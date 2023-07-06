@@ -26,6 +26,10 @@ def validate_cli_args(args: Args):
         assert os.access(args.file, os.R_OK), "Data directory must have read permission granted"
 
 
+def convert_str_to_path(str_path: str) -> Path:
+    return Path(str_path)
+
+
 def build_cli() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ECDataKitRunner",
@@ -35,10 +39,10 @@ def build_cli() -> argparse.ArgumentParser:
             Authored by Kacper Kafara <kacperkafara@gmail.com>.
             """
     )
-    parser.add_argument('bin', help='path to jssp instance solver')
+    parser.add_argument('bin', help='path to jssp instance solver', type=Path)
     mutex_group = parser.add_mutually_exclusive_group()
-    mutex_group.add_argument('-f', '--file', help='path to jssp instance data file', type=Path)
-    mutex_group.add_argument('-d', '--dir', help='path to jssp instance data directory', type=Path)
+    mutex_group.add_argument('-f', '--file', help='path to jssp instance data file', type=convert_str_to_path)
+    mutex_group.add_argument('-d', '--dir', help='path to jssp instance data directory', type=convert_str_to_path)
     return parser
 
 

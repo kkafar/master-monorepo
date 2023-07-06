@@ -1,10 +1,8 @@
-import argparse
-import sys
 import polars as pl
 import matplotlib.pyplot as plt
-from pathlib import Path
-import jssp
 import cli
+import subprocess as sp
+import os
 
 
 def configure_env():
@@ -13,8 +11,20 @@ def configure_env():
     plt.rcParams['figure.figsize'] = (16, 9)
 
 
+def run_solver(args: cli.Args):
+    assert args.file is not None
+    completed_pc: sp.CompletedProcess = sp.run([args.bin, '--file', args.file])
+    if completed_pc.returncode != 0:
+        print("Jssp solver exited with non-zero return code")
+        exit(completed_pc.returncode)
+
+
+
+
+
 configure_env()
 args = cli.parse_cli_args()
+run_solver(args)
 
 
 
