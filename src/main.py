@@ -12,14 +12,11 @@ def configure_env():
 
 
 def run_solver(args: cli.Args):
-    assert args.file is not None
-    completed_pc: sp.CompletedProcess = sp.run([args.bin, '--file', args.file])
+    assert args.input_file is not None
+    completed_pc: sp.CompletedProcess = sp.run([args.bin, '--input-file', args.input_file, '--output-file', args.output_file])
     if completed_pc.returncode != 0:
         print("Jssp solver exited with non-zero return code")
         exit(completed_pc.returncode)
-
-
-
 
 
 configure_env()
