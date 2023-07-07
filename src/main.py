@@ -4,6 +4,7 @@ import cli
 import subprocess as sp
 import os
 import jssp
+import model
 
 
 def configure_env():
@@ -27,8 +28,7 @@ run_solver(args)
 data_file = args.output_file
 assert data_file.is_file(), f"Solver did not produce valid data output file under path: {data_file}"
 
-data_df = pl.read_csv(data_file, has_header=False, new_columns=[
-                      "event", "gen", "time", "fitness"]).filter(pl.col('event') != 'diversity').select(pl.exclude('column_5'))
+data_df = pl.read_csv(data_file, has_header=False, new_columns=model.OUTPUT_LABELS).filter(pl.col('event') != 'diversity').select(pl.exclude('column_5'))
 print(data_df)
 
 problem_name = None
