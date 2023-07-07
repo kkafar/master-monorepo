@@ -1,6 +1,11 @@
+COL_EVENT = 'event'
+COL_GENERATION = 'gen'
+COL_TIME = 'time'
+COL_FITNESS = 'fitness'
+
 OUTPUT_LABELS = [
-    'event',
-    'gen',
-    'time',
-    'fitness',
+    COL_EVENT,
+    COL_GENERATION,
+    COL_TIME,
+    COL_FITNESS,
 ]

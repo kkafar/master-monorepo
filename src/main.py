@@ -2,9 +2,9 @@ import polars as pl
 import matplotlib.pyplot as plt
 import cli
 import subprocess as sp
-import os
 import jssp
 import model
+from pathlib import Path
 
 
 def configure_env():
@@ -21,6 +21,13 @@ def run_solver(args: cli.Args):
         exit(completed_pc.returncode)
 
 
+def load_data(file: Path) -> pl.DataFrame:
+    data_df = (pl.read_csv(data_file, has_header=False, new_columns=model.OUTPUT_LABELS)
+               .filter(pl.col(model.COL_EVENT) != 'diversity')
+               .select(pl.exclude('column_5')))
+    return data_df
+
+
 configure_env()
 args = cli.parse_cli_args()
 run_solver(args)
@@ -28,7 +35,7 @@ run_solver(args)
 data_file = args.output_file
 assert data_file.is_file(), f"Solver did not produce valid data output file under path: {data_file}"
 
-data_df = pl.read_csv(data_file, has_header=False, new_columns=model.OUTPUT_LABELS).filter(pl.col('event') != 'diversity').select(pl.exclude('column_5'))
+data_df = load_data(data_file)
 print(data_df)
 
 problem_name = None
