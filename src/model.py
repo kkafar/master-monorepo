@@ -9,3 +9,13 @@ OUTPUT_LABELS = [
     COL_TIME,
     COL_FITNESS,
 ]
+
+EVENT_BEST_IN_GEN = 'bestingen'
+EVENT_NEW_BEST = 'newbest'
+EVENT_DIVERSITY = 'diversity'
+
+OUTPUT_EVENTS = [
+    EVENT_BEST_IN_GEN,
+    EVENT_NEW_BEST,
+    EVENT_DIVERSITY,
+]
