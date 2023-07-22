@@ -2,7 +2,6 @@ import polars as pl
 import matplotlib.pyplot as plt
 import cli
 import subprocess as sp
-import os
 import jssp
 import model
 
@@ -15,7 +14,9 @@ def configure_env():
 
 def run_solver(args: cli.Args):
     assert args.input_file is not None
-    completed_pc: sp.CompletedProcess = sp.run([args.bin, '--input-file', args.input_file, '--output-file', args.output_file])
+    completed_pc: sp.CompletedProcess = sp.run([args.bin,
+                                                '--input-file', args.input_file,
+                                                '--output-file', args.output_file])
     if completed_pc.returncode != 0:
         print("Jssp solver exited with non-zero return code")
         exit(completed_pc.returncode)
