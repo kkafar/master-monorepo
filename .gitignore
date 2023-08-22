@@ -2,3 +2,7 @@
 __pycache__/
 test.log
 output.csv
+output/
+run.sh
+*local.*
+
