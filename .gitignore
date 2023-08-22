@@ -4,3 +4,5 @@ test.log
 output.csv
 output/
 run.sh
+*local.*
+
