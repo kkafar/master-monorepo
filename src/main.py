@@ -81,7 +81,7 @@ def resolve_all_input_files(args: cli.Args) -> list[Path]:
 def main():
     configure_env()
     args = cli.parse_cli_args()
-    config = Config(resolve_all_input_files(args), args.output_file, args.output_dir)
+    config = Config(args.bin, resolve_all_input_files(args), args.output_file, args.output_dir)
 
     if args.input_dir is not None:
         run_solver_for_many_inputs(args.bin, args.input_dir.glob('*.txt'), args.output_dir)

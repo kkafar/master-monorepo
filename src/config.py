@@ -8,14 +8,18 @@ def default_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
 
 
 class Config:
+    solver_bin: Path
     configurations: list[SolverInput]
     output_path_resolver: Callable[[Path, Path], Path]
 
     def __init__(self,
+                 solver_bin: Path,
                  inputs: list[Path],
                  output_file: Optional[Path] = None,
                  output_dir: Optional[Path] = None,
                  output_path_resolver: Callable[[Path, Path], Path] = default_output_path_resolver):
+        self.solver_bin = solver_bin
+
         if len(inputs) == 1:
             if output_file is None:
                 output_file = Config.default_output_file()
