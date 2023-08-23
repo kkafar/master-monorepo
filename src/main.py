@@ -1,8 +1,6 @@
 import polars as pl
 import matplotlib.pyplot as plt
 import cli
-import subprocess as sp
-import logging
 import jssp
 import model
 from config import Config
