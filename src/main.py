@@ -8,6 +8,8 @@ import model
 from config import Config
 from pathlib import Path
 from typing import Iterable
+from runner import ExperimentRunner
+from solver import SolverProxy
 
 
 def configure_env():
@@ -72,29 +74,14 @@ def resolve_all_input_files(args: cli.Args) -> list[Path]:
         for input_dir in args.input_dirs:
             all_paths.extend(resolve_input_files_in_dir(input_dir))
 
-    print("Running for input files")
-    print(all_paths)
     return all_paths
-
 
 
 def main():
     configure_env()
     args = cli.parse_cli_args()
-    config = Config(resolve_all_input_files(args), args.output_file, args.output_dir)
-
-    if args.input_dir is not None:
-        run_solver_for_many_inputs(args.bin, args.input_dir.glob('*.txt'), args.output_dir)
-    elif args.input_file is not None:
-        run_solver(args.bin, args.input_file, args.output_file)
-
-    if args.output_dir is not None:
-        process_output(args.output_dir)
-    elif args.output_file is not None:
-        process_data(args.output_file)
-
-    # data_file = args.output_file
-    # assert data_file.is_file(), f"Solver did not produce valid data output file under path: {data_file}"
+    runner = ExperimentRunner(SolverProxy(args.bin), Config(resolve_all_input_files(args), args.output_file, args.output_dir))
+    runner.run()
 
 
 if __name__ == "__main__":
