@@ -8,9 +8,9 @@ import os
 @dataclass
 class Args:
     bin: Path
-    input_file: Path
-    output_file: Path
-    input_dir: Optional[Path]
+    input_files: Optional[list[Path]]
+    input_dirs: Optional[list[Path]]
+    output_file: Optional[Path]
     output_dir: Optional[Path]
 
 
@@ -19,17 +19,20 @@ def validate_cli_args(args: Args):
     assert args.bin.is_file(), "Provided binary path must point to an existing file"
     assert os.access(args.bin, os.X_OK), "Provided binary file must have executable permission granted"
 
-    if args.input_file is not None:
-        assert args.input_file.is_file(), "Provided input data file path must point to an existing file"
-        assert os.access(args.input_file, os.R_OK), "Data input file must have read permission granted"
+    assert args.input_files is not None or args.input_dirs is not None, "One of input files or input dirs must be specified"
 
-    if args.input_dir is not None:
-        assert args.input_dir.is_dir(), "Provided data directory path must point to an existing directory"
-        assert os.access(args.input_dir, os.R_OK), "Data directory must have read permission granted"
+    if args.input_files is not None:
+        for file in args.input_files:
+            assert file.is_file(), f'{file} is not a file'
+            assert os.access(file, os.R_OK), f'{file} does not have read permissions'
 
-    if args.output_file is not None and args.output_dir is not None:
-        parts = args.output_file.parts
-        assert len(parts) == 1 or len(parts) == 2 and parts[0] == '.', "If output dir is specified output file should specify base pattern for output files"
+    if args.input_dirs is not None:
+        for input_dir in args.input_dirs:
+            assert input_dir.is_dir(), f'{input_dir} is not a directory'
+            assert os.access(input_dir, os.R_OK), f'{input_dir} does not have read permission granted'
+
+    if args.output_file is not None:
+        assert args.input_files is not None and len(args.input_files) == 1, "For output_file option to work exactly one input file must be specified"
 
 
 def build_cli() -> argparse.ArgumentParser:
@@ -40,12 +43,12 @@ def build_cli() -> argparse.ArgumentParser:
             Authored by Kacper Kafara <kacperkafara@gmail.com>.
             """
     )
-    parser.add_argument('bin', help='path to jssp instance solver', type=Path)
+    parser.add_argument('bin', help='Path to jssp instance solver', type=Path)
     # mutex_group = parser.add_mutually_exclusive_group()
-    parser.add_argument('-f', '--input-file', help='path to jssp instance data file', type=Path)
-    parser.add_argument('-o', '--output-file', help='output file path', type=Path)
-    parser.add_argument('-d', '--input-dir', help='path to jssp instance data directory', type=Path)
-    parser.add_argument('-D', '--output-dir', help='output directory', type=Path)
+    parser.add_argument('-f', '--input-files', help='Path to jssp instance data file or list of those', nargs='+', type=Path)
+    parser.add_argument('-d', '--input-dirs', help='Path to jssp instance data directory or list of those', nargs='+', type=Path)
+    parser.add_argument('-o', '--output-file', help='Output file path; should be used only when in case single input file was specified', type=Path)
+    parser.add_argument('-D', '--output-dir', help='Output directory; should be specified in case multiple input files / directory/ies were specified', type=Path)
     return parser
 
 
