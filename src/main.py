@@ -1,8 +1,6 @@
 import polars as pl
 import matplotlib.pyplot as plt
 import cli
-import subprocess as sp
-import logging
 import jssp
 import model
 from config import Config
@@ -16,23 +14,6 @@ def configure_env():
     pl.Config.set_tbl_rows(400)
     pl.Config.set_tbl_cols(10)
     plt.rcParams['figure.figsize'] = (16, 9)
-
-
-def resolve_output_file_name(output_dir: Path, input_file: Path, output_file_suffix: Path, joiner: str = '-') -> str:
-    assert output_file_suffix is not None
-    return output_dir.joinpath(input_file.stem + joiner + output_file_suffix + input_file.suffix)
-
-
-def run_solver(binary: Path, input_file: Path, output_file: Path):
-    completed_pc: sp.CompletedProcess = sp.run([binary, '--input-file', input_file, '--output-file', output_file])
-    if completed_pc.returncode != 0:
-        print("Jssp solver exited with non-zero return code")
-        exit(completed_pc.returncode)
-
-
-def run_solver_for_many_inputs(binary: Path, input_files: Iterable[Path], output_dir: Path, output_file_suffix: str = 'log'):
-    for input_file in input_files:
-        run_solver(binary, input_file, resolve_output_file_name(output_dir, input_file, output_file_suffix))
 
 
 def load_data(data_file: Path) -> pl.DataFrame:
