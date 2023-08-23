@@ -23,13 +23,13 @@ class SolverProxy:
 
     def run(self, params: SolverParams) -> ExperimentResult:
         print(f"[SolverProxy] Running for {params}")
-        completed_process = sp.CompletedProcess = sp.run([
+        completed_process: sp.CompletedProcess = sp.run([
             self.binary,
             SolverProxy.INPUT_FILE_OPT_NAME,
             params.input_file,
             SolverProxy.OUTPUT_FILE_OPT_NAME,
             params.output_file,
-        ])
+        ], stdout=sp.DEVNULL)
 
         if completed_process.returncode != 0:
             print("JSSP solver exited with non-zero return code")

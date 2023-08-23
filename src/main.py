@@ -74,8 +74,6 @@ def resolve_all_input_files(args: cli.Args) -> list[Path]:
         for input_dir in args.input_dirs:
             all_paths.extend(resolve_input_files_in_dir(input_dir))
 
-    print("Running for input files")
-    print(all_paths)
     return all_paths
 
 
