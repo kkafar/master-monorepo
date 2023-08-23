@@ -79,25 +79,11 @@ def resolve_all_input_files(args: cli.Args) -> list[Path]:
     return all_paths
 
 
-
 def main():
     configure_env()
     args = cli.parse_cli_args()
     runner = ExperimentRunner(SolverProxy(args.bin), Config(resolve_all_input_files(args), args.output_file, args.output_dir))
     runner.run()
-
-    # if args.input_dir is not None:
-    #     run_solver_for_many_inputs(args.bin, args.input_dir.glob('*.txt'), args.output_dir)
-    # elif args.input_file is not None:
-    #     run_solver(args.bin, args.input_file, args.output_file)
-
-    # if args.output_dir is not None:
-    #     process_output(args.output_dir)
-    # elif args.output_file is not None:
-    #     process_data(args.output_file)
-
-    # data_file = args.output_file
-    # assert data_file.is_file(), f"Solver did not produce valid data output file under path: {data_file}"
 
 
 if __name__ == "__main__":
