@@ -12,6 +12,5 @@ class ExperimentRunner:
 
     def run(self):
         for params in self.config.configurations:
-            print(f"Running for params {params}")
             self.solver.run(params)
 

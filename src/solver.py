@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 @dataclass
-class SolverInput:
+class SolverParams:
     input_file: Path
     output_file: Path
 
@@ -21,16 +21,19 @@ class SolverProxy:
     def __init__(self, binary: Path):
         self.binary = binary
 
-    def run(self, input: SolverInput) -> ExperimentResult:
+    def run(self, params: SolverParams) -> ExperimentResult:
+        print(f"[SolverProxy] Running for {params}")
         completed_process = sp.CompletedProcess = sp.run([
             self.binary,
             SolverProxy.INPUT_FILE_OPT_NAME,
-            input.input_file,
+            params.input_file,
             SolverProxy.OUTPUT_FILE_OPT_NAME,
-            input.output_file,
+            params.output_file,
         ])
 
         if completed_process.returncode != 0:
             print("JSSP solver exited with non-zero return code")
             exit(completed_process.returncode)
+
+        return None
 

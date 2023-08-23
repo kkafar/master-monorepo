@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Optional, Callable
-from solver import SolverInput
+from solver import SolverParams
 
 
 def default_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
@@ -8,7 +8,7 @@ def default_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
 
 
 class Config:
-    configurations: list[SolverInput]
+    configurations: list[SolverParams]
     output_path_resolver: Callable[[Path, Path], Path]
 
     def __init__(self,
@@ -20,7 +20,7 @@ class Config:
         if len(inputs) == 1:
             if output_file is None:
                 output_file = Config.default_output_file()
-            self.configurations = [SolverInput(input_file=inputs[0],
+            self.configurations = [SolverParams(input_file=inputs[0],
                                                output_file=output_file)]
             return
 
@@ -29,7 +29,7 @@ class Config:
 
         self.output_path_resolver = output_path_resolver
         self.configurations = [
-            SolverInput(input_file=input_file,
+            SolverParams(input_file=input_file,
                         output_file=self.output_path_resolver(input_file, output_dir))
             for input_file in inputs
         ]
