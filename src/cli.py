@@ -31,6 +31,9 @@ def validate_cli_args(args: Args):
             assert input_dir.is_dir(), f'{input_dir} is not a directory'
             assert os.access(input_dir, os.R_OK), f'{input_dir} does not have read permission granted'
 
+    if args.output_file is not None:
+        assert args.input_files is not None and len(args.input_files) == 1, "For output_file option to work exactly one input file must be specified"
+
 
 def build_cli() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
