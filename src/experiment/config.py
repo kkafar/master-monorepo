@@ -7,7 +7,7 @@ def default_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
     return output_dir.joinpath(input_file.stem + '-result').with_suffix('.txt')
 
 
-class Config:
+class ExpConfig:
     configurations: list[SolverParams]
     output_path_resolver: Callable[[Path, Path], Path]
 
@@ -19,7 +19,7 @@ class Config:
         self.output_path_resolver = output_path_resolver
 
         if output_dir is None:
-            output_dir = Config.default_output_dir()
+            output_dir = ExpConfig.default_output_dir()
 
         if len(inputs) == 1:
             if output_file is None:
@@ -41,8 +41,4 @@ class Config:
     @classmethod
     def default_output_dir(cls) -> Path:
         return Path("output")
-
-
-
-
 

@@ -9,7 +9,7 @@ class SolverParams:
     output_file: Path
 
 
-ExperimentResult = None
+SolverResult = None
 
 
 class SolverProxy:
@@ -21,7 +21,7 @@ class SolverProxy:
     def __init__(self, binary: Path):
         self.binary = binary
 
-    def run(self, params: SolverParams) -> ExperimentResult:
+    def run(self, params: SolverParams) -> SolverResult:
         print(f"[SolverProxy] Running for {params}")
         completed_process: sp.CompletedProcess = sp.run([
             self.binary,
