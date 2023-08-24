@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import model
 import jssp
 from pathlib import Path
+from experiment.runner import ExpResult
 
 
 class RawDataProcessor:
@@ -24,7 +25,7 @@ def process_output(output_dir: Path):
 
 def process_data(input_file: Path):
     data_df = load_data(input_file)
-    print(data_df)
+    # print(data_df)
 
     problem_name = None
 
@@ -37,3 +38,10 @@ def process_data(input_file: Path):
         ylabel="Wartość funkcji fitness"
     )
     plt.show()
+
+
+def process_experiment_results(exp_results: list[ExpResult]):
+    for result in exp_results:
+        print(f'Processing {result.name}')
+        process_data(result.params.output_file)
+

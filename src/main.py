@@ -5,6 +5,7 @@ import data.file_resolver as fr
 from experiment.config import ExpConfig
 from experiment.runner import ExpRunner, ExpResult
 from solver import SolverProxy
+from data.pipeline import process_experiment_results
 
 
 def configure_env():
@@ -19,10 +20,12 @@ def main():
     runner = ExpRunner(SolverProxy(args.bin),
                        ExpConfig(fr.resolve_all_input_files(args),
                                  args.output_file, args.output_dir))
-    exp_result: ExpResult = runner.run()
+    exp_results: ExpResult = runner.run()
 
-    for result in exp_result:
+    for result in exp_results:
         print(result)
+
+    process_experiment_results(exp_results)
 
 
 if __name__ == "__main__":

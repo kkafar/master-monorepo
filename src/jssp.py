@@ -1,7 +1,6 @@
 import polars as pl
 import matplotlib.pyplot as plt
 from model import COL_EVENT, EVENT_BEST_IN_GEN, COL_GENERATION, COL_FITNESS
-import model
 
 
 def plot_fitness_improvements(data: pl.DataFrame, plot: plt.Axes):
@@ -13,7 +12,6 @@ def plot_fitness_improvements(data: pl.DataFrame, plot: plt.Axes):
         .collect()
     )
 
-    print(data)
     x_data = data.get_column(COL_GENERATION)
     y_data = data.get_column(COL_FITNESS)
 
