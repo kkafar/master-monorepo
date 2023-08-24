@@ -1,5 +1,5 @@
 from solver import SolverProxy, SolverParams, SolverResult
-from config import ExpConfig
+from .config import ExpConfig
 from dataclasses import dataclass
 from pathlib import Path
 
