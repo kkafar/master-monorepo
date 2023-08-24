@@ -12,6 +12,7 @@ class Args:
     input_dirs: Optional[list[Path]]
     output_file: Optional[Path]
     output_dir: Optional[Path]
+    runs: Optional[int]
 
 
 def validate_cli_args(args: Args):
@@ -53,6 +54,7 @@ def build_cli() -> argparse.ArgumentParser:
     parser.add_argument('-d', '--input-dirs', help='Path to jssp instance data directory or list of those', nargs='+', type=Path)
     parser.add_argument('-o', '--output-file', help='Output file path; should be used only when in case single input file was specified', type=Path)
     parser.add_argument('-D', '--output-dir', help='Output directory; should be specified in case multiple input files / directory/ies were specified', type=Path)
+    parser.add_argument('--runs', help='Number of repetitions for each problem instance. Defaults to 1.', type=int)
     return parser
 
 
