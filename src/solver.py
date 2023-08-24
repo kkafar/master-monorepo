@@ -1,4 +1,5 @@
 import subprocess as sp
+import datetime as dt
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -9,7 +10,9 @@ class SolverParams:
     output_file: Path
 
 
-SolverResult = None
+@dataclass
+class SolverResult:
+    duration: int
 
 
 class SolverProxy:
@@ -23,6 +26,7 @@ class SolverProxy:
 
     def run(self, params: SolverParams) -> SolverResult:
         print(f"[SolverProxy] Running for {params}")
+        start_time = dt.datetime.now()
         completed_process: sp.CompletedProcess = sp.run([
             self.binary,
             SolverProxy.INPUT_FILE_OPT_NAME,
@@ -30,10 +34,11 @@ class SolverProxy:
             SolverProxy.OUTPUT_FILE_OPT_NAME,
             params.output_file,
         ], stdout=sp.DEVNULL)
+        end_time = dt.datetime.now()
 
         if completed_process.returncode != 0:
             print("JSSP solver exited with non-zero return code")
             exit(completed_process.returncode)
 
-        return None
+        return SolverResult(duration=(end_time - start_time))
 
