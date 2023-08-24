@@ -18,7 +18,7 @@ def main():
     args = cli.parse_cli_args()
     runner = ExpRunner(SolverProxy(args.bin),
                        ExpConfig(fr.resolve_all_input_files(args),
-                              args.output_file, args.output_dir))
+                                 args.output_file, args.output_dir))
     runner.run()
 
 
