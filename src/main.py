@@ -2,8 +2,8 @@ import polars as pl
 import matplotlib.pyplot as plt
 import cli
 import data.file_resolver as fr
-from config import Config
-from runner import ExperimentRunner
+from experiment.config import ExpConfig
+from experiment.runner import ExpRunner
 from solver import SolverProxy
 
 
@@ -16,9 +16,9 @@ def configure_env():
 def main():
     configure_env()
     args = cli.parse_cli_args()
-    runner = ExperimentRunner(SolverProxy(args.bin),
-                              Config(fr.resolve_all_input_files(args),
-                                     args.output_file, args.output_dir))
+    runner = ExpRunner(SolverProxy(args.bin),
+                       ExpConfig(fr.resolve_all_input_files(args),
+                              args.output_file, args.output_dir))
     runner.run()
 
 
