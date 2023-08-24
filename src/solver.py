@@ -12,7 +12,7 @@ class SolverParams:
 
 @dataclass
 class SolverResult:
-    duration: int
+    duration: dt.timedelta
 
 
 class SolverProxy:
@@ -40,5 +40,6 @@ class SolverProxy:
             print("JSSP solver exited with non-zero return code")
             exit(completed_process.returncode)
 
-        return SolverResult(duration=(end_time - start_time))
+        timedelta: dt.timedelta = end_time - start_time
+        return SolverResult(duration=timedelta)
 

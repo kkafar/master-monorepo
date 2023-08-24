@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import cli
 import data.file_resolver as fr
 from experiment.config import ExpConfig
-from experiment.runner import ExpRunner
+from experiment.runner import ExpRunner, ExpResult
 from solver import SolverProxy
 
 
@@ -19,7 +19,10 @@ def main():
     runner = ExpRunner(SolverProxy(args.bin),
                        ExpConfig(fr.resolve_all_input_files(args),
                                  args.output_file, args.output_dir))
-    runner.run()
+    exp_result: ExpResult = runner.run()
+
+    for result in exp_result:
+        print(result)
 
 
 if __name__ == "__main__":
