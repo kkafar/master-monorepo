@@ -1,18 +1,14 @@
-from solver import SolverProxy, SolverParams
+from solver import SolverProxy, SolverParams, SolverResult
 from config import ExpConfig
 from dataclasses import dataclass
-
-
-@dataclass
-class ExpMetadata:
-    duration: int
+from pathlib import Path
 
 
 @dataclass
 class ExpResult:
     name: str
     params: SolverParams
-    meta: ExpMetadata
+    run_results: list[SolverResult]
 
 
 class ExpRunner:
@@ -23,7 +19,14 @@ class ExpRunner:
         self.solver = solver
         self.config = config
 
-    def run(self):
+    def run(self) -> list[ExpResult]:
+        results: list[ExpResult] = []
         for params in self.config.configurations:
-            self.solver.run(params)
+            name = self.exp_name_from_input_file(params.input_file)
+            run_result = self.solver.run(params)
+            results.append(ExpResult(name, params, [run_result]))
+        return results
+
+    def exp_name_from_input_file(self, input_file: Path) -> str:
+        return input_file.stem
 

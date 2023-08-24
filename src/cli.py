@@ -36,7 +36,7 @@ def validate_cli_args(args: Args):
 
     if args.output_dir is not None and not args.output_dir.is_dir():
         args.output_dir.mkdir(parents=True)
-        assert args.output_dir.is_dir(), "Output directory was specified but it does not exist"
+        assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
 
 
 def build_cli() -> argparse.ArgumentParser:
