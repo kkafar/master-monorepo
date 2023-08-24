@@ -7,8 +7,13 @@ def base_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
     return output_dir.joinpath(input_file.stem + '-result').with_suffix('.txt')
 
 
+def exp_name_from_input_file(input_file: Path) -> str:
+    return input_file.stem
+
+
 @dataclass
 class ExperimentDescription:
+    name: str
     input_file: Path
     output_dir: Path
     repeats_no: int
@@ -30,15 +35,17 @@ class RunInfo:
             output_dir = RunInfo.default_output_dir()
 
         if len(inputs) == 1:
+            input_file = inputs[0]
             if output_file is None:
-                output_file = self.output_path_resolver(inputs[0], output_dir)
-            self.descriptions = [ExperimentDescription(input_file=inputs[0],
+                output_file = self.output_path_resolver(input_file, output_dir)
+            self.descriptions = [ExperimentDescription(name=exp_name_from_input_file(input_file),
+                                                       input_file=input_file,
                                                        output_dir=output_dir,
                                                        repeats_no=repeats_no)]
             return
 
         self.descriptions = [
-            ExperimentDescription(input_file=input_file,
+            ExperimentDescription(name=exp_name_from_input_file(input_file), input_file=input_file,
                                   output_dir=output_dir, repeats_no=repeats_no)
             for input_file in inputs
         ]
