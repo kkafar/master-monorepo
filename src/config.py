@@ -42,7 +42,3 @@ class Config:
     def default_output_dir(cls) -> Path:
         return Path("output")
 
-
-
-
-
