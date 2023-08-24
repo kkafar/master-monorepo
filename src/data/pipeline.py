@@ -42,6 +42,7 @@ def process_data(input_file: Path):
 
 def process_experiment_results(exp_results: list[ExperimentResult]):
     for result in exp_results:
-        print(f'Processing {result.name}')
-        process_data(result.params.output_file)
+        print(f'Processing {result.description.name}')
+        for output_file in result.output_files:
+            process_data(output_file)
 

@@ -20,7 +20,7 @@ def main():
     runner = Runner(SolverProxy(args.bin),
                     RunInfo(fr.resolve_all_input_files(args),
                             args.output_file, args.output_dir))
-    exp_results: ExperimentResult = runner.run()
+    exp_results: list[ExperimentResult] = runner.run()
 
     # for result in exp_results:
     #     print(result)
