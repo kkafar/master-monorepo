@@ -1,9 +1,9 @@
 import polars as pl
 import matplotlib.pyplot as plt
-import model
 import jssp
 from pathlib import Path
 from experiment.runner import ExperimentResult
+from model import Col, Event
 
 
 class RawDataProcessor:
@@ -12,8 +12,8 @@ class RawDataProcessor:
 
 
 def load_data(data_file: Path) -> pl.DataFrame:
-    data_df = (pl.read_csv(data_file, has_header=False, new_columns=model.OUTPUT_LABELS)
-               .filter(pl.col(model.COL_EVENT) != 'diversity')
+    data_df = (pl.read_csv(data_file, has_header=False, new_columns=Col.ALL_COLLS)
+               .filter(pl.col(Col.EVENT) != Event.DIVERSITY)
                .select(pl.exclude('column_5')))
     return data_df
 
