@@ -22,10 +22,10 @@ class Col:
     POP_SIZE = 'popsize'
     DIVERSITY = 'diversity'
     EVAL_TIME = 'eval_time'
-    SEL_TIME = 'sel_time',
-    CROSS_TIME = 'cross_time',
-    MUT_TIME = 'mut_time',
-    REPL_TIME = 'repl_time',
+    SEL_TIME = 'sel_time'
+    CROSS_TIME = 'cross_time'
+    MUT_TIME = 'mut_time'
+    REPL_TIME = 'repl_time'
     ITER_TIME = 'iter_time'
 
     ALL_COLLS = [

@@ -4,6 +4,29 @@ import jssp
 from pathlib import Path
 from experiment.runner import ExperimentResult
 from model import Col, Event
+from typing import Iterable, Optional
+from pprint import pprint
+
+
+def data_frame_from_file(data_file: Path) -> pl.DataFrame:
+    df = (pl.scan_csv(data_file,
+                      has_header=False,
+                      infer_schema_length=None))
+    return df
+
+
+def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
+    main_df: Optional[pl.DataFrame] = None
+    for sid, data_file in enumerate(output_files):
+        print(f'Processing data file {data_file} sid {sid}')
+        tmp_df: pl.DataFrame = data_frame_from_file(data_file).collect()
+        series_column = pl.Series([sid for _ in range(tmp_df.height)])
+        tmp_df = tmp_df.with_columns(series_column.alias("sid"))
+        if main_df is not None:
+            main_df.vstack(tmp_df, in_place=True)
+        else:
+            main_df = tmp_df
+    print(main_df)
 
 
 class RawDataProcessor:
@@ -43,6 +66,7 @@ def process_data(input_file: Path):
 def process_experiment_results(exp_results: list[ExperimentResult]):
     for result in exp_results:
         print(f'Processing {result.description.name}')
-        for output_file in result.output_files:
-            process_data(output_file)
+        pprint(result.output_files)
+        join_data_from_multiple_runs(result.output_files)
+        break
 

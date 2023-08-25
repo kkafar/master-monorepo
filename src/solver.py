@@ -25,7 +25,7 @@ class SolverProxy:
         self.binary = binary
 
     def run(self, params: SolverParams) -> SolverResult:
-        print(f"[SolverProxy] Running with {params}")
+        print(f"[SolverProxy] Running with {params}", end=' ')
         start_time = dt.datetime.now()
         completed_process: sp.CompletedProcess = sp.run([
             self.binary,
@@ -37,9 +37,10 @@ class SolverProxy:
         end_time = dt.datetime.now()
 
         if completed_process.returncode != 0:
-            print("JSSP solver exited with non-zero return code")
+            print(f"Failed with nonzero return code {completed_process.returncode}")
             exit(completed_process.returncode)
 
         timedelta: dt.timedelta = end_time - start_time
+        print(f"Done in {timedelta}")
         return SolverResult(duration=timedelta)
 
