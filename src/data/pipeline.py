@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import jssp
 from pathlib import Path
 from experiment.runner import ExperimentResult
-from model import Col, Event, EventName, EventConfig, config_for_event
+from data.model import Col, Event, EventConfig, config_for_event
 from typing import Iterable, Optional
 from pprint import pprint
 
