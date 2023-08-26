@@ -1,6 +1,7 @@
 import polars as pl
 import matplotlib.pyplot as plt
 from .model import Col
+from .filter import filter_sid
 
 
 def plot_best_in_gen(data: pl.DataFrame, plot: plt.Axes):
@@ -21,7 +22,7 @@ def plot_column_by_generation(data: pl.DataFrame, plot: plt.Axes, column_name: s
         series_data = (
             data
             .lazy()
-            .filter(pl.col(Col.SID) == sid)
+            .filter(filter_sid(sid))
             .sort(Col.GENERATION)
             .collect()
         )
