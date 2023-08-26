@@ -1,6 +1,6 @@
 import polars as pl
 import matplotlib.pyplot as plt
-from model import Col, Event
+from data.model import Col, Event
 
 
 def plot_fitness_improvements(data: pl.DataFrame, plot: plt.Axes):

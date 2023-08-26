@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Optional, Callable
-from dataclasses import dataclass
+from .model import ExperimentDescription
 
 
 def base_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
@@ -9,14 +9,6 @@ def base_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
 
 def exp_name_from_input_file(input_file: Path) -> str:
     return input_file.stem
-
-
-@dataclass
-class ExperimentDescription:
-    name: str
-    input_file: Path
-    output_dir: Path
-    repeats_no: int
 
 
 class RunInfo:
