@@ -25,7 +25,7 @@ class SolverProxy:
         self.binary = binary
 
     def run(self, params: SolverParams) -> SolverResult:
-        print(f"[SolverProxy] Running with {params}", end=' ')
+        print(f"[SolverProxy] Running with {params}", end=' ', flush=True)
         start_time = dt.datetime.now()
         completed_process: sp.CompletedProcess = sp.run([
             self.binary,
