@@ -90,6 +90,15 @@ def process_experiment_data(data: pl.DataFrame, desc: ExperimentDescription):
         ylabel="Fitness value"
     )
     plot.legend()
+
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_diversity(partitioned_data.get(Event.DIVERSITY), plot)
+    plot.set(
+        title=f"Diversity rate by generation, {desc.name}",
+        xlabel="Generation",
+        ylabel="Diversity rate"
+    )
+    plot.legend()
     plt.show()
 
 
