@@ -1,6 +1,6 @@
-from solver import SolverProxy, SolverParams, SolverResult
-from .config import RunInfo, ExperimentDescription
-from dataclasses import dataclass
+from solver import SolverProxy, SolverParams
+from .config import RunInfo
+from .model import ExperimentResult
 from pathlib import Path
 from typing import Optional
 
@@ -10,13 +10,6 @@ def base_output_path_resolver(input_file: Path, output_dir: Path, series_id: Opt
         '-result' + \
         ('-run-' + str(series_id)) if series_id is not None else ''
     return output_dir.joinpath(file_name).with_suffix('.txt')
-
-
-@dataclass
-class ExperimentResult:
-    description: ExperimentDescription
-    run_results: list[SolverResult]
-    output_files: list[Path]
 
 
 class Runner:
