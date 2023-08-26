@@ -9,7 +9,7 @@ from data.pipeline import process_experiment_results
 
 
 def configure_env():
-    pl.Config.set_tbl_rows(400)
+    pl.Config.set_tbl_rows(20)
     pl.Config.set_tbl_cols(10)
     plt.rcParams['figure.figsize'] = (16, 9)
 
