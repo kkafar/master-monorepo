@@ -5,7 +5,7 @@ import data.file_resolver as fr
 from experiment.config import RunInfo
 from experiment.runner import Runner, ExperimentResult
 from solver import SolverProxy
-from data.pipeline import process_experiment_results
+from data.tools import process_experiment_results
 
 
 def configure_env():
