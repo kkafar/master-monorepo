@@ -39,6 +39,7 @@ class Col:
     MUT_TIME = 'mut_time'
     REPL_TIME = 'repl_time'
     ITER_TIME = 'iter_time'
+    SID = 'sid'
 
     ALL_COLLS = [
         EVENT,
@@ -52,31 +53,46 @@ class Col:
         CROSS_TIME,
         MUT_TIME,
         REPL_TIME,
-        ITER_TIME
+        ITER_TIME,
+        SID,
     ]
 
 
-SCHEMA_FOR_EVENT = {
-    Event.NEW_BEST: [Col.GENERATION, Col.TIME, Col.FITNESS],
-    Event.DIVERSITY: [Col.GENERATION, Col.TIME, Col.POP_SIZE, Col.DIVERSITY],
-    Event.BEST_IN_GEN: [Col.GENERATION, Col.TIME, Col.FITNESS],
-    Event.POP_GEN_TIME: [Col.TIME],
-    Event.ITER_INFO: [Col.GENERATION, Col.EVAL_TIME, Col.SEL_TIME,
-                      Col.CROSS_TIME, Col.MUT_TIME, Col.REPL_TIME, Col.ITER_TIME]
-}
+EVENT_COL_INDEX = 0
+SID_COL_INDEX = -1
+
+
+# We append series_id column which is not present in original result
+SCHEMA_FOR_EVENT = dict(map(lambda kv: (kv[0], [Col.EVENT] + kv[1] + [Col.SID]), [
+    (Event.NEW_BEST, [Col.GENERATION, Col.TIME, Col.FITNESS]),
+    (Event.DIVERSITY, [Col.GENERATION, Col.TIME, Col.POP_SIZE, Col.DIVERSITY]),
+    (Event.BEST_IN_GEN, [Col.GENERATION, Col.TIME, Col.FITNESS]),
+    (Event.POP_GEN_TIME, [Col.TIME]),
+    (Event.ITER_INFO, [Col.GENERATION, Col.EVAL_TIME, Col.SEL_TIME,
+                       Col.CROSS_TIME, Col.MUT_TIME, Col.REPL_TIME, Col.ITER_TIME])
+]))
+
+COLUMN_INDICES_FOR_EVENT = dict(map(lambda kv: (kv[0], [EVENT_COL_INDEX] + kv[1] + [SID_COL_INDEX]), [
+    (Event.NEW_BEST, [1, 2, 3]),
+    (Event.DIVERSITY, [1, 2, 3, 4]),
+    (Event.BEST_IN_GEN, [1, 2, 3]),
+    (Event.POP_GEN_TIME, [1]),
+    (Event.ITER_INFO, list(range(1, 7 + 1)))
+]))
 
 
 def schema_for_event(event: EventName) -> list[str]:
     return SCHEMA_FOR_EVENT[event]
 
 
-EVENT_CONFIGS = {
-    Event.NEW_BEST: EventConfig(Event.NEW_BEST, schema_for_event(Event.NEW_BEST), [0, 1, 2, 3]),
-    Event.DIVERSITY: EventConfig(Event.DIVERSITY, schema_for_event(Event.DIVERSITY), [0, 1, 2, 3, 4]),
-    Event.BEST_IN_GEN: EventConfig(Event.BEST_IN_GEN, schema_for_event(Event.BEST_IN_GEN), [0, 1, 2, 3]),
-    Event.POP_GEN_TIME: EventConfig(Event.POP_GEN_TIME, schema_for_event(Event.POP_GEN_TIME), [0, 1]),
-    Event.ITER_INFO: EventConfig(Event.ITER_INFO, schema_for_event(Event.ITER_INFO), [0, 1, 2, 3, 4, 5, 6, 7, 8])
-}
+def column_indices_for_event(event: EventName) -> list[int]:
+    return COLUMN_INDICES_FOR_EVENT[event]
+
+
+EVENT_CONFIGS = dict([
+    (name, EventConfig(name, SCHEMA_FOR_EVENT[name], COLUMN_INDICES_FOR_EVENT[name]))
+    for name in Event.ALL_EVENTS
+])
 
 
 def config_for_event(event: EventName) -> EventConfig:

@@ -3,15 +3,24 @@ import matplotlib.pyplot as plt
 import jssp
 from pathlib import Path
 from experiment.runner import ExperimentResult
-from model import Col, Event
+from model import Col, Event, EventName, EventConfig, config_for_event
 from typing import Iterable, Optional
 from pprint import pprint
 
 
 def data_frame_from_file(data_file: Path) -> pl.DataFrame:
-    df = (pl.scan_csv(data_file,
-                      has_header=False,
-                      infer_schema_length=None))
+    df = (pl.read_csv(data_file,
+                      has_header=False))
+    return df
+
+
+def extract_data_for_event_with_config(data: pl.DataFrame, config: EventConfig) -> pl.DataFrame:
+    selected_columns = [data.columns[i] for i in config.raw_columns]
+    df = (data
+          .filter(pl.col(Col.EVENT) == config.name)
+          .select(selected_columns))
+    df.columns = config.record_schema
+    print(df)
     return df
 
 
@@ -19,14 +28,14 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     main_df: Optional[pl.DataFrame] = None
     for sid, data_file in enumerate(output_files):
         print(f'Processing data file {data_file} sid {sid}')
-        tmp_df: pl.DataFrame = data_frame_from_file(data_file).collect()
-        series_column = pl.Series([sid for _ in range(tmp_df.height)])
-        tmp_df = tmp_df.with_columns(series_column.alias("sid"))
+        tmp_df: pl.DataFrename = data_frame_from_file(data_file)
+        series_column = pl.Series("sid", [sid for _ in range(tmp_df.height)])
+        tmp_df = tmp_df.with_columns(series_column).rename({'column_1': Col.EVENT})
         if main_df is not None:
             main_df.vstack(tmp_df, in_place=True)
         else:
             main_df = tmp_df
-    print(main_df)
+    return main_df
 
 
 class RawDataProcessor:
@@ -48,8 +57,6 @@ def process_output(output_dir: Path):
 
 def process_data(input_file: Path):
     data_df = load_data(input_file)
-    # print(data_df)
-
     problem_name = None
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
@@ -63,10 +70,17 @@ def process_data(input_file: Path):
     plt.show()
 
 
+def process_experiment_data(experiment_data: pl.DataFrame):
+    # 1. Split into
+    pass
+
+
 def process_experiment_results(exp_results: list[ExperimentResult]):
     for result in exp_results:
         print(f'Processing {result.description.name}')
         pprint(result.output_files)
-        join_data_from_multiple_runs(result.output_files)
+        experiment_data = join_data_from_multiple_runs(result.output_files)
+        for event_name in Event.ALL_EVENTS:
+            extract_data_for_event_with_config(experiment_data, config_for_event(event_name))
         break
 
