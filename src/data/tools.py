@@ -1,11 +1,9 @@
 import polars as pl
 import matplotlib.pyplot as plt
-import jssp
 from pathlib import Path
-from experiment.runner import ExperimentResult
-from data.model import Col, Event, EventConfig, config_for_event
+from experiment.model import ExperimentResult, ExperimentDescription
+from data.model import Col, Event, EventConfig, config_for_event, EventName
 from typing import Iterable, Optional
-from pprint import pprint
 
 
 def data_frame_from_file(data_file: Path) -> pl.DataFrame:
@@ -20,8 +18,14 @@ def extract_data_for_event_with_config(data: pl.DataFrame, config: EventConfig) 
           .filter(pl.col(Col.EVENT) == config.name)
           .select(selected_columns))
     df.columns = config.record_schema
-    print(df)
     return df
+
+
+def partition_experiment_data_by_event(data: pl.DataFrame) -> dict[EventName, pl.DataFrame]:
+    return {
+        event_name: extract_data_for_event_with_config(data, config_for_event(event_name))
+        for event_name in Event.ALL_EVENTS
+    }
 
 
 def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
@@ -38,49 +42,47 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     return main_df
 
 
-class RawDataProcessor:
-    def __init__(self):
-        pass
+def plot_best_in_gen(data: pl.DataFrame, plot: plt.Axes):
+    """ Expects rows in `data` to comply to schema for `Event.BEST_IN_GEN` """
+    n_series = data.get_column(Col.SID).n_unique()
+    for sid in range(n_series):
+        series_data = (
+            data
+            .lazy()
+            .filter(pl.col(Col.SID) == sid)
+            .sort(Col.GENERATION)
+            .collect()
+        )
+        print(series_data)
+        y_data = series_data.get_column(Col.FITNESS)
+        x_data = series_data.get_column(Col.GENERATION)
+        plt.plot(x_data, y_data, marker='o', linestyle='--', label=f'Series {sid}')
 
 
-def load_data(data_file: Path) -> pl.DataFrame:
-    data_df = (pl.read_csv(data_file, has_header=False, new_columns=Col.ALL_COLLS)
-               .filter(pl.col(Col.EVENT) != Event.DIVERSITY)
-               .select(pl.exclude('column_5')))
-    return data_df
+def process_experiment_data(data: pl.DataFrame, desc: ExperimentDescription):
+    partitioned_data = partition_experiment_data_by_event(data)
 
-
-def process_output(output_dir: Path):
-    for output_file in output_dir.glob('*.txt'):
-        process_data(output_file)
-
-
-def process_data(input_file: Path):
-    data_df = load_data(input_file)
-    problem_name = None
+    # TODO: Extract these to separate functions
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
-    jssp.plot_fitness_improvements(data_df, plot)
+    plot_best_in_gen(partitioned_data.get(Event.BEST_IN_GEN), plot)
     plot.set(
-        title="Najlepszy osobnik w populacji w danej generacji" +
-        f', problem: {problem_name}' if problem_name else "",
-        xlabel="Generacja",
-        ylabel="Wartość funkcji fitness"
+        title=f"Best fitness by generation, {desc.name}",
+        xlabel="Generation",
+        ylabel="Fitness value"
     )
+    plot.legend()
     plt.show()
-
-
-def process_experiment_data(experiment_data: pl.DataFrame):
-    # 1. Split into
-    pass
 
 
 def process_experiment_results(exp_results: list[ExperimentResult]):
     for result in exp_results:
         print(f'Processing {result.description.name}')
-        pprint(result.output_files)
         experiment_data = join_data_from_multiple_runs(result.output_files)
-        for event_name in Event.ALL_EVENTS:
-            extract_data_for_event_with_config(experiment_data, config_for_event(event_name))
+        # print(experiment_data)
+        process_experiment_data(experiment_data, result.description)
+        # for event_name in Event.ALL_EVENTS:
+        #     extract_data_for_event_with_config(
+        #         experiment_data, config_for_event(event_name))
         break
 
