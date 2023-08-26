@@ -59,6 +59,24 @@ def plot_best_in_gen(data: pl.DataFrame, plot: plt.Axes):
         plt.plot(x_data, y_data, marker='o', linestyle='--', label=f'Series {sid}')
 
 
+def plot_diversity(data: pl.DataFrame, plot: plt.Axes):
+    """ Expects rows in `data` to comply to schema for `Event.DIVERSITY` """
+    series_ids = data.get_column(Col.SID).unique()
+    for sid in series_ids:
+        series_data = (
+            data
+            .lazy()
+            .filter(pl.col(Col.SID) == sid)
+            .sort(Col.GENERATION)
+            .collect()
+        )
+        print(series_data)
+        y_data = series_data.get_column(Col.DIVERSITY)
+        x_data = series_data.get_column(Col.GENERATION)
+        plt.plot(x_data, y_data, marker='o', linestyle='--', label=f'Series {sid}')
+
+
+
 def process_experiment_data(data: pl.DataFrame, desc: ExperimentDescription):
     partitioned_data = partition_experiment_data_by_event(data)
 
@@ -70,6 +88,15 @@ def process_experiment_data(data: pl.DataFrame, desc: ExperimentDescription):
         title=f"Best fitness by generation, {desc.name}",
         xlabel="Generation",
         ylabel="Fitness value"
+    )
+    plot.legend()
+
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_diversity(partitioned_data.get(Event.DIVERSITY), plot)
+    plot.set(
+        title=f"Diversity rate by generation, {desc.name}",
+        xlabel="Generation",
+        ylabel="Diversity rate"
     )
     plot.legend()
     plt.show()
