@@ -1,5 +1,5 @@
 from solver import SolverProxy, SolverParams
-from .config import RunInfo
+from .config import ExperimentBatchDesc
 from .model import ExperimentResult
 from pathlib import Path
 from typing import Optional
@@ -14,9 +14,9 @@ def base_output_path_resolver(input_file: Path, output_dir: Path, series_id: Opt
 
 class Runner:
     solver: SolverProxy
-    config: RunInfo
+    config: ExperimentBatchDesc
 
-    def __init__(self, solver: SolverProxy, config: RunInfo):
+    def __init__(self, solver: SolverProxy, config: ExperimentBatchDesc):
         self.solver = solver
         self.config = config
 

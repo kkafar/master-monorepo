@@ -2,7 +2,7 @@ import polars as pl
 import matplotlib.pyplot as plt
 import cli
 import data.file_resolver as fr
-from experiment.config import RunInfo
+from experiment.config import ExperimentBatchDesc
 from experiment.runner import Runner, ExperimentResult
 from solver import SolverProxy
 from data.tools import process_experiment_results
@@ -18,9 +18,9 @@ def main():
     configure_env()
     args = cli.parse_cli_args()
     runner = Runner(SolverProxy(args.bin),
-                    RunInfo(fr.resolve_all_input_files(args),
-                            args.output_file, args.output_dir,
-                            repeats_no=args.runs if args.runs is not None else 1))
+                    ExperimentBatchDesc(fr.resolve_all_input_files(args),
+                                        args.output_file, args.output_dir,
+                                        repeats_no=args.runs if args.runs is not None else 1))
     exp_results: list[ExperimentResult] = runner.run()
 
     # for result in exp_results:

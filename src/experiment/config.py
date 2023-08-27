@@ -11,7 +11,7 @@ def exp_name_from_input_file(input_file: Path) -> str:
     return input_file.stem
 
 
-class RunInfo:
+class ExperimentBatchDesc:
     descriptions: list[ExperimentDescription]
     output_path_resolver: Callable[[Path, Path], Path]
 
@@ -24,7 +24,7 @@ class RunInfo:
         self.output_path_resolver = output_path_resolver
 
         if output_dir is None:
-            output_dir = RunInfo.default_output_dir()
+            output_dir = ExperimentBatchDesc.default_output_dir()
 
         if len(inputs) == 1:
             input_file = inputs[0]
