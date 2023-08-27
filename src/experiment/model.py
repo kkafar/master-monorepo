@@ -22,3 +22,4 @@ class ExperimentResult:
 
     """ Each experiment series output is stored in separate file """
     output_files: list[Path]
+

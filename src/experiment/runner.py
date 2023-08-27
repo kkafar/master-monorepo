@@ -12,7 +12,7 @@ def base_output_path_resolver(input_file: Path, output_dir: Path, series_id: Opt
     return output_dir.joinpath(file_name).with_suffix('.txt')
 
 
-class Runner:
+class ExperimentBatchRunner:
     solver: SolverProxy
     config: ExperimentBatchDesc
 
