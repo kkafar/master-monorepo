@@ -31,14 +31,14 @@ class ExperimentBatchDesc:
             if output_file is None:
                 output_file = self.output_path_resolver(input_file, output_dir)
             self.descriptions = [ExperimentDesc(name=exp_name_from_input_file(input_file),
-                                                       input_file=input_file,
-                                                       output_dir=output_dir,
-                                                       repeats_no=repeats_no)]
+                                                input_file=input_file,
+                                                output_dir=output_dir,
+                                                repeats_no=repeats_no)]
             return
 
         self.descriptions = [
             ExperimentDesc(name=exp_name_from_input_file(input_file), input_file=input_file,
-                                  output_dir=output_dir, repeats_no=repeats_no)
+                           output_dir=output_dir, repeats_no=repeats_no)
             for input_file in inputs
         ]
 
