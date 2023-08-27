@@ -3,7 +3,6 @@ from .config import ExperimentBatchDesc
 from .model import ExperimentResult, ExperimentDesc
 from pathlib import Path
 from typing import Optional
-from dataclasses import dataclass
 
 
 def base_output_path_resolver(input_file: Path, output_dir: Path, series_id: Optional[int] = None) -> Path:
