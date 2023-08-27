@@ -23,7 +23,7 @@ class Runner:
     def run(self) -> list[ExperimentResult]:
         results: list[ExperimentResult] = []
         for desc in self.config.descriptions:
-            run_results = []
+            run_metadata = []
             output_files = []
             for series_id in range(1, desc.repeats_no + 1):
                 output_file = base_output_path_resolver(
@@ -31,7 +31,7 @@ class Runner:
                 params = SolverParams(desc.input_file, output_file)
                 solver_result = self.solver.run(params)
                 output_files.append(output_file)
-                run_results.append(solver_result)
-            results.append(ExperimentResult(desc, run_results, output_files))
+                run_metadata.append(solver_result)
+            results.append(ExperimentResult(desc, run_metadata, output_files))
         return results
 

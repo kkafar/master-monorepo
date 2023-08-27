@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from solver import SolverResult
+from solver import SolverRunMetadata
 
 
 @dataclass(frozen=True)
@@ -17,8 +17,8 @@ class ExperimentResult:
     description: ExperimentDescription
 
     """ Computations might be repeated > 1 times to average results,
-        hence `run_results` is a list """
-    run_results: list[SolverResult]
+        hence `run_metadata` is a list """
+    run_metadata: list[SolverRunMetadata]
 
     """ Each experiment series output is stored in separate file """
     output_files: list[Path]

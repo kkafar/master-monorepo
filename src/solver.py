@@ -11,7 +11,7 @@ class SolverParams:
 
 
 @dataclass
-class SolverResult:
+class SolverRunMetadata:
     duration: dt.timedelta
 
 
@@ -24,7 +24,7 @@ class SolverProxy:
     def __init__(self, binary: Path):
         self.binary = binary
 
-    def run(self, params: SolverParams) -> SolverResult:
+    def run(self, params: SolverParams) -> SolverRunMetadata:
         print(f"[SolverProxy] Running with {params}", end=' ', flush=True)
         start_time = dt.datetime.now()
         completed_process: sp.CompletedProcess = sp.run([
@@ -42,5 +42,5 @@ class SolverProxy:
 
         timedelta: dt.timedelta = end_time - start_time
         print(f"Done in {timedelta}")
-        return SolverResult(duration=timedelta)
+        return SolverRunMetadata(duration=timedelta)
 
