@@ -4,7 +4,7 @@ from solver import SolverRunMetadata
 
 
 @dataclass(frozen=True)
-class ExperimentDescription:
+class ExperimentDesc:
     """ Experiment is a series of solver runs over single test case """
     name: str
     input_file: Path
@@ -14,7 +14,7 @@ class ExperimentDescription:
 
 @dataclass
 class ExperimentResult:
-    description: ExperimentDescription
+    description: ExperimentDesc
 
     """ Computations might be repeated > 1 times to average results,
         hence `run_metadata` is a list """

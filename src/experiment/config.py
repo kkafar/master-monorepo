@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Optional, Callable
-from .model import ExperimentDescription
+from .model import ExperimentDesc
 
 
 def base_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
@@ -12,7 +12,7 @@ def exp_name_from_input_file(input_file: Path) -> str:
 
 
 class ExperimentBatchDesc:
-    descriptions: list[ExperimentDescription]
+    descriptions: list[ExperimentDesc]
     output_path_resolver: Callable[[Path, Path], Path]
 
     def __init__(self,
@@ -30,14 +30,14 @@ class ExperimentBatchDesc:
             input_file = inputs[0]
             if output_file is None:
                 output_file = self.output_path_resolver(input_file, output_dir)
-            self.descriptions = [ExperimentDescription(name=exp_name_from_input_file(input_file),
+            self.descriptions = [ExperimentDesc(name=exp_name_from_input_file(input_file),
                                                        input_file=input_file,
                                                        output_dir=output_dir,
                                                        repeats_no=repeats_no)]
             return
 
         self.descriptions = [
-            ExperimentDescription(name=exp_name_from_input_file(input_file), input_file=input_file,
+            ExperimentDesc(name=exp_name_from_input_file(input_file), input_file=input_file,
                                   output_dir=output_dir, repeats_no=repeats_no)
             for input_file in inputs
         ]

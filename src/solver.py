@@ -19,10 +19,8 @@ class SolverProxy:
     INPUT_FILE_OPT_NAME = '--input-file'
     OUTPUT_FILE_OPT_NAME = '--output-file'
 
-    binary: Path
-
     def __init__(self, binary: Path):
-        self.binary = binary
+        self.binary: Path = binary
 
     def run(self, params: SolverParams) -> SolverRunMetadata:
         print(f"[SolverProxy] Running with {params}", end=' ', flush=True)

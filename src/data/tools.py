@@ -1,7 +1,7 @@
 import polars as pl
 import matplotlib.pyplot as plt
 from pathlib import Path
-from experiment.model import ExperimentResult, ExperimentDescription
+from experiment.model import ExperimentResult, ExperimentDesc
 from data.model import Col, Event, EventConfig, config_for_event, EventName
 from typing import Iterable, Optional
 from .plot import (
@@ -46,7 +46,7 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     return main_df
 
 
-def process_experiment_data(data: pl.DataFrame, desc: ExperimentDescription):
+def process_experiment_data(data: pl.DataFrame, desc: ExperimentDesc):
     partitioned_data = partition_experiment_data_by_event(data)
 
     # TODO: Extract these to separate functions
