@@ -4,7 +4,7 @@ import cli
 import data.file_resolver as fr
 from experiment.config import ExperimentBatchDesc
 from experiment.runner import ExperimentBatchRunner, ExperimentResult
-from solver import SolverProxy
+from experiment.solver import SolverProxy
 from data.tools import process_experiment_results
 
 

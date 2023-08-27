@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from solver import SolverRunMetadata
+from .solver import SolverRunMetadata
 
 
 @dataclass(frozen=True)

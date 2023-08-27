@@ -1,4 +1,4 @@
-from solver import SolverProxy, SolverParams, SolverRunMetadata
+from .solver import SolverProxy, SolverParams, SolverRunMetadata
 from .config import ExperimentBatchDesc
 from .model import ExperimentResult, ExperimentDesc
 from pathlib import Path
