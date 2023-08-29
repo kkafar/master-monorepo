@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Iterable, Generator
 import itertools as it
-import cli
+from cli.args import Args, RunCmdArgs
 
 
 def enumerate_test_cases_in_dir(directory: Path) -> Iterable[Path]:
@@ -29,7 +29,7 @@ def find_test_cases_in_dir_recursive(directory: Path) -> list[Path]:
     return list(enumerate_test_cases_in_dir_recursive(directory))
 
 
-def resolve_all_input_files(args: cli.Args) -> list[Path]:
+def resolve_all_input_files(args: RunCmdArgs) -> list[Path]:
     all_paths = args.input_files if args.input_files is not None else []
     if args.input_dirs is not None:
         for input_dir in args.input_dirs:
