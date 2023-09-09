@@ -4,6 +4,7 @@ from experiment.solver import SolverProxy
 from experiment.model import ExperimentResult
 from data.file_resolver import resolve_all_input_files
 from data.tools import process_experiment_results
+from data.pipeline import PipelineExecutor, ProcessingNode
 
 
 def handle_cmd_run(args: RunCmdArgs):
@@ -17,6 +18,8 @@ def handle_cmd_run(args: RunCmdArgs):
     process_experiment_results(exp_results)
 
 
-
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
+
+    data_adapter = (PipelineExecutor(metadata='DataAdapter')
+    )
