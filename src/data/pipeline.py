@@ -32,8 +32,12 @@ class DataProcessingStrategy(ProcessingNode):
 
 
 class PipelineExecutor(DataProcessingStrategy):
-    def __init__(self, nodes: list[ProcessingNode] = []):
-        super().__init__(nodes, NodeMetadata(name='PipelineExecutor'))
+    DEFAULT_META = NodeMetadata('PipelineExecutor')
+
+    def __init__(self,
+                 nodes: list[ProcessingNode] = [],
+                 metadata: NodeMetadata = DEFAULT_META):
+        super().__init__(nodes, metadata)
 
     def execute(self, data: Any) -> Any:
         last_result = data
@@ -43,8 +47,12 @@ class PipelineExecutor(DataProcessingStrategy):
 
 
 class FanOutExecutor(DataProcessingStrategy):
-    def __init__(self, nodes: list[ProcessingNode] = []):
-        super().__init__(nodes, NodeMetadata(name='FanOutExecutor'))
+    DEFAULT_META = NodeMetadata('FanOutExecutor')
+
+    def __init__(self,
+                 nodes: list[ProcessingNode] = [],
+                 metadata: NodeMetadata = DEFAULT_META):
+        super().__init__(nodes, metadata)
 
     def execute(self, data: Any) -> Any:
         for node in self.nodes:

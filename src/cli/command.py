@@ -21,3 +21,5 @@ def handle_cmd_run(args: RunCmdArgs):
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
+    data_adapter = (PipelineExecutor(metadata='DataAdapter')
+    )
