@@ -17,6 +17,5 @@ def handle_cmd_run(args: RunCmdArgs):
     process_experiment_results(exp_results)
 
 
-
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
