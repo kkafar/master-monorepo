@@ -3,8 +3,7 @@ from experiment.runner import ExperimentBatchRunner, ExperimentBatchDesc
 from experiment.solver import SolverProxy
 from experiment.model import ExperimentResult
 from data.file_resolver import resolve_all_input_files
-from data.tools import process_experiment_results
-from data.pipeline import PipelineExecutor, ProcessingNode
+from data.tools import process_experiment_results, extract_experiment_results_from_dir
 
 
 def handle_cmd_run(args: RunCmdArgs):
@@ -21,5 +20,6 @@ def handle_cmd_run(args: RunCmdArgs):
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
-    data_adapter = (PipelineExecutor(metadata='DataAdapter')
-    )
+    exp_results: list[ExperimentResult] = extract_experiment_results_from_dir(args.dir)
+    process_experiment_results(exp_results)
+

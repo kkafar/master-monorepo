@@ -38,7 +38,7 @@ def validate_run_cmd_args(args: RunCmdArgs):
 
 
 def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
-    pass
+    assert args.dir.is_dir(), f'{args.dir} is not a directory'
 
 
 def validate_cli_args(args: Args):
@@ -80,8 +80,10 @@ def build_cli() -> argparse.ArgumentParser:
     run_parser.set_defaults(handler=handle_cmd_run)
 
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")
-    group = analyze_parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--names', help='Experiment names to analyze. Note that output files must have default names.', nargs='+', type=str)
+    # analyze_parser.add_argument('--names', help='Experiment names to analyze. Note that output files must have default names.', nargs='+', type=str, required=True)
+    analyze_parser.add_argument('--dir', help='Directory with the result files', type=Path, required=True)
+    # group = analyze_parser.add_mutually_exclusive_group(required=True)
+    # group.add_argument('--names', help='Experiment names to analyze. Note that output files must have default names.', nargs='+', type=str)
     analyze_parser.set_defaults(handler=handle_cmd_analyze)
     # group.add_argument('--
 

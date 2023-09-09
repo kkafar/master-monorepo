@@ -22,3 +22,4 @@ class RunCmdArgs(Args):
 @dataclass
 class AnalyzeCmdArgs(Args):
     names: list[str]
+    dir: Path
