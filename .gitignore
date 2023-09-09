@@ -5,4 +5,5 @@ output.csv
 output/
 run.sh
 *local.*
+instances/
 
