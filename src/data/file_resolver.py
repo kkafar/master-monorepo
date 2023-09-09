@@ -1,12 +1,20 @@
 from pathlib import Path
 from typing import Iterable, Generator
 import itertools as it
-from cli.args import Args, RunCmdArgs
+from cli.args import RunCmdArgs
 
 
-def enumerate_test_cases_in_dir(directory: Path) -> Iterable[Path]:
+def enumerate_test_cases_in_dir(directory: Path) -> Generator[Path, None, None]:
     # Yep, that is it
     return directory.glob('*.txt')
+
+
+def enumerate_result_files_in_dir(directory: Path) -> Generator[Path, None, None]:
+    return directory.glob('*.txt')
+
+
+def find_result_files_in_dir(directory: Path) -> list[Path]:
+    return list(enumerate_result_files_in_dir(directory))
 
 
 def enumerate_test_cases_in_dir_recursive(directory: Path) -> Iterable[Path]:

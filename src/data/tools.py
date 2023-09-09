@@ -1,13 +1,47 @@
 import polars as pl
 import matplotlib.pyplot as plt
+from typing import Dict, Iterable, Optional
 from pathlib import Path
 from experiment.model import ExperimentResult, ExperimentDesc
+from .file_resolver import find_result_files_in_dir
+from collections import defaultdict
 from data.model import Col, Event, EventConfig, config_for_event, EventName
-from typing import Iterable, Optional
 from .plot import (
     plot_diversity,
     plot_best_in_gen
 )
+
+
+def partition_exp_by_files(paths: list[Path]) -> Dict[str, list[Path]]:
+    exp_to_files = defaultdict(list)
+
+    for exp_file in paths:
+        partitioned_name: list[str] = exp_file.stem.split('-')
+        exp_name = '-'.join(partitioned_name[0:partitioned_name.index('result')])
+        exp_to_files[exp_name].append(exp_file)
+
+    return exp_to_files
+
+
+def extract_experiment_results_from_dir(directory: Path) -> list[ExperimentResult]:
+    all_result_files = find_result_files_in_dir(directory)
+    experiment_raw_results = partition_exp_by_files(all_result_files)
+
+    experiment_results = []
+    for name, paths in experiment_raw_results.items():
+        experiment_results.append(
+            ExperimentResult(
+                ExperimentDesc(
+                    name=name,
+                    input_file='unknown',
+                    output_dir=directory,
+                    repeats_no=len(paths)
+                ),
+                None,
+                paths
+            )
+        )
+    return experiment_results
 
 
 def data_frame_from_file(data_file: Path) -> pl.DataFrame:
