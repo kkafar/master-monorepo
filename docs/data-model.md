@@ -75,6 +75,29 @@ The solution start file gives a matrix with row per job and a column per machine
 
 If `M[1][0] == 10` ==> Job 2 starts on machine 0 (1) at time 10.
 
+# Metadata file
+
+Provider:
+`https://github.com/thomasWeise/jsspInstancesAndResults#3-provided-data`
+
+CSV with following schema:
+
+```csv
+inst.id,inst.ref,inst.jobs,inst.machines,inst.opt.bound.lower,inst.opt.bound.lower.ref,inst.bks,inst.bks.ref,inst.bks.time,inst.bks.time.ref
+```
+
+where:
+
+* `id` (`inst.id`) - the unique identifier of the instance
+* `ref` (`inst.ref`) - reference to the publication (this is available via repo)
+* `jobs` (`inst.jobs`) - the number of jobs in the instance
+* `machines` (`inst.machines`) - the number of machines in the instance
+* `lb` (`inst.opt.bound.lower`) - the lower bound for the makespan of any solution for the instance
+* `lb ref` (`inst.opt.bound.lower.ref`) - the reference to the earliest publication that mentioned this lower bound (available via repo)
+* `bks` (`inst.bks`) - the makespan of the best-known solution
+* `bks ref` (`inst.bks.ref`) - ...
+* `bks time` (`inst.bks.time`) - ignore
+* `bks time ref` (`inst.bks.time.ref`) - ignore
 
 # CSV output files outline
 
