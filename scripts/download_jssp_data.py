@@ -8,6 +8,19 @@ from dataclasses import dataclass
 from typing import Generator
 
 
+# Awesome site
+# http://jobshop.jjvh.nl
+endpoint = "http://jobshop.jjvh.nl"
+specs_endpoint = "http://jobshop.jjvh.nl/specification_zip.php"
+
+# Credits to @thomasWeise https://github.com/thomasWeise/jsspInstancesAndResults
+metadata_endpoint = "https://raw.githubusercontent.com/thomasWeise/jsspInstancesAndResults/master/data-raw/instances/instances_with_bks.txt"
+
+category_codes = [
+    "abz", "dmu", "ft", "la", "orb", "swv", "ta", "yn"
+]
+
+
 @dataclass
 class Args:
     output_dir: Path
@@ -73,15 +86,6 @@ def create_directory_structure(root: Path) -> Dirs:
         assert directory.is_dir(), f"Failed to create directory {directory}"
 
     return Dirs(*dirs)
-
-
-# Awesome site
-# http://jobshop.jjvh.nl/specification_zip.php?catagory_id=1
-endpoint = "http://jobshop.jjvh.nl"
-specs_endpoint = "http://jobshop.jjvh.nl/specification_zip.php"
-
-# Credits to @thomasWeise https://github.com/thomasWeise/jsspInstancesAndResults
-metadata_endpoint = "https://raw.githubusercontent.com/thomasWeise/jsspInstancesAndResults/master/data-raw/instances/instances_with_bks.txt"
 
 
 def main():
