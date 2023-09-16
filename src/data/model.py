@@ -1,5 +1,16 @@
 from dataclasses import dataclass
 
+
+@dataclass
+class InstanceMetadata:
+    id: str
+    ref: str
+    jobs: int
+    machines: int
+    lower_bound: int
+    best_known_solution: int
+
+
 EventName = str
 
 

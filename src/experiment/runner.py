@@ -1,6 +1,6 @@
 from .solver import SolverProxy, SolverParams, SolverRunMetadata
-from .config import ExperimentBatchDesc
-from .model import ExperimentResult, ExperimentDesc
+from .config import ExperimentBatchConfig
+from .model import ExperimentResult, ExperimentConfig
 from pathlib import Path
 from typing import Optional
 
@@ -13,27 +13,27 @@ def base_output_path_resolver(input_file: Path, output_dir: Path, series_id: Opt
 
 
 class ExperimentBatchRunner:
-    def __init__(self, solver: SolverProxy, batch_desc: ExperimentBatchDesc):
+    def __init__(self, solver: SolverProxy, batch_config: ExperimentBatchConfig):
         self.solver: SolverProxy = solver
-        self.batch_desc: ExperimentBatchDesc = batch_desc
+        self.batch_config: ExperimentBatchConfig = batch_config
         self.runner: ExperimentRunner = ExperimentRunner(self.solver)
 
     def run(self) -> list[ExperimentResult]:
-        return [self.runner.run(desc) for desc in self.batch_desc.descriptions]
+        return [self.runner.run(desc) for desc in self.batch_config.configs]
 
 
 class ExperimentRunner:
     def __init__(self, solver: SolverProxy):
         self.solver: SolverProxy = solver
 
-    def run(self, desc: ExperimentDesc) -> ExperimentResult:
+    def run(self, config: ExperimentConfig) -> ExperimentResult:
         run_metadata: list[SolverRunMetadata] = []
         output_files: list[Path] = []
-        for sid in range(1, desc.repeats_no + 1):
-            out_file = base_output_path_resolver(desc.input_file, desc.output_dir, sid)
-            params = SolverParams(desc.input_file, out_file)
+        for sid in range(1, config.repeats_no + 1):
+            out_file = base_output_path_resolver(config.input_file, config.output_dir, sid)
+            params = SolverParams(config.input_file, out_file)
             metadata = self.solver.run(params)
             output_files.append(out_file)
             run_metadata.append(metadata)
-        return ExperimentResult(desc, run_metadata, output_files)
+        return ExperimentResult(config, run_metadata, output_files)
 
