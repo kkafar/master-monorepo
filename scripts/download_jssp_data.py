@@ -15,6 +15,14 @@ class Args:
     taillard: bool
 
 
+@dataclass
+class Dirs:
+    root: Path
+    instances: Path
+    solutions: Path
+    metadata: Path
+
+
 def get_categories_range() -> Generator[None, None, int]:
     return range(1, 8 + 1)
 
@@ -58,14 +66,43 @@ def resolve_category_name(zip_file: zip.ZipFile) -> str:
     return ''.join(list(category_name)) + '_instances'
 
 
+def create_directory_structure(root: Path) -> Dirs:
+    dirs = [root, root.joinpath('instances'), root.joinpath('solutions'), root.joinpath('metadata')]
+    for directory in dirs:
+        directory.mkdir(parents=True, exist_ok=True)
+        assert directory.is_dir(), f"Failed to create directory {directory}"
+
+    return Dirs(*dirs)
+
+
+# Awesome site
 # http://jobshop.jjvh.nl/specification_zip.php?catagory_id=1
 endpoint = "http://jobshop.jjvh.nl"
 specs_endpoint = "http://jobshop.jjvh.nl/specification_zip.php"
+
+# Credits to @thomasWeise https://github.com/thomasWeise/jsspInstancesAndResults
+metadata_endpoint = "https://raw.githubusercontent.com/thomasWeise/jsspInstancesAndResults/master/data-raw/instances/instances_with_bks.txt"
 
 
 def main():
     args: Args = build_cli_parser().parse_args()
 
+    dirs = create_directory_structure(args.output_dir)
+
+    # Try to download metadata
+    response: req.Response = req.get(metadata_endpoint)
+    if response.status_code != 200:
+        print(f"[ERROR] GET to {response.url} failed with status code {response.status_code}")
+        if not args.force:
+            exit(1)
+    else:
+        with open(dirs.metadata.joinpath("instance_metadata.txt"), 'wb') as md_file:
+            # Fingers crossed that this will write all content in single write.
+            # Not writing line by line here as something goes wrong with linesplitting...
+            md_file.write(response.content)
+            # md_file.writelines(response.iter_lines(decode_unicode=True))
+
+    # Download solutions
     for id in get_categories_range():
         print(f"[INFO] Downloading for category_id {id}")
         # Typo in `catagory` is intentional...
@@ -80,9 +117,9 @@ def main():
 
         zipped_file = zip.ZipFile(io.BytesIO(response.content))
         category_name = resolve_category_name(zipped_file)
-        output_dir = args.output_dir.joinpath(category_name)
+        output_dir = dirs.instances.joinpath(category_name)
 
-        # This is potential security risk
+        # This is potential security risk. Use this script with care.
         # See: https://docs.python.org/3/library/zipfile.html#zipfile.ZipFile.extractall
         zipped_file.extractall(output_dir)
 
