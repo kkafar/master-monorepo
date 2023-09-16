@@ -36,6 +36,9 @@ def validate_run_cmd_args(args: RunCmdArgs):
         args.output_dir.mkdir(parents=True)
         assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
 
+    if args.metadata_file is not None:
+        assert args.metadata_file.is_file(), f"Metadata file {args.metadata_file} is not a file"
+
 
 def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
     assert args.dir.is_dir(), f'{args.dir} is not a directory'
