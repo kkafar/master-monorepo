@@ -6,4 +6,5 @@ output/
 run.sh
 *local.*
 instances/
+data/
 
