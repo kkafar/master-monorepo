@@ -35,5 +35,5 @@ class ExperimentRunner:
             metadata = self.solver.run(params)
             output_files.append(out_file)
             run_metadata.append(metadata)
-        return ExperimentResult(config, run_metadata, output_files)
+        return ExperimentResult(config, output_files, run_metadata)
 

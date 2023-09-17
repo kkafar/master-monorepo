@@ -1,14 +1,35 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class InstanceMetadata:
+    """ Additional information on the instance """
+
+    """ Unique identifier of the instance """
     id: str
+
+    """ Reference to the publication (see [data_model](docs/data_model.md)]) """
     ref: str
+
+    """ Number of jobs in the instance """
     jobs: int
+
+    """ Number of machines in the instance """
     machines: int
+
+    """ Lower bound for the problem instance """
     lower_bound: int
-    best_known_solution: int
+
+    """ Reference to the publication that indicated the lower bound """
+    lower_bound_ref: str
+
+    """ Best known solution up to this point """
+    best_solution: int
+
+    # Do not use these right now
+    best_solution_ref: str
+    best_solution_time: str
+    best_solution_time_ref: str
 
 
 EventName = str

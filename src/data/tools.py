@@ -5,7 +5,14 @@ from pathlib import Path
 from experiment.model import ExperimentResult, ExperimentDesc
 from .file_resolver import find_result_files_in_dir
 from collections import defaultdict
-from data.model import Col, Event, EventConfig, config_for_event, EventName
+from data.model import (
+    Col,
+    Event,
+    EventConfig,
+    config_for_event,
+    EventName,
+    InstanceMetadata
+)
 from .plot import (
     plot_diversity,
     plot_best_in_gen
@@ -44,9 +51,9 @@ def extract_experiment_results_from_dir(directory: Path) -> list[ExperimentResul
     return experiment_results
 
 
-def data_frame_from_file(data_file: Path) -> pl.DataFrame:
+def data_frame_from_file(data_file: Path, has_header: bool = False) -> pl.DataFrame:
     df = (pl.read_csv(data_file,
-                      has_header=False))
+                      has_header=has_header))
     return df
 
 
@@ -70,7 +77,7 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     main_df: Optional[pl.DataFrame] = None
     for sid, data_file in enumerate(output_files):
         print(f'Processing data file {data_file} sid {sid}')
-        tmp_df: pl.DataFrename = data_frame_from_file(data_file)
+        tmp_df: pl.DataFrame = data_frame_from_file(data_file)
         series_column = pl.Series("sid", [sid for _ in range(tmp_df.height)])
         tmp_df = tmp_df.with_columns(series_column).rename({'column_1': Col.EVENT})
         if main_df is not None:
@@ -105,14 +112,17 @@ def process_experiment_data(data: pl.DataFrame, desc: ExperimentDesc):
     plt.show()
 
 
-def process_experiment_results(exp_results: list[ExperimentResult]):
+def process_experiment_results(exp_results: list[ExperimentResult], metadata: Optional[pl.DataFrame] = None):
     for result in exp_results:
         print(f'Processing {result.description.name}')
         experiment_data = join_data_from_multiple_runs(result.output_files)
-        # print(experiment_data)
         process_experiment_data(experiment_data, result.description)
-        # for event_name in Event.ALL_EVENTS:
-        #     extract_data_for_event_with_config(
-        #         experiment_data, config_for_event(event_name))
         break
+
+
+def maybe_load_instance_metadata(metadata_file: Optional[Path]) -> Optional[pl.DataFrame]:
+    if metadata_file is None:
+        return None
+    df: pl.DataFrame = data_frame_from_file(metadata_file, has_header=True)
+    return df
 
