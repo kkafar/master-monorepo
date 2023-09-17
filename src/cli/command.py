@@ -12,14 +12,16 @@ from data.tools import (
 
 def handle_cmd_run(args: RunCmdArgs):
     print(f"RunCommand run with args: {args}")
+    # metadata_store = maybe_load_instance_metadata(args.metadata_file)
     runner = ExperimentBatchRunner(
         SolverProxy(args.bin),
         ExperimentBatchConfig(resolve_all_input_files(args.input_files, args.input_dirs),
                               args.output_file, args.output_dir,
                               repeats_no=args.runs if args.runs is not None else 1))
+
     exp_results: list[ExperimentResult] = runner.run()
-    metadata = maybe_load_instance_metadata(args.metadata_file)
-    process_experiment_results(exp_results, metadata)
+    # print(metadata_store)
+    process_experiment_results(exp_results)
 
 
 def handle_cmd_analyze(args: AnalyzeCmdArgs):

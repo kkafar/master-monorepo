@@ -33,7 +33,6 @@ class ExperimentResult:
 @dataclass
 class ExperimentBundle:
     """ Instance description, run configuration, result obtained """
-    name: str
     instance: InstanceMetadata
     run_config: ExperimentConfig
     run_result: Optional[ExperimentResult] = None

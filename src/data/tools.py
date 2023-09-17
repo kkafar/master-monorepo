@@ -2,7 +2,7 @@ import polars as pl
 import matplotlib.pyplot as plt
 from typing import Dict, Iterable, Optional
 from pathlib import Path
-from experiment.model import ExperimentResult, ExperimentDesc
+from experiment.model import ExperimentResult, ExperimentConfig
 from .file_resolver import find_result_files_in_dir
 from collections import defaultdict
 from data.model import (
@@ -38,7 +38,7 @@ def extract_experiment_results_from_dir(directory: Path) -> list[ExperimentResul
     for name, paths in experiment_raw_results.items():
         experiment_results.append(
             ExperimentResult(
-                ExperimentDesc(
+                ExperimentConfig(
                     name=name,
                     input_file='unknown',
                     output_dir=directory,
@@ -87,7 +87,7 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     return main_df
 
 
-def process_experiment_data(data: pl.DataFrame, desc: ExperimentDesc):
+def process_experiment_data(data: pl.DataFrame, config: ExperimentConfig):
     partitioned_data = partition_experiment_data_by_event(data)
 
     # TODO: Extract these to separate functions
@@ -95,7 +95,7 @@ def process_experiment_data(data: pl.DataFrame, desc: ExperimentDesc):
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen(partitioned_data.get(Event.BEST_IN_GEN), plot)
     plot.set(
-        title=f"Best fitness by generation, {desc.name}",
+        title=f"Best fitness by generation, {config.name}",
         xlabel="Generation",
         ylabel="Fitness value"
     )
@@ -104,7 +104,7 @@ def process_experiment_data(data: pl.DataFrame, desc: ExperimentDesc):
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_diversity(partitioned_data.get(Event.DIVERSITY), plot)
     plot.set(
-        title=f"Diversity rate by generation, {desc.name}",
+        title=f"Diversity rate by generation, {config.name}",
         xlabel="Generation",
         ylabel="Diversity rate"
     )
@@ -120,9 +120,13 @@ def process_experiment_results(exp_results: list[ExperimentResult], metadata: Op
         break
 
 
-def maybe_load_instance_metadata(metadata_file: Optional[Path]) -> Optional[pl.DataFrame]:
+def maybe_load_instance_metadata(metadata_file: Optional[Path]) -> Optional[Dict[str, InstanceMetadata]]:
     if metadata_file is None:
         return None
     df: pl.DataFrame = data_frame_from_file(metadata_file, has_header=True)
-    return df
+    metadata_store = {}
+    for record in df.iter_rows():
+        metadata = InstanceMetadata(*record)
+        metadata_store[metadata.id] = metadata
+    return metadata_store
 
