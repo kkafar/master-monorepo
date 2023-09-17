@@ -1,4 +1,5 @@
 from typing import Dict
+from pathlib import Path
 from data.model import (
     InstanceMetadata,
 )
@@ -20,4 +21,10 @@ def create_exp_bundles_from_results(
         )
         for result in results
     ]
-        
+
+
+def exp_name_from_input_file(input_file: Path) -> str:
+    return input_file.stem
+
+def base_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
+    return output_dir.joinpath(input_file.stem + '-result').with_suffix('.txt')
