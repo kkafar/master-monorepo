@@ -42,3 +42,25 @@ class SolverProxy:
         print(f"Done in {timedelta}")
         return SolverRunMetadata(duration=timedelta)
 
+    def run_many(self, params: list[SolverParams]) -> list[SolverRunMetadata]:
+        print(f"[SolverProxy] Running with {params}", end=' ', flush=True)
+        processes = []
+        start_time = dt.datetime.now()
+        for p in params:
+            processes.append(sp.Popen([
+                self.binary,
+                SolverProxy.INPUT_FILE_OPT_NAME,
+                p.input_file,
+                SolverProxy.OUTPUT_FILE_OPT_NAME,
+                p.output_file,
+            ], stdout=sp.DEVNULL))
+
+        for p in processes:
+            p.wait()
+
+        end_time = dt.datetime.now()
+        timedelta: dt.timedelta = end_time - start_time
+        print(f"Done in {timedelta}")
+        return [SolverRunMetadata(duration=timedelta)]
+
+

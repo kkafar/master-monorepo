@@ -39,6 +39,7 @@ def handle_cmd_run(args: RunCmdArgs):
         SolverProxy(args.bin),
         [exp.run_config for exp in batch]
     ).run()
+    exit(0)
 
     for (exp, result) in zip(batch, results):
         exp.run_result = result

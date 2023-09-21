@@ -18,7 +18,8 @@ class ExperimentBatchRunner:
         self.runner: ExperimentRunner = ExperimentRunner(self.solver)
 
     def run(self) -> list[ExperimentResult]:
-        return [self.runner.run(desc) for desc in self.configs]
+        # return [self.runner.run(desc) for desc in self.configs]
+        return self.runner.run_many(self.configs)
 
 
 class ExperimentRunner:
@@ -35,4 +36,14 @@ class ExperimentRunner:
             output_files.append(out_file)
             run_metadata.append(metadata)
         return ExperimentResult(output_files, run_metadata)
+
+    def run_many(self, configs: list[ExperimentConfig]) -> list[ExperimentResult]:
+        params = []
+        for cfg in configs:
+            for sid in range(1, cfg.repeats_no + 1):
+                out_file = base_output_path_resolver(cfg.input_file, cfg.output_dir, sid)
+                params.append(SolverParams(cfg.input_file, out_file))
+        
+        mds = self.solver.run_many(params)
+        return mds
 
