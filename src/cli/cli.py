@@ -36,6 +36,9 @@ def validate_run_cmd_args(args: RunCmdArgs):
         args.output_dir.mkdir(parents=True)
         assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
 
+    if args.metadata_file is not None:
+        assert args.metadata_file.is_file(), f"Metadata file {args.metadata_file} is not a file"
+
 
 def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
     assert args.dir.is_dir(), f'{args.dir} is not a directory'
@@ -77,6 +80,7 @@ def build_cli() -> argparse.ArgumentParser:
     run_parser.add_argument('-o', '--output-file', help='Output file path; should be used only when in case single input file was specified', type=Path)
     run_parser.add_argument('-D', '--output-dir', help='Output directory; should be specified in case multiple input files / directory/ies were specified', type=Path)
     run_parser.add_argument('--runs', help='Number of repetitions for each problem instance. Defaults to 1.', type=int)
+    run_parser.add_argument('-m', '--metadata-file', type=Path, required=False, help='Path to file with instance metadata information', dest='metadata_file')
     run_parser.set_defaults(handler=handle_cmd_run)
 
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")
