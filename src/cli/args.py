@@ -18,6 +18,7 @@ class RunCmdArgs(Args):
     output_dir: Optional[Path]
     runs: Optional[int]
     metadata_file: Optional[Path]
+    procs: Optional[int]
 
 
 @dataclass
