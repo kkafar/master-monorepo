@@ -17,8 +17,12 @@ class ExperimentBatchRunner:
         self.configs: list[ExperimentConfig] = configs
         self.runner: ExperimentRunner = ExperimentRunner(self.solver)
 
-    def run(self) -> list[ExperimentResult]:
-        return [self.runner.run(desc) for desc in self.configs]
+    def run(self, process_limit: int = 1) -> list[ExperimentResult]:
+        assert process_limit >= 1, "Process limit must be >= 0"
+        if process_limit == 1:
+            return [self.runner.run(desc) for desc in self.configs]
+        else:
+            return self.runner.run_nonblocking(self.configs, process_limit)
 
 
 class ExperimentRunner:
@@ -35,4 +39,20 @@ class ExperimentRunner:
             output_files.append(out_file)
             run_metadata.append(metadata)
         return ExperimentResult(output_files, run_metadata)
+
+    def run_nonblocking(self, configs: list[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
+        params = []
+        results = []
+        for cfg in configs:
+            result = ExperimentResult(output_files=[], run_metadata=[])
+            for sid in range(1, cfg.repeats_no + 1):
+                out_file = base_output_path_resolver(cfg.input_file, cfg.output_dir, sid)
+                result.output_files.append(out_file)
+                params.append(SolverParams(cfg.input_file, out_file))
+            results.append(result)
+
+        mds = self.solver.run_nonblocking(params, process_limit)
+        for res, md in zip(results, mds):
+            res.run_metadata = md
+        return results
 
