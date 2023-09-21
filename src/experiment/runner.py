@@ -1,5 +1,4 @@
 from .solver import SolverProxy, SolverParams, SolverRunMetadata
-from .config import ExperimentBatchConfig
 from .model import ExperimentResult, ExperimentConfig
 from pathlib import Path
 from typing import Optional
@@ -13,13 +12,13 @@ def base_output_path_resolver(input_file: Path, output_dir: Path, series_id: Opt
 
 
 class ExperimentBatchRunner:
-    def __init__(self, solver: SolverProxy, batch_config: ExperimentBatchConfig):
+    def __init__(self, solver: SolverProxy, configs: list[ExperimentConfig]):
         self.solver: SolverProxy = solver
-        self.batch_config: ExperimentBatchConfig = batch_config
+        self.configs: list[ExperimentConfig] = configs
         self.runner: ExperimentRunner = ExperimentRunner(self.solver)
 
     def run(self) -> list[ExperimentResult]:
-        return [self.runner.run(desc) for desc in self.batch_config.configs]
+        return [self.runner.run(desc) for desc in self.configs]
 
 
 class ExperimentRunner:

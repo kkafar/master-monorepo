@@ -2,7 +2,7 @@ import polars as pl
 import matplotlib.pyplot as plt
 from typing import Dict, Iterable, Optional
 from pathlib import Path
-from experiment.model import ExperimentResult, ExperimentConfig
+from experiment.model import ExperimentResult, ExperimentConfig, Experiment
 from .file_resolver import find_result_files_in_dir
 from collections import defaultdict
 from data.model import (
@@ -87,7 +87,7 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     return main_df
 
 
-def process_experiment_data(data: pl.DataFrame, config: ExperimentConfig):
+def process_experiment_data(data: pl.DataFrame, exp: Experiment):
     partitioned_data = partition_experiment_data_by_event(data)
 
     # TODO: Extract these to separate functions
@@ -95,7 +95,7 @@ def process_experiment_data(data: pl.DataFrame, config: ExperimentConfig):
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen(partitioned_data.get(Event.BEST_IN_GEN), plot)
     plot.set(
-        title=f"Best fitness by generation, {config.name}",
+        title=f"Best fitness by generation, {exp.name}",
         xlabel="Generation",
         ylabel="Fitness value"
     )
@@ -104,7 +104,7 @@ def process_experiment_data(data: pl.DataFrame, config: ExperimentConfig):
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_diversity(partitioned_data.get(Event.DIVERSITY), plot)
     plot.set(
-        title=f"Diversity rate by generation, {config.name}",
+        title=f"Diversity rate by generation, {exp.name}",
         xlabel="Generation",
         ylabel="Diversity rate"
     )
@@ -112,11 +112,11 @@ def process_experiment_data(data: pl.DataFrame, config: ExperimentConfig):
     plt.show()
 
 
-def process_experiment_results(exp_results: list[ExperimentResult], metadata: Optional[pl.DataFrame] = None):
-    for result in exp_results:
-        print(f'Processing {result.description.name}')
-        experiment_data = join_data_from_multiple_runs(result.output_files)
-        process_experiment_data(experiment_data, result.description)
+def process_experiment_batch_output(batch: list[Experiment]):
+    for exp in batch:
+        print(f'Processing {exp.name}')
+        experiment_data = join_data_from_multiple_runs(exp.run_result.output_files)
+        process_experiment_data(experiment_data, exp)
         break
 
 

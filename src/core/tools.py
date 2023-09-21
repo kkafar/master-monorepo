@@ -4,17 +4,17 @@ from data.model import (
     InstanceMetadata,
 )
 from experiment.model import (
-    ExperimentBundle,
+    Experiment,
     ExperimentConfig,
     ExperimentResult
 )
 
 
-def create_exp_bundles_from_results(
+def create_experiments_form_results(
         results: list[ExperimentResult],
-        metadata_store: Dict[str, InstanceMetadata]) -> list[ExperimentBundle]:
+        metadata_store: Dict[str, InstanceMetadata]) -> list[Experiment]:
     return [
-        ExperimentBundle(
+        Experiment(
             metadata_store.get(result.name),
             result.config,
             result
