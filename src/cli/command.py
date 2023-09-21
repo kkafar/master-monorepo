@@ -1,7 +1,6 @@
-import core
 import itertools as it
 from .args import RunCmdArgs, AnalyzeCmdArgs
-from experiment.runner import ExperimentBatchRunner, ExperimentBatchConfig
+from experiment.runner import ExperimentBatchRunner
 from experiment.solver import SolverProxy
 from experiment.model import (
     ExperimentResult,
@@ -14,6 +13,7 @@ from data.tools import (
     extract_experiment_results_from_dir,
     maybe_load_instance_metadata
 )
+from core.tools import exp_name_from_input_file
 
 
 def handle_cmd_run(args: RunCmdArgs):
@@ -21,9 +21,10 @@ def handle_cmd_run(args: RunCmdArgs):
     metadata_store = maybe_load_instance_metadata(args.metadata_file)
 
     input_files = resolve_all_input_files(args.input_files, args.input_dirs)
+    print(input_files)
     batch = []
     for file in input_files:
-        name = core.tools.exp_name_from_input_file(file)
+        name = exp_name_from_input_file(file)
         batch.append(
             Experiment(
                 name=name,
@@ -40,7 +41,6 @@ def handle_cmd_run(args: RunCmdArgs):
 
     for (exp, result) in zip(batch, results):
         exp.run_result = result
-
 
     process_experiment_batch_output(batch)
 

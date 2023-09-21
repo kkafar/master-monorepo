@@ -44,8 +44,8 @@ def resolve_all_input_files(input_files: list[Path] = [],
         input_files = []
     if input_dirs is None:
         input_dirs = []
-    all_paths = input_dirs.copy()
+    all_paths = [file for file in input_files]
     for input_dir in input_dirs:
         all_paths.extend(find_test_cases_in_dir(input_dir))
-
+    print(all_paths)
     return all_paths

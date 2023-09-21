@@ -88,6 +88,7 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
 
 
 def process_experiment_data(data: pl.DataFrame, exp: Experiment):
+    print(f"Processing experiment {exp.name}")
     partitioned_data = partition_experiment_data_by_event(data)
 
     # TODO: Extract these to separate functions
@@ -113,6 +114,7 @@ def process_experiment_data(data: pl.DataFrame, exp: Experiment):
 
 
 def process_experiment_batch_output(batch: list[Experiment]):
+    print(batch)
     for exp in batch:
         print(f'Processing {exp.name}')
         experiment_data = join_data_from_multiple_runs(exp.run_result.output_files)
