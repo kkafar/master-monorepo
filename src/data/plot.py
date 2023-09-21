@@ -2,22 +2,28 @@ import polars as pl
 import matplotlib.pyplot as plt
 from .model import Col
 from .filter import filter_sid
+from .model import InstanceMetadata
 
 
-def plot_best_in_gen(data: pl.DataFrame, plot: plt.Axes):
+def plot_best_in_gen(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
     """ Expects rows in `data` to comply to schema for `Event.BEST_IN_GEN` """
-    plot_column_by_generation(data, plot, Col.FITNESS)
+    plot_column_by_generation(plot, data, Col.FITNESS)
+
+    if metadata:
+        x_data = data.get_column(Col.GENERATION).unique().sort()
+        plt.plot(x_data, [metadata.best_solution for _ in range(len(x_data))])
 
 
-def plot_diversity(data: pl.DataFrame, plot: plt.Axes):
+def plot_diversity(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
     """ Expects rows in `data` to comply to schema for `Event.DIVERSITY` """
-    plot_column_by_generation(data, plot, Col.DIVERSITY)
+    plot_column_by_generation(plot, data, Col.DIVERSITY)
 
 
-def plot_column_by_generation(data: pl.DataFrame, plot: plt.Axes, column_name: str):
+def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: str):
     """ Expects `data` to be filtered data for single event type and column name to exists in `data.columns`.
         Also expects `Col.GENERATION` to exist in `data.columns`."""
     series_ids = data.get_column(Col.SID).unique()
+    x_data = None
     for sid in series_ids:
         series_data = (
             data

@@ -94,7 +94,7 @@ def process_experiment_data(data: pl.DataFrame, exp: Experiment):
     # TODO: Extract these to separate functions
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_best_in_gen(partitioned_data.get(Event.BEST_IN_GEN), plot)
+    plot_best_in_gen(plot, partitioned_data.get(Event.BEST_IN_GEN), exp.instance)
     plot.set(
         title=f"Best fitness by generation, {exp.name}",
         xlabel="Generation",
@@ -103,7 +103,7 @@ def process_experiment_data(data: pl.DataFrame, exp: Experiment):
     plot.legend()
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_diversity(partitioned_data.get(Event.DIVERSITY), plot)
+    plot_diversity(plot, partitioned_data.get(Event.DIVERSITY), exp.instance)
     plot.set(
         title=f"Diversity rate by generation, {exp.name}",
         xlabel="Generation",
@@ -114,7 +114,6 @@ def process_experiment_data(data: pl.DataFrame, exp: Experiment):
 
 
 def process_experiment_batch_output(batch: list[Experiment]):
-    print(batch)
     for exp in batch:
         print(f'Processing {exp.name}')
         experiment_data = join_data_from_multiple_runs(exp.run_result.output_files)

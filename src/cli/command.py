@@ -21,10 +21,11 @@ def handle_cmd_run(args: RunCmdArgs):
     metadata_store = maybe_load_instance_metadata(args.metadata_file)
 
     input_files = resolve_all_input_files(args.input_files, args.input_dirs)
-    print(input_files)
     batch = []
     for file in input_files:
         name = exp_name_from_input_file(file)
+        print(f"Looking up metadata for {name}: {metadata_store.get(name)}")
+        metadata = metadata_store.get(name)
         batch.append(
             Experiment(
                 name=name,
