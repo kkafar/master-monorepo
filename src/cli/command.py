@@ -38,7 +38,7 @@ def handle_cmd_run(args: RunCmdArgs):
     results: list[ExperimentResult] = ExperimentBatchRunner(
         SolverProxy(args.bin),
         [exp.run_config for exp in batch]
-    ).run()
+    ).run(process_limit=4)
     exit(0)
 
     for (exp, result) in zip(batch, results):
