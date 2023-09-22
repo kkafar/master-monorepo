@@ -24,12 +24,12 @@ def handle_cmd_run(args: RunCmdArgs):
     batch = []
     for file in input_files:
         name = exp_name_from_input_file(file)
-        print(f"Looking up metadata for {name}: {metadata_store.get(name)}")
         metadata = metadata_store.get(name)
+        print(f"Looking up metadata for {name}: {metadata}")
         batch.append(
             Experiment(
                 name=name,
-                instance=metadata_store.get(name), # WARN: This may fail for few experiments
+                instance=metadata, # WARN: This may fail for few experiments
                 run_config=ExperimentConfig(file, args.output_dir, args.runs if args.runs else 1),
                 run_result=None
             )
@@ -39,7 +39,6 @@ def handle_cmd_run(args: RunCmdArgs):
         SolverProxy(args.bin),
         [exp.run_config for exp in batch]
     ).run(process_limit=args.procs)
-    exit(0)
 
     for (exp, result) in zip(batch, results):
         exp.run_result = result
