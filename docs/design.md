@@ -19,7 +19,7 @@ Main goal of this software is to provide tools for running jssp solver & analyze
 8. [ ] I want to run analysis only, skipping solver run
 9. [ ] I want to specify input data for all kind of runs
 10. [x] I want to specify output directory for the data
-11. [ ] Each run of the program, if any data is produced,
+11. [x] Each run of the program, if any data is produced,
         should put all produced data inside timestamped directory
 12. [x] Each experiment result should be put inside dedicated directory
 13. [x] Each series of given experiment should have its dedicated directory
