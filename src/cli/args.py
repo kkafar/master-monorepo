@@ -13,8 +13,6 @@ class Args:
 class RunCmdArgs(Args):
     bin: Path
     input_files: Optional[list[Path]]
-    input_dirs: Optional[list[Path]]
-    output_file: Optional[Path]
     output_dir: Optional[Path]
     runs: Optional[int]
     metadata_file: Optional[Path]

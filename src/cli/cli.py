@@ -17,20 +17,12 @@ def validate_run_cmd_args(args: RunCmdArgs):
     assert args.bin.is_file(), "Provided binary path must point to an existing file"
     assert os.access(args.bin, os.X_OK), "Provided binary file must have executable permission granted"
 
-    assert args.input_files is not None or args.input_dirs is not None, "One of input files or input dirs must be specified"
+    assert args.input_files is not None, "At least one input file / directory must be specified"
 
     if args.input_files is not None:
         for file in args.input_files:
-            assert file.is_file(), f'{file} is not a file'
+            assert file.is_file() or file.is_dir(), f'{file} is neither a file nor a directory'
             assert os.access(file, os.R_OK), f'{file} does not have read permissions'
-
-    if args.input_dirs is not None:
-        for input_dir in args.input_dirs:
-            assert input_dir.is_dir(), f'{input_dir} is not a directory'
-            assert os.access(input_dir, os.R_OK), f'{input_dir} does not have read permission granted'
-
-    if args.output_file is not None:
-        assert args.input_files is not None and len(args.input_files) == 1, "For output_file option to work exactly one input file must be specified"
 
     if args.output_dir is not None and not args.output_dir.is_dir():
         args.output_dir.mkdir(parents=True)
@@ -78,13 +70,11 @@ def build_cli() -> argparse.ArgumentParser:
 
     run_parser = subparsers.add_parser(name="run", help="Run experiment(s) & analyze the results")
     run_parser.add_argument('bin', help='Path to jssp instance solver', type=Path)
-    run_parser.add_argument('-f', '--input-files', help='Path to jssp instance data file or list of those', nargs='+', type=Path)
-    run_parser.add_argument('-d', '--input-dirs', help='Path to jssp instance data directory or list of those', nargs='+', type=Path)
-    run_parser.add_argument('-o', '--output-file', help='Output file path; should be used only when in case single input file was specified', type=Path)
-    run_parser.add_argument('-D', '--output-dir', help='Output directory; should be specified in case multiple input files / directory/ies were specified', type=Path)
-    run_parser.add_argument('--runs', help='Number of repetitions for each problem instance. Defaults to 1.', type=int)
+    run_parser.add_argument('-i', '--input-files', help='Path to jssp instance data file/directory or list of those', nargs='+', type=Path)
+    run_parser.add_argument('-o', '--output-dir', help='Output directory; should be specified in case multiple input files / directory/ies were specified', type=Path)
+    run_parser.add_argument('-n', '--runs', help='Number of repetitions for each problem instance. Defaults to 1.', type=int)
     run_parser.add_argument('-m', '--metadata-file', type=Path, required=False, help='Path to file with instance metadata information', dest='metadata_file')
-    run_parser.add_argument('--procs', type=int, required=False, help='Number of processes to run in parallel', default=1)
+    run_parser.add_argument('-p', '--procs', type=int, required=False, help='Number of processes to run in parallel', default=1)
     run_parser.set_defaults(handler=handle_cmd_run)
 
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")

@@ -37,15 +37,20 @@ def find_test_cases_in_dir_recursive(directory: Path) -> list[Path]:
     return list(enumerate_test_cases_in_dir_recursive(directory))
 
 
-def resolve_all_input_files(input_files: list[Path] = [],
-                            input_dirs: list[Path] = []) -> list[Path]:
+def resolve_all_input_files(input_files: list[Path] = [], recursive: bool = True) -> list[Path]:
     """ Joins `input_files` with all test cases found in `input_dirs` """
     if input_files is None:
         input_files = []
-    if input_dirs is None:
-        input_dirs = []
-    all_paths = [file for file in input_files]
-    for input_dir in input_dirs:
-        all_paths.extend(find_test_cases_in_dir(input_dir))
-    print(all_paths)
-    return all_paths
+
+    all_files = list(filter(lambda file: file.is_file(), input_files))
+    directories = list(filter(lambda file: file.is_dir(), input_files))
+
+    file_resolver = find_test_cases_in_dir_recursive if recursive else find_test_cases_in_dir
+
+    for input_dir in directories:
+        all_files.extend(file_resolver(input_dir))
+
+    print(all_files)
+
+    return all_files
+

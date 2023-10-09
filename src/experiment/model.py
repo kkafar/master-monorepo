@@ -10,14 +10,14 @@ class ExperimentConfig:
     """ Experiment is a series of solver runs over single test case """
     input_file: Path
     output_dir: Path
-    repeats_no: int
+    n_series: int
 
 
 @dataclass
 class ExperimentResult:
 
-    """ Each experiment series output is stored in separate file """
-    output_files: list[Path]
+    """ Each experiment series output is stored in separate directory """
+    output_dirs: list[Path]
 
     """ Computations might be repeated > 1 times to average results,
         hence `run_metadata` is a list """
