@@ -43,7 +43,7 @@ by the python scripts.
 1. [ ] For each event there should be separate file produced named with respect to pattern: `event-<event_name>.csv`
 2. [ ] There should be additional JSON file produced with following keys:
     1. [ ] `solution_string` - solution string constructed as described in [data model docs](./data-model.md)
-    2. [ ] `hash` - MD5 has of the `solution_string`
+    2. [ ] `hash` - MD5 hash of the `solution_string`
     In case no solution was found, these fields should be nulls (but the entries should exist)
 3. [ ] Most parameters of the evolution process should be possible to specifiy via the cli
 
