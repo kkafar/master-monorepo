@@ -26,5 +26,11 @@ def create_experiments_form_results(
 def exp_name_from_input_file(input_file: Path) -> str:
     return input_file.stem
 
+
 def base_output_path_resolver(input_file: Path, output_dir: Path) -> Path:
     return output_dir.joinpath(input_file.stem + '-result').with_suffix('.txt')
+
+
+def output_dir_for_experiment_with_name(name: str, base_dir: Path) -> Path:
+    return base_dir.joinpath(name)
+

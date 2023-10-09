@@ -8,7 +8,7 @@ from time import sleep
 @dataclass
 class SolverParams:
     input_file: Path
-    output_file: Path
+    output_dir: Path
 
 
 @dataclass
@@ -18,7 +18,7 @@ class SolverRunMetadata:
 
 class SolverProxy:
     INPUT_FILE_OPT_NAME = '--input-file'
-    OUTPUT_FILE_OPT_NAME = '--output-file'
+    OUTPUT_DIR_OPT_NAME = '--output-dir'
 
     def __init__(self, binary: Path):
         self.binary: Path = binary
@@ -30,8 +30,8 @@ class SolverProxy:
             self.binary,
             SolverProxy.INPUT_FILE_OPT_NAME,
             params.input_file,
-            SolverProxy.OUTPUT_FILE_OPT_NAME,
-            params.output_file,
+            SolverProxy.OUTPUT_DIR_OPT_NAME,
+            params.output_dir,
         ], stdout=sp.DEVNULL)
         end_time = dt.datetime.now()
 
@@ -43,7 +43,7 @@ class SolverProxy:
         print(f"Done in {timedelta}")
         return SolverRunMetadata(duration=timedelta)
 
-    def run_nonblocking(self, params: list[SolverParams], process_limit: int = 1, poll_interval: int = 2) -> list[SolverRunMetadata]:
+    def run_nonblocking(self, params: list[SolverParams], process_limit: int = 1, poll_interval: int = 1) -> list[SolverRunMetadata]:
         processes = set()
         n_scheduled = min(process_limit, len(params))
         start_time = dt.datetime.now()
@@ -54,8 +54,8 @@ class SolverProxy:
                 self.binary,
                 SolverProxy.INPUT_FILE_OPT_NAME,
                 p.input_file,
-                SolverProxy.OUTPUT_FILE_OPT_NAME,
-                p.output_file,
+                SolverProxy.OUTPUT_DIR_OPT_NAME,
+                p.output_dir,
             ], stdout=sp.DEVNULL))
 
         should_loop = n_scheduled < len(params)
@@ -80,8 +80,8 @@ class SolverProxy:
                         self.binary,
                         SolverProxy.INPUT_FILE_OPT_NAME,
                         param.input_file,
-                        SolverProxy.OUTPUT_FILE_OPT_NAME,
-                        param.output_file,
+                        SolverProxy.OUTPUT_DIR_OPT_NAME,
+                        param.output_dir,
                     ], stdout=sp.DEVNULL))
                     n_scheduled += 1
 
