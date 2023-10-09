@@ -36,6 +36,10 @@ def output_dir_for_experiment_with_name(name: str, base_dir: Path) -> Path:
     return base_dir.joinpath(name)
 
 
-def attach_timestamp_to_dir(dir: Path) -> Path:
+def current_timestamp() -> str:
     timestamp = dt.datetime.now().strftime("%y-%m-%d_%H-%M-%S")
-    return dir.joinpath("_" + timestamp)
+    return timestamp
+
+
+def attach_timestamp_to_dir(directory: Path, timestamp: str) -> Path:
+    return directory.joinpath(timestamp)

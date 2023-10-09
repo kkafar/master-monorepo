@@ -15,7 +15,8 @@ from data.tools import (
 from core.tools import (
     exp_name_from_input_file,
     output_dir_for_experiment_with_name,
-    attach_timestamp_to_dir
+    attach_timestamp_to_dir,
+    current_timestamp
 )
 
 
@@ -25,13 +26,16 @@ def handle_cmd_run(args: RunCmdArgs):
 
     input_files = resolve_all_input_files(args.input_files, recursive=False)
     batch = []
+
+    base_dir = args.output_dir
+    if args.attach_timestamp:
+        base_dir = attach_timestamp_to_dir(base_dir, current_timestamp())
+
     for file in input_files:
         name = exp_name_from_input_file(file)
         metadata = metadata_store.get(name)
         print(f"Looking up metadata for {name}: {metadata}")
-        out_dir = output_dir_for_experiment_with_name(name, args.output_dir)
-        if args.attach_timestamp:
-            out_dir = attach_timestamp_to_dir(out_dir)
+        out_dir = output_dir_for_experiment_with_name(name, base_dir)
         batch.append(
             Experiment(
                 name=name,
