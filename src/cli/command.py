@@ -1,4 +1,3 @@
-import itertools as it
 from .args import RunCmdArgs, AnalyzeCmdArgs
 from experiment.runner import ExperimentBatchRunner
 from experiment.solver import SolverProxy
