@@ -30,7 +30,8 @@ def handle_cmd_run(args: RunCmdArgs):
         metadata = metadata_store.get(name)
         print(f"Looking up metadata for {name}: {metadata}")
         out_dir = output_dir_for_experiment_with_name(name, args.output_dir)
-        out_dir = attach_timestamp_to_dir(out_dir)
+        if args.attach_timestamp:
+            out_dir = attach_timestamp_to_dir(out_dir)
         batch.append(
             Experiment(
                 name=name,

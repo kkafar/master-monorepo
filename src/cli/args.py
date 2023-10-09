@@ -17,6 +17,7 @@ class RunCmdArgs(Args):
     runs: Optional[int]
     metadata_file: Optional[Path]
     procs: Optional[int]
+    attach_timestamp: bool
 
 
 @dataclass

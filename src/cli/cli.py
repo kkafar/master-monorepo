@@ -75,6 +75,8 @@ def build_cli() -> argparse.ArgumentParser:
     run_parser.add_argument('-n', '--runs', help='Number of repetitions for each problem instance. Defaults to 1.', type=int)
     run_parser.add_argument('-m', '--metadata-file', type=Path, required=False, help='Path to file with instance metadata information', dest='metadata_file')
     run_parser.add_argument('-p', '--procs', type=int, required=False, help='Number of processes to run in parallel', default=1)
+    run_parser.add_argument('--timestamp', action=argparse.BooleanOptionalAction, type=bool,
+                            required=False, help='Whether a timestamp should be attached to output file name', default=True, dest='attach_timestamp')
     run_parser.set_defaults(handler=handle_cmd_run)
 
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")
