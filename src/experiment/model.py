@@ -36,6 +36,9 @@ class SeriesOutput:
     data: Optional[SeriesOutputData]
     files: SeriesOutputFiles
 
+    def is_materialized(self) -> bool:
+        return self.data is None
+
 
 @dataclass(frozen=True)
 class ExperimentConfig:
@@ -49,7 +52,7 @@ class ExperimentConfig:
 class ExperimentResult:
 
     """ Each experiment series output is stored in separate directory """
-    output_dirs: list[Path]
+    series_outputs: list[SeriesOutput]
 
     """ Computations might be repeated > 1 times to average results,
         hence `run_metadata` is a list """

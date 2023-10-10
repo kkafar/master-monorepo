@@ -1,7 +1,10 @@
-from .solver import SolverProxy, SolverParams, SolverRunMetadata
-from .model import ExperimentResult, ExperimentConfig
+from .solver import SolverProxy, SolverParams, SolverRunMetadata, SolverResult
+from .model import ExperimentResult, ExperimentConfig, SeriesOutput
 from pathlib import Path
 from typing import Optional
+import itertools as it
+import functools as ft
+import core
 
 
 def base_output_dir_resolver(input_file: Path, output_dir: Path, series_id: Optional[int] = None) -> Path:
@@ -38,28 +41,34 @@ class ExperimentRunner:
 
     def run(self, config: ExperimentConfig) -> ExperimentResult:
         run_metadata: list[SolverRunMetadata] = []
-        output_dirs: list[Path] = []
+        series_outputs: list[SeriesOutput] = []
         for sid in range(0, config.n_series):
             out_dir = simple_output_dir_resolver(config.output_dir, sid)
             params = SolverParams(config.input_file, out_dir)
-            metadata = self.solver.run(params)
-            output_dirs.append(out_dir)
-            run_metadata.append(metadata)
-        return ExperimentResult(output_dirs, run_metadata)
+            solver_result: SolverResult = self.solver.run(params)
+            series_outputs.append(solver_result.series_output)
+            run_metadata.append(solver_result.run_metadata)
+        return ExperimentResult(series_outputs=series_outputs, run_metadata=run_metadata)
 
     def run_in_parallel(self, configs: list[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
         params = []
-        results = []
         for cfg in configs:
-            result = ExperimentResult(output_dirs=[], run_metadata=[])
             for sid in range(0, cfg.n_series):
                 out_dir = simple_output_dir_resolver(cfg.output_dir, sid)
-                result.output_dirs.append(out_dir)
                 params.append(SolverParams(cfg.input_file, out_dir))
-            results.append(result)
 
-        mds = self.solver.run_nonblocking(params, process_limit)
-        for res, md in zip(results, mds):
-            res.run_metadata = md
+        solver_results = self.solver.run_nonblocking(params, process_limit)
+
+        # lets assert that chunks are equal
+        n_series = configs[0].n_series
+        assert all(map(lambda cfg: cfg.n_series == n_series, configs))
+        assert len(solver_results) % n_series == 0
+
+        results: list[ExperimentResult] = []
+        for solver_result_batch in core.util.iter_batched(solver_results, n_series):
+            results.append(ExperimentResult(
+                series_outputs=list(map(lambda res: res.series_output, solver_result_batch)),
+                run_metadata=list(map(lambda res: res.run_metadata, solver_result_batch))
+            ))
         return results
 

@@ -72,7 +72,7 @@ def materialize_all_series_outputs(outputs: list[SeriesOutput], force: bool = Fa
         materialize_series_output(output, force)
 
 
-def load_series_output(id: int, directory: Path, lazy: bool = False) -> SeriesOutput:
+def load_series_output(directory: Path, lazy: bool = False) -> SeriesOutput:
     files = _resolve_series_files_from_dir(directory)
     series_output = SeriesOutput(None, files)
     if not lazy:
