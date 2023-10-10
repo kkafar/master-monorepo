@@ -1,8 +1,40 @@
 from dataclasses import dataclass
 from pathlib import Path
 from .solver import SolverRunMetadata
-from typing import Optional
+from typing import Optional, Dict
 from data.model import InstanceMetadata
+from polars import DataFrame
+
+
+@dataclass(frozen=True)
+class SeriesOutputFiles:
+    directory: Path
+    event_files: Dict[str, Path]
+    run_metadata_file: Path
+
+
+@dataclass(frozen=True)
+class SeriesOutputMetadata:
+    solution_string: str
+    hash: str
+    fitness: int
+    generation_count: int
+    total_time: int
+
+
+@dataclass(frozen=True)
+class SeriesOutputData:
+    event_data: Dict[str, DataFrame]
+    metadata: SeriesOutputMetadata
+
+    def data_for_event(self, event: str) -> Optional[DataFrame]:
+        return self.event_data.get(event, None)
+
+
+@dataclass(frozen=True)
+class SeriesOutput:
+    data: Optional[SeriesOutputData]
+    files: SeriesOutputFiles
 
 
 @dataclass(frozen=True)
