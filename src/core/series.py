@@ -5,10 +5,10 @@ from experiment.model import (
     SeriesOutputData,
     SeriesOutput,
 )
-import core
+from core.util import find_first_or_none
+from core.conversion import deserialize_series_metadata_from_dict
 import polars as pl
 import json
-
 
 
 def _event_file_filter(file: Path) -> bool:
@@ -34,7 +34,7 @@ def _load_series_metadata_from_file(metadata_file: Path) -> SeriesOutputFiles:
     metadata = None
 
     with open(metadata_file, 'r') as file:
-        metadata = json.load(file, object_hook=core.conversion.deserialize_series_metadata_from_dict)
+        metadata = json.load(file, object_hook=deserialize_series_metadata_from_dict)
 
     return metadata
 
@@ -55,7 +55,7 @@ def _resolve_series_files_from_dir(directory: Path) -> SeriesOutputFiles:
     assert len(all_files) > 0, f"Ill formed series result - no files found in directory {directory}"
 
     event_files = _event_file_map_from_data_files(filter(_event_file_filter, all_files))
-    run_metadata_file = core.util.find_first_or_none(all_files, _run_metadata_file_filter)
+    run_metadata_file = find_first_or_none(all_files, _run_metadata_file_filter)
 
     return SeriesOutputFiles(directory, event_files, run_metadata_file)
 
@@ -72,7 +72,7 @@ def materialize_all_series_outputs(outputs: list[SeriesOutput], force: bool = Fa
         materialize_series_output(output, force)
 
 
-def load_series_output(id: int, directory: Path, lazy: bool = False) -> SeriesOutput:
+def load_series_output(directory: Path, lazy: bool = False) -> SeriesOutput:
     files = _resolve_series_files_from_dir(directory)
     series_output = SeriesOutput(None, files)
     if not lazy:

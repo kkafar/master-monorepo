@@ -18,6 +18,10 @@ from core.tools import (
     attach_timestamp_to_dir,
     current_timestamp
 )
+from core.series import (
+    materialize_all_series_outputs
+)
+
 
 
 def handle_cmd_run(args: RunCmdArgs):
@@ -51,6 +55,9 @@ def handle_cmd_run(args: RunCmdArgs):
         SolverProxy(args.bin),
         [exp.run_config for exp in batch]
     ).run(process_limit=args.procs)
+
+    for exp_result in results:
+        materialize_all_series_outputs(exp_result.series_outputs, force=False)
     exit(0)
 
     for (exp, result) in zip(batch, results):
