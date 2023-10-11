@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
-from .solver import SolverRunMetadata
 from typing import Optional, Dict
 from data.model import InstanceMetadata
 from polars import DataFrame
+import datetime as dt
 
 
 @dataclass(frozen=True)
@@ -31,13 +31,30 @@ class SeriesOutputData:
         return self.event_data.get(event, None)
 
 
-@dataclass(frozen=True)
+@dataclass
 class SeriesOutput:
     data: Optional[SeriesOutputData]
     files: SeriesOutputFiles
 
     def is_materialized(self) -> bool:
         return self.data is None
+
+
+@dataclass
+class SolverParams:
+    input_file: Path
+    output_dir: Path
+
+
+@dataclass
+class SolverRunMetadata:
+    duration: dt.timedelta
+
+
+@dataclass
+class SolverResult:
+    series_output: SeriesOutput
+    run_metadata: SolverRunMetadata
 
 
 @dataclass(frozen=True)
@@ -69,3 +86,4 @@ class Experiment:
 
     def has_result(self) -> bool:
         return self.run_result is not None
+

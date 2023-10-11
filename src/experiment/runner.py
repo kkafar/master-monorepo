@@ -2,9 +2,7 @@ from .solver import SolverProxy, SolverParams, SolverRunMetadata, SolverResult
 from .model import ExperimentResult, ExperimentConfig, SeriesOutput
 from pathlib import Path
 from typing import Optional
-import itertools as it
-import functools as ft
-import core
+from core.util import iter_batched
 
 
 def base_output_dir_resolver(input_file: Path, output_dir: Path, series_id: Optional[int] = None) -> Path:
@@ -65,7 +63,7 @@ class ExperimentRunner:
         assert len(solver_results) % n_series == 0
 
         results: list[ExperimentResult] = []
-        for solver_result_batch in core.util.iter_batched(solver_results, n_series):
+        for solver_result_batch in iter_batched(solver_results, n_series):
             results.append(ExperimentResult(
                 series_outputs=list(map(lambda res: res.series_output, solver_result_batch)),
                 run_metadata=list(map(lambda res: res.run_metadata, solver_result_batch))

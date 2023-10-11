@@ -1,28 +1,13 @@
 import subprocess as sp
 import datetime as dt
-import core
-from dataclasses import dataclass
 from pathlib import Path
 from time import sleep
-from .model import SeriesOutput
-
-
-
-@dataclass
-class SolverParams:
-    input_file: Path
-    output_dir: Path
-
-
-@dataclass
-class SolverRunMetadata:
-    duration: dt.timedelta
-
-
-@dataclass
-class SolverResult:
-    series_output: SeriesOutput
-    run_metadata: SolverRunMetadata
+from .model import (
+    SolverParams,
+    SolverResult,
+    SolverRunMetadata,
+)
+from core.series import load_series_output
 
 
 class SolverProxy:
@@ -52,7 +37,7 @@ class SolverProxy:
         print(f"Done in {timedelta}")
 
         return SolverResult(
-            series_output=core.series.load_series_output(params.output_dir, lazy=True),
+            series_output=load_series_output(params.output_dir, lazy=True),
             run_metadata=SolverRunMetadata(duration=timedelta))
 
     def run_nonblocking(self, params: list[SolverParams], process_limit: int = 1, poll_interval: int = 1) -> list[SolverResult]:
@@ -111,6 +96,6 @@ class SolverProxy:
         end_time = dt.datetime.now()
         timedelta: dt.timedelta = end_time - start_time
         print(f"[SolverProxy] Completed batch of {len(params)} in {timedelta}")
-        return [SolverResult(series_output=core.series.load_series_output(p.output_dir, lazy=True),
+        return [SolverResult(series_output=load_series_output(p.output_dir, lazy=True),
                              run_metadata=SolverRunMetadata(duration=timedelta)) for p in params]
 
