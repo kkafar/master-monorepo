@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, Literal, Union
 from data.model import InstanceMetadata
 from polars import DataFrame
 import datetime as dt
@@ -49,6 +49,11 @@ class SolverParams:
 @dataclass
 class SolverRunMetadata:
     duration: dt.timedelta
+    status: int  # Executing process return code
+
+    def is_ok(self) -> bool:
+        """ Whether the computation completed without any errors """
+        return self.status == 0
 
 
 @dataclass
