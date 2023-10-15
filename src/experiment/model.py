@@ -20,6 +20,7 @@ class SeriesOutputMetadata:
     fitness: int
     generation_count: int
     total_time: int
+    chromosome: list[float]
 
 
 @dataclass(frozen=True)
