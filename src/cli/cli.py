@@ -40,8 +40,6 @@ def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
 
 
 def validate_cli_args(args: Args):
-    global CMD_RUN
-    global CMD_ANALYZE
     validate_base_args(args)
     match args.cmd_name:
         case 'run':

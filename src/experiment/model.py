@@ -107,6 +107,8 @@ class Experiment:
         return self.result is not None
 
     def as_dict(self) -> dict:
+        # result field is not serialized on purpose
+        # it enforces thoughts that result should not be stored in this class
         return {
             "name": self.name,
             "instance": self.instance.as_dict(),

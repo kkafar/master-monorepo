@@ -14,12 +14,29 @@ def simple_output_dir_resolver(base_output_dir: Path, series_id: int) -> Path:
     return base_output_dir.joinpath(dir_name)
 
 
-# def dump_run_metadata()
+# TODO: This function should not be here
+def dump_exp_batch_config(config_file: Path, experiments: list[Experiment]):
+    joined_config = {
+        "configs": list(map(lambda e: e.as_dict(), experiments))
+    }
+
+    with open(config_file, 'w') as file:
+        json.dump(joined_config, file, indent=4)
 
 
+# TODO: This function should not be here
 def initialize_file_hierarchy(experiments: list[Experiment]):
     """ Creates directory structure for the output & dumps experiments / series configuration
     to appriopriate directories """
+
+    assert len(experiments) > 0, "No experiments were specified"
+
+    base_dir = experiments[0].config.output_dir.parent
+    base_dir.mkdir(parents=True, exist_ok=True)
+    config_file = base_dir.joinpath("config.json")
+
+    dump_exp_batch_config(config_file, experiments)
+
     for experiment in experiments:
         experiment.config.output_dir.mkdir(parents=True, exist_ok=True)
         for series_i in range(0, experiment.config.n_series):
