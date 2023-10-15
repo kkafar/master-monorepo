@@ -28,6 +28,6 @@ def initialize_file_hierarchy(experiments: list[Experiment]):
 
         experiment_file = experiment_file_resolver(experiment)
         with open(experiment_file, 'w') as file:
-            json.dump(experiment.as_dict(), file)
+            json.dump(experiment.as_dict(), file, indent=4)
 
 

@@ -71,7 +71,11 @@ class ExperimentConfig:
     n_series: int
 
     def as_dict(self) -> dict:
-        return self.__dict__
+        return {
+            "input_file": str(self.input_file),
+            "output_dir": str(self.output_dir),
+            "n_series": self.n_series
+        }
 
 
 @dataclass
