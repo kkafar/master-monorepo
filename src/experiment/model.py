@@ -69,6 +69,9 @@ class ExperimentConfig:
     output_dir: Path
     n_series: int
 
+    def as_dict(self) -> dict:
+        return self.__dict__
+
 
 @dataclass
 class ExperimentResult:
@@ -78,7 +81,13 @@ class ExperimentResult:
 
     """ Computations might be repeated > 1 times to average results,
         hence `run_metadata` is a list """
-    run_metadata: Optional[list[SolverRunMetadata]] = None
+    metadata: Optional[list[SolverRunMetadata]] = None
+
+    def n_series(self) -> int:
+        return len(self.series_outputs)
+
+    def has_metadata(self) -> bool:
+        return self.metadata is not None
 
 
 @dataclass
@@ -86,9 +95,17 @@ class Experiment:
     """ Instance description, run configuration, result obtained """
     name: str
     instance: InstanceMetadata
-    run_config: ExperimentConfig
-    run_result: Optional[ExperimentResult] = None
+    config: ExperimentConfig
+    result: Optional[ExperimentResult] = None
 
     def has_result(self) -> bool:
-        return self.run_result is not None
+        return self.result is not None
+
+    def as_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "instance": self.instance.as_dict(),
+            "config": self.config.as_dict(),
+        }
+
 

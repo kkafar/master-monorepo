@@ -31,6 +31,9 @@ class InstanceMetadata:
     best_solution_time: str
     best_solution_time_ref: str
 
+    def as_dict(self) -> dict:
+        return self.__dict__
+
 
 EventName = str
 

@@ -2,7 +2,11 @@ import polars as pl
 import matplotlib.pyplot as plt
 from typing import Dict, Iterable, Optional
 from pathlib import Path
-from experiment.model import ExperimentResult, ExperimentConfig, Experiment
+from experiment.model import (
+    ExperimentResult,
+    ExperimentConfig,
+    Experiment,
+)
 from .file_resolver import find_result_files_in_dir
 from collections import defaultdict
 from data.model import (
@@ -17,6 +21,7 @@ from .plot import (
     plot_diversity,
     plot_best_in_gen
 )
+from core.series import load_series_output
 
 
 def partition_exp_by_files(paths: list[Path]) -> Dict[str, list[Path]]:
@@ -30,25 +35,22 @@ def partition_exp_by_files(paths: list[Path]) -> Dict[str, list[Path]]:
     return exp_to_files
 
 
-def extract_experiment_results_from_dir(directory: Path) -> list[ExperimentResult]:
-    all_result_files = find_result_files_in_dir(directory)
-    experiment_raw_results = partition_exp_by_files(all_result_files)
+def experiment_result_from_dir(directory: Path) -> ExperimentResult:
+    # Metadata collected by SolverProxy is not dumped on the disk currently.
+    # TODO: dump it on the disk & load it here
+    result = ExperimentResult([], None)
+    for series_dir in filter(lambda file: file.is_dir(), directory.iterdir()):
+        series_output = load_series_output(directory, lazy=False)
+        result.series_outputs.append(series_output)
 
-    experiment_results = []
-    for name, paths in experiment_raw_results.items():
-        experiment_results.append(
-            ExperimentResult(
-                ExperimentConfig(
-                    name=name,
-                    input_file='unknown',
-                    output_dir=directory,
-                    repeats_no=len(paths)
-                ),
-                None,
-                paths
-            )
-        )
-    return experiment_results
+    return result
+
+
+def extract_experiment_results_from_dir(directory: Path) -> list[ExperimentResult]:
+    exp_results = []
+    for exp_dir in filter(lambda file: file.is_dir(), directory.iterdir()):
+        exp_results.append(experiment_result_from_dir(exp_dir))
+    return exp_results
 
 
 def data_frame_from_file(data_file: Path, has_header: bool = False) -> pl.DataFrame:
