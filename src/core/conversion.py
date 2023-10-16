@@ -8,6 +8,7 @@ def deserialize_series_metadata_from_dict(metadata_dict: Dict) -> SeriesOutputMe
         hash=metadata_dict["hash"],
         fitness=metadata_dict["fitness"],
         generation_count=metadata_dict["generation_count"],
-        total_time=metadata_dict["total_time"]
+        total_time=metadata_dict["total_time"],
+        chromosome=metadata_dict["chromosome"]
     )
 
