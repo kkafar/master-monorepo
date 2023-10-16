@@ -77,6 +77,14 @@ class ExperimentConfig:
             "n_series": self.n_series
         }
 
+    @classmethod
+    def from_dict(cls, d: dict) -> 'ExperimentConfig':
+        return ExperimentConfig(
+            input_file=d['input_file'],
+            output_dir=d['output_dir'],
+            n_series=d['n_series']
+        )
+
 
 @dataclass
 class ExperimentResult:
@@ -114,5 +122,12 @@ class Experiment:
             "instance": self.instance.as_dict(),
             "config": self.config.as_dict(),
         }
+
+    @classmethod
+    def from_dict(cls, exp_dict: dict) -> 'Experiment':
+        return cls(name=exp_dict["name"],
+                   instance=InstanceMetadata.from_dict(exp_dict["instance"]),
+                   config=ExperimentConfig.from_dict(exp_dict["config"]))
+
 
 

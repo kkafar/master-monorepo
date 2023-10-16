@@ -10,7 +10,8 @@ from data.file_resolver import resolve_all_input_files
 from data.tools import (
     process_experiment_batch_output,
     extract_experiment_results_from_dir,
-    maybe_load_instance_metadata
+    maybe_load_instance_metadata,
+    extract_experiments_from_dir,
 )
 from core.tools import (
     exp_name_from_input_file,
@@ -55,9 +56,6 @@ def handle_cmd_run(args: RunCmdArgs):
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
 
-    print("Exiting after initialization")
-    exit(0)
-
     # Run computations
     results: list[ExperimentResult] = ExperimentBatchRunner(
         SolverProxy(args.bin),
@@ -79,7 +77,6 @@ def handle_cmd_run(args: RunCmdArgs):
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
-    exp_results: list[ExperimentResult] = extract_experiment_results_from_dir(args.dir)
-
-    process_experiment_batch_output(exp_results)
+    experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
+    process_experiment_batch_output(experiment_batch)
 

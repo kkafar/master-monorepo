@@ -3,8 +3,12 @@ from pathlib import Path
 from experiment.model import Experiment
 
 
+def experiment_file_from_directory(directory: Path) -> Path:
+    return directory.joinpath('experiment').with_suffix('.json')
+
+
 def experiment_file_resolver(experiment: Experiment) -> Path:
-    return experiment.config.output_dir.joinpath('experiment').with_suffix('.json')
+    return experiment_file_from_directory(experiment.config.output_dir)
 
 
 def simple_output_dir_resolver(base_output_dir: Path, series_id: int) -> Path:
@@ -27,6 +31,7 @@ def dump_exp_batch_config(config_file: Path, experiments: list[Experiment]):
 # TODO: This function should not be here
 def initialize_file_hierarchy(experiments: list[Experiment]):
     """ Creates directory structure for the output & dumps experiments / series configuration
+
     to appriopriate directories """
 
     assert len(experiments) > 0, "No experiments were specified"
