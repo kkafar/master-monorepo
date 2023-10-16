@@ -9,7 +9,6 @@ from experiment.model import (
 from data.file_resolver import resolve_all_input_files
 from data.tools import (
     process_experiment_batch_output,
-    extract_experiment_results_from_dir,
     maybe_load_instance_metadata,
     extract_experiments_from_dir,
 )
