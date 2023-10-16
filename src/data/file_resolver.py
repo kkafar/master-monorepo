@@ -1,7 +1,6 @@
 from pathlib import Path
-from typing import Iterable, Generator, Optional
+from typing import Iterable, Generator
 import itertools as it
-from cli.args import RunCmdArgs
 
 
 def enumerate_test_cases_in_dir(directory: Path) -> Generator[Path, None, None]:

@@ -9,8 +9,8 @@ from experiment.model import (
 from data.file_resolver import resolve_all_input_files
 from data.tools import (
     process_experiment_batch_output,
-    extract_experiment_results_from_dir,
-    maybe_load_instance_metadata
+    maybe_load_instance_metadata,
+    extract_experiments_from_dir,
 )
 from core.tools import (
     exp_name_from_input_file,
@@ -21,13 +21,14 @@ from core.tools import (
 from core.series import (
     materialize_all_series_outputs
 )
-
+from core.fs import initialize_file_hierarchy
 
 
 def handle_cmd_run(args: RunCmdArgs):
     print(f"RunCommand run with args: {args}")
     metadata_store = maybe_load_instance_metadata(args.metadata_file)
 
+    # Not recursive as we don't want to load Taillard specification
     input_files = resolve_all_input_files(args.input_files, recursive=False)
     batch = []
 
@@ -44,24 +45,30 @@ def handle_cmd_run(args: RunCmdArgs):
             Experiment(
                 name=name,
                 instance=metadata,  # WARN: This may fail for few experiments
-                run_config=ExperimentConfig(file,
-                                            out_dir,
-                                            args.runs if args.runs else 1),
-                run_result=None
+                config=ExperimentConfig(file,
+                                        out_dir,
+                                        args.runs if args.runs else 1),
+                result=None
             )
         )
 
+    # Create file hierarchy & dump configuration data
+    initialize_file_hierarchy(batch)
+
+    # Run computations
     results: list[ExperimentResult] = ExperimentBatchRunner(
         SolverProxy(args.bin),
-        [exp.run_config for exp in batch]
+        [exp.config for exp in batch]
     ).run(process_limit=args.procs)
+
+    # Dump computation results (metadata) to appropriate directories
 
     for exp_result in results:
         materialize_all_series_outputs(exp_result.series_outputs, force=False)
     exit(0)
 
     for (exp, result) in zip(batch, results):
-        exp.run_result = result
+        exp.result = result
 
     process_experiment_batch_output(batch)
 
@@ -69,6 +76,6 @@ def handle_cmd_run(args: RunCmdArgs):
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
-    exp_results: list[ExperimentResult] = extract_experiment_results_from_dir(args.dir)
-    process_experiment_batch_output(exp_results)
+    experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
+    process_experiment_batch_output(experiment_batch)
 

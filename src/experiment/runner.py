@@ -1,22 +1,7 @@
 from .solver import SolverProxy, SolverParams, SolverRunMetadata, SolverResult
 from .model import ExperimentResult, ExperimentConfig, SeriesOutput
-from pathlib import Path
-from typing import Optional
 from core.util import iter_batched
-
-
-def base_output_dir_resolver(input_file: Path, output_dir: Path, series_id: Optional[int] = None) -> Path:
-    file_name = input_file.stem + \
-        '-result' + \
-        ('-run-' + str(series_id)) if series_id is not None else ''
-    return output_dir.joinpath(file_name).with_suffix('.txt')
-
-
-def simple_output_dir_resolver(base_output_dir: Path, series_id: int) -> Path:
-    dir_name = base_output_dir.stem + \
-        '-series-' + \
-        str(series_id)
-    return base_output_dir.joinpath(dir_name)
+from core.fs import simple_output_dir_resolver
 
 
 class ExperimentBatchRunner:
@@ -46,7 +31,7 @@ class ExperimentRunner:
             solver_result: SolverResult = self.solver.run(params)
             series_outputs.append(solver_result.series_output)
             run_metadata.append(solver_result.run_metadata)
-        return ExperimentResult(series_outputs=series_outputs, run_metadata=run_metadata)
+        return ExperimentResult(series_outputs=series_outputs, metadata=run_metadata)
 
     def run_in_parallel(self, configs: list[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
         params = []
@@ -66,7 +51,7 @@ class ExperimentRunner:
         for solver_result_batch in iter_batched(solver_results, n_series):
             results.append(ExperimentResult(
                 series_outputs=list(map(lambda res: res.series_output, solver_result_batch)),
-                run_metadata=list(map(lambda res: res.run_metadata, solver_result_batch))
+                metadata=list(map(lambda res: res.run_metadata, solver_result_batch))
             ))
         return results
 

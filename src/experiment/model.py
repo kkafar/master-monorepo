@@ -20,6 +20,7 @@ class SeriesOutputMetadata:
     fitness: int
     generation_count: int
     total_time: int
+    chromosome: list[float]
 
 
 @dataclass(frozen=True)
@@ -69,6 +70,21 @@ class ExperimentConfig:
     output_dir: Path
     n_series: int
 
+    def as_dict(self) -> dict:
+        return {
+            "input_file": str(self.input_file),
+            "output_dir": str(self.output_dir),
+            "n_series": self.n_series
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> 'ExperimentConfig':
+        return ExperimentConfig(
+            input_file=d['input_file'],
+            output_dir=d['output_dir'],
+            n_series=d['n_series']
+        )
+
 
 @dataclass
 class ExperimentResult:
@@ -78,7 +94,13 @@ class ExperimentResult:
 
     """ Computations might be repeated > 1 times to average results,
         hence `run_metadata` is a list """
-    run_metadata: Optional[list[SolverRunMetadata]] = None
+    metadata: Optional[list[SolverRunMetadata]] = None
+
+    def n_series(self) -> int:
+        return len(self.series_outputs)
+
+    def has_metadata(self) -> bool:
+        return self.metadata is not None
 
 
 @dataclass
@@ -86,9 +108,26 @@ class Experiment:
     """ Instance description, run configuration, result obtained """
     name: str
     instance: InstanceMetadata
-    run_config: ExperimentConfig
-    run_result: Optional[ExperimentResult] = None
+    config: ExperimentConfig
+    result: Optional[ExperimentResult] = None
 
     def has_result(self) -> bool:
-        return self.run_result is not None
+        return self.result is not None
+
+    def as_dict(self) -> dict:
+        # result field is not serialized on purpose
+        # it enforces thoughts that result should not be stored in this class
+        return {
+            "name": self.name,
+            "instance": self.instance.as_dict(),
+            "config": self.config.as_dict(),
+        }
+
+    @classmethod
+    def from_dict(cls, exp_dict: dict) -> 'Experiment':
+        return cls(name=exp_dict["name"],
+                   instance=InstanceMetadata.from_dict(exp_dict["instance"]),
+                   config=ExperimentConfig.from_dict(exp_dict["config"]))
+
+
 

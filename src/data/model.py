@@ -31,6 +31,24 @@ class InstanceMetadata:
     best_solution_time: str
     best_solution_time_ref: str
 
+    def as_dict(self) -> dict:
+        return self.__dict__
+
+    @classmethod
+    def from_dict(cls, d: dict) -> 'InstanceMetadata':
+        return InstanceMetadata(
+            id=d['id'],
+            ref=d['ref'],
+            jobs=d['jobs'],
+            machines=d['machines'],
+            lower_bound=d['lower_bound'],
+            lower_bound_ref=d['lower_bound_ref'],
+            best_solution=d['best_solution'],
+            best_solution_ref=d['best_solution_ref'],
+            best_solution_time=d['best_solution_time'],
+            best_solution_time_ref=d['best_solution_time_ref']
+        )
+
 
 EventName = str
 

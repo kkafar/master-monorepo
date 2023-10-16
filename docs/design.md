@@ -37,7 +37,7 @@ Main goal of this software is to provide tools for running jssp solver & analyze
 
 ## Solver output structure
 
-Please note that the solver takes only two parameters (see [Solver section](#Solver)) and most of there requirements should be implemented
+Please note that the solver takes only two parameters (see [Solver section](#Solver)) and most of these requirements should be implemented
 by the python scripts.
 
 1. [x] For each event there should be separate file produced named with respect to pattern: `event_<event_name>.csv`
@@ -47,6 +47,7 @@ by the python scripts.
     3. [x] `fitness` - fitness of the best individual
     4. [x] `generation_count` - number of computed generations
     5. [x] `total_time` - duration in ms of the solver run
+    6. [x] `chromosome` - chromosome of the individual
     In case no solution was found, these fields should be nulls (but the entries should exist).
     The file should be named `run_metadata.json`.
 3. [ ] Most parameters of the evolution process should be possible to specifiy via the cli
