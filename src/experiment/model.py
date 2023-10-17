@@ -38,7 +38,7 @@ class SeriesOutput:
     files: SeriesOutputFiles
 
     def is_materialized(self) -> bool:
-        return self.data is None
+        return self.data is not None
 
 
 @dataclass
