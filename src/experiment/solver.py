@@ -88,12 +88,10 @@ class SolverProxy:
                 schedule_time=dt.datetime.now()
             ))
 
-        should_loop = n_scheduled < n_procs
-
         newly_scheduled_procs = set()
         recently_finished_procs = set()
         all_finished_procs = [-1 for _ in range(n_procs)]
-        while should_loop:
+        while True:
             newly_scheduled_procs.clear()
             recently_finished_procs.clear()
 
