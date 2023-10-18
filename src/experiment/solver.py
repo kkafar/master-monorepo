@@ -45,16 +45,17 @@ class SolverProxy:
         )
 
     def _log_run_start(self, id: int, p: SolverParams):
-        print(f"[SolverProxy] Running id: {id}, input_file: {p.input_file}, output_dir: {p.output_dir}", flush=True)
+        print(f"Running id: {id}, input_file: {p.input_file}, output_dir: {p.output_dir}", flush=True)
 
-    def _log_run_finish(self, id: int, proc: ScheduledProcess):
-        print(f"[SolverProxy] Finished {id} at {proc.finish_time} in aprox. {proc.duration()}", flush=True)
+    def _log_run_finish(self, id: int, proc: ScheduledProcess, finished_count: int, total_count: int):
+        complete_percent = (finished_count / total_count) * 100
+        print(f"Finished id: {id} at {proc.finish_time} in aprox. {proc.duration()} | {finished_count}/{total_count} ({complete_percent:.2f}%) ", flush=True)
 
     def _log_run_error(self, id: int, proc: ScheduledProcess):
-        print(f"[SolverProxy][ERROR] Proc with args {proc.args} failed with nonzero return code {proc.process.returncode}", flush=True)
+        print(f"[ERROR] Proc with args {proc.args} failed with nonzero return code {proc.process.returncode}", flush=True)
 
     def run(self, params: SolverParams) -> SolverResult:
-        print(f"[SolverProxy] Running with {params}", end=' ', flush=True)
+        print(f"Running with {params}", end=' ', flush=True)
         start_time = dt.datetime.now()
         args = self._run_args_from_params(params)
         completed_process: sp.CompletedProcess = sp.run(args, stdout=sp.DEVNULL)
@@ -73,6 +74,7 @@ class SolverProxy:
             run_metadata=SolverRunMetadata(duration=timedelta, status=completed_process.returncode))
 
     def run_nonblocking(self, params: list[SolverParams], process_limit: int = 1, poll_interval: float = 0.1) -> list[SolverResult]:
+        finished_count = 0
         running_procs = set()
         n_procs = len(params)
         n_scheduled = min(process_limit, n_procs)
@@ -106,7 +108,8 @@ class SolverProxy:
                 proc.finish_time = dt.datetime.now()
                 recently_finished_procs.add(proc)
                 all_finished_procs[proc.params_id] = proc
-                self._log_run_finish(proc.params_id, proc)
+                finished_count += 1
+                self._log_run_finish(proc.params_id, proc, finished_count, n_procs)
 
                 if ret_code != 0:
                     self._log_run_error(proc.params_id, proc)
@@ -137,7 +140,7 @@ class SolverProxy:
 
         assert len(all_finished_procs) == n_procs
 
-        print(f"[SolverProxy] Completed batch of {len(params)} in {timedelta}")
+        print(f"Completed batch of {len(params)} in {timedelta}")
         return [SolverResult(series_output=load_series_output(p.output_dir, lazy=True),
                              run_metadata=SolverRunMetadata(duration=proc.duration(),
                                                             status=proc.process.returncode))
