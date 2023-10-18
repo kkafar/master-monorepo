@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from polars import DataFrame
 
 
 @dataclass(frozen=True)
@@ -149,3 +150,12 @@ EVENT_CONFIGS = dict([
 
 def config_for_event(event: EventName) -> EventConfig:
     return EVENT_CONFIGS[event]
+
+
+@dataclass
+class JoinedExperimentData:
+    newbest: DataFrame
+    diversity: DataFrame
+    bestingen: DataFrame
+    popgentime: DataFrame
+    iterinfo: DataFrame
