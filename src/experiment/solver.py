@@ -72,7 +72,7 @@ class SolverProxy:
             series_output=load_series_output(params.output_dir, lazy=True),
             run_metadata=SolverRunMetadata(duration=timedelta, status=completed_process.returncode))
 
-    def run_nonblocking(self, params: list[SolverParams], process_limit: int = 1, poll_interval: int = 1) -> list[SolverResult]:
+    def run_nonblocking(self, params: list[SolverParams], process_limit: int = 1, poll_interval: float = 0.1) -> list[SolverResult]:
         running_procs = set()
         n_procs = len(params)
         n_scheduled = min(process_limit, n_procs)
