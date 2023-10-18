@@ -11,7 +11,8 @@ def plot_best_in_gen(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetad
 
     if metadata:
         x_data = data.get_column(Col.GENERATION).unique().sort()
-        plt.plot(x_data, [metadata.best_solution for _ in range(len(x_data))])
+        if metadata.best_solution:
+            plt.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
 
 
 def plot_diversity(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
