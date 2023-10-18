@@ -9,6 +9,7 @@ from experiment.model import (
     ExperimentResult,
     ExperimentConfig,
     Experiment,
+    SeriesOutput,
 )
 from .file_resolver import find_result_files_in_dir
 from collections import defaultdict
@@ -24,18 +25,7 @@ from .plot import (
     plot_diversity,
     plot_best_in_gen
 )
-from core.series import load_series_output
-
-
-def partition_exp_by_files(paths: list[Path]) -> Dict[str, list[Path]]:
-    exp_to_files = defaultdict(list)
-
-    for exp_file in paths:
-        partitioned_name: list[str] = exp_file.stem.split('-')
-        exp_name = '-'.join(partitioned_name[0:partitioned_name.index('result')])
-        exp_to_files[exp_name].append(exp_file)
-
-    return exp_to_files
+from core.series import load_series_output, materialize_series_output
 
 
 def experiment_result_from_dir(directory: Path, materialize: bool = False) -> ExperimentResult:
@@ -111,6 +101,16 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     return main_df
 
 
+def experiment_data_from_all_series(experiment: Experiment) -> pl.DataFrame:
+    main_df = Optional[pl.DataFrame] = None
+    for sid, series_output in enumerate(experiment.result.series_outputs):
+        if not series_output.is_materialized():
+            materialize_series_output(series_output, force=False)
+        
+
+    return main_df
+
+
 def process_experiment_data(data: pl.DataFrame, exp: Experiment):
     print(f"Processing experiment {exp.name}")
     partitioned_data = partition_experiment_data_by_event(data)
@@ -140,6 +140,7 @@ def process_experiment_data(data: pl.DataFrame, exp: Experiment):
 def process_experiment_batch_output(batch: list[Experiment]):
     for exp in batch:
         print(f'Processing {exp.name}')
+        exp_data = experiment_data_from_all_series(exp)
         experiment_data = join_data_from_multiple_runs(exp.run_result.output_files)
         process_experiment_data(experiment_data, exp)
         break
