@@ -102,7 +102,7 @@ class SolverProxy:
                 print(f"[SolverProxy] Finished {proc.params_id} in aprox. {proc.duration()}", flush=True)
 
                 if ret_code != 0:
-                    print(f"[SolverProxy][ERROR] Proc with args {proc.args} failed with nonzero return code {ret_code}")
+                    print(f"[SolverProxy][ERROR] Proc with args {proc.args} failed with nonzero return code {ret_code}", flush=True)
 
                 # If there are any processes left to schedule
                 if n_scheduled < n_procs:
