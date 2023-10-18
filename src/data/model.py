@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from polars import DataFrame
 
 
 @dataclass(frozen=True)
@@ -77,11 +78,12 @@ class Event:
 
 
 class Col:
-    EVENT = 'event'
-    GENERATION = 'gen'
+    EVENT = 'event_name'
+    GENERATION = 'generation'
     TIME = 'time'
+    DURATION = 'total_duration'
     FITNESS = 'fitness'
-    POP_SIZE = 'popsize'
+    POP_SIZE = 'population_size'
     DIVERSITY = 'diversity'
     EVAL_TIME = 'eval_time'
     SEL_TIME = 'sel_time'
@@ -95,6 +97,7 @@ class Col:
         EVENT,
         GENERATION,
         TIME,
+        DURATION,
         FITNESS,
         POP_SIZE,
         DIVERSITY,
@@ -117,7 +120,7 @@ SCHEMA_FOR_EVENT = dict(map(lambda kv: (kv[0], [Col.EVENT] + kv[1] + [Col.SID]),
     (Event.NEW_BEST, [Col.GENERATION, Col.TIME, Col.FITNESS]),
     (Event.DIVERSITY, [Col.GENERATION, Col.TIME, Col.POP_SIZE, Col.DIVERSITY]),
     (Event.BEST_IN_GEN, [Col.GENERATION, Col.TIME, Col.FITNESS]),
-    (Event.POP_GEN_TIME, [Col.TIME]),
+    (Event.POP_GEN_TIME, [Col.DURATION]),
     (Event.ITER_INFO, [Col.GENERATION, Col.EVAL_TIME, Col.SEL_TIME,
                        Col.CROSS_TIME, Col.MUT_TIME, Col.REPL_TIME, Col.ITER_TIME])
 ]))
@@ -147,3 +150,12 @@ EVENT_CONFIGS = dict([
 
 def config_for_event(event: EventName) -> EventConfig:
     return EVENT_CONFIGS[event]
+
+
+@dataclass
+class JoinedExperimentData:
+    newbest: DataFrame
+    diversity: DataFrame
+    bestingen: DataFrame
+    popgentime: DataFrame
+    iterinfo: DataFrame

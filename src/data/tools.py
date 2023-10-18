@@ -9,6 +9,7 @@ from experiment.model import (
     ExperimentResult,
     ExperimentConfig,
     Experiment,
+    SeriesOutput,
 )
 from .file_resolver import find_result_files_in_dir
 from collections import defaultdict
@@ -18,24 +19,14 @@ from data.model import (
     EventConfig,
     config_for_event,
     EventName,
-    InstanceMetadata
+    InstanceMetadata,
+    JoinedExperimentData,
 )
 from .plot import (
     plot_diversity,
     plot_best_in_gen
 )
-from core.series import load_series_output
-
-
-def partition_exp_by_files(paths: list[Path]) -> Dict[str, list[Path]]:
-    exp_to_files = defaultdict(list)
-
-    for exp_file in paths:
-        partitioned_name: list[str] = exp_file.stem.split('-')
-        exp_name = '-'.join(partitioned_name[0:partitioned_name.index('result')])
-        exp_to_files[exp_name].append(exp_file)
-
-    return exp_to_files
+from core.series import load_series_output, materialize_series_output
 
 
 def experiment_result_from_dir(directory: Path, materialize: bool = False) -> ExperimentResult:
@@ -90,13 +81,6 @@ def extract_data_for_event_with_config(data: pl.DataFrame, config: EventConfig) 
     return df
 
 
-def partition_experiment_data_by_event(data: pl.DataFrame) -> dict[EventName, pl.DataFrame]:
-    return {
-        event_name: extract_data_for_event_with_config(data, config_for_event(event_name))
-        for event_name in Event.ALL_EVENTS
-    }
-
-
 def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     main_df: Optional[pl.DataFrame] = None
     for sid, data_file in enumerate(output_files):
@@ -111,14 +95,45 @@ def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
     return main_df
 
 
-def process_experiment_data(data: pl.DataFrame, exp: Experiment):
-    print(f"Processing experiment {exp.name}")
-    partitioned_data = partition_experiment_data_by_event(data)
+def _update_df_with(base_df: pl.DataFrame, new_df: pl.DataFrame) -> pl.DataFrame:
+    if base_df is not None:
+        base_df.vstack(new_df, in_place=True)
+    else:
+        base_df = new_df
+    return base_df
 
-    # TODO: Extract these to separate functions
+
+def _add_sid_column_to_df(df: pl.DataFrame, sid: int) -> pl.DataFrame:
+    return df.with_columns(pl.Series(Col.SID, [sid for _ in range(0, df.shape[0])]))
+
+
+def experiment_data_from_all_series(experiment: Experiment) -> JoinedExperimentData:
+    exp_data = JoinedExperimentData(
+        newbest=None,
+        diversity=None,
+        bestingen=None,
+        popgentime=None,
+        iterinfo=None
+    )
+
+    for sid, series_output in enumerate(experiment.result.series_outputs):
+        if not series_output.is_materialized():
+            materialize_series_output(series_output, force=False)
+
+        exp_data.newbest = _update_df_with(exp_data.newbest, _add_sid_column_to_df(series_output.data.data_for_event(Event.NEW_BEST), sid))
+        exp_data.diversity = _update_df_with(exp_data.diversity, _add_sid_column_to_df(series_output.data.data_for_event(Event.DIVERSITY), sid))
+        exp_data.bestingen = _update_df_with(exp_data.bestingen, _add_sid_column_to_df(series_output.data.data_for_event(Event.BEST_IN_GEN), sid))
+        exp_data.popgentime = _update_df_with(exp_data.popgentime, _add_sid_column_to_df(series_output.data.data_for_event(Event.POP_GEN_TIME), sid))
+        exp_data.iterinfo = _update_df_with(exp_data.iterinfo, _add_sid_column_to_df(series_output.data.data_for_event(Event.ITER_INFO), sid))
+
+    return exp_data
+
+
+def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
+    print(f"Processing experiment {exp.name}")
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_best_in_gen(plot, partitioned_data.get(Event.BEST_IN_GEN), exp.instance)
+    plot_best_in_gen(plot, data.bestingen, exp.instance)
     plot.set(
         title=f"Best fitness by generation, {exp.name}",
         xlabel="Generation",
@@ -127,7 +142,7 @@ def process_experiment_data(data: pl.DataFrame, exp: Experiment):
     plot.legend()
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_diversity(plot, partitioned_data.get(Event.DIVERSITY), exp.instance)
+    plot_diversity(plot, data.diversity, exp.instance)
     plot.set(
         title=f"Diversity rate by generation, {exp.name}",
         xlabel="Generation",
@@ -140,9 +155,9 @@ def process_experiment_data(data: pl.DataFrame, exp: Experiment):
 def process_experiment_batch_output(batch: list[Experiment]):
     for exp in batch:
         print(f'Processing {exp.name}')
-        experiment_data = join_data_from_multiple_runs(exp.run_result.output_files)
-        process_experiment_data(experiment_data, exp)
-        break
+        exp_data: JoinedExperimentData = experiment_data_from_all_series(exp)
+        process_experiment_data(exp, exp_data)
+        # break
 
 
 def maybe_load_instance_metadata(metadata_file: Optional[Path]) -> Optional[Dict[str, InstanceMetadata]]:

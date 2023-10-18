@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Dict, Literal, Union
+from typing import Optional, Dict
 from data.model import InstanceMetadata
 from polars import DataFrame
 import datetime as dt
@@ -128,6 +128,4 @@ class Experiment:
         return cls(name=exp_dict["name"],
                    instance=exp_dict["instance"],
                    config=exp_dict["config"])
-
-
 

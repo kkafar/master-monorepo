@@ -61,11 +61,6 @@ def handle_cmd_run(args: RunCmdArgs):
         [exp.config for exp in batch]
     ).run(process_limit=args.procs)
 
-    # Dump computation results (metadata) to appropriate directories
-    exit(0)
-
-    for exp_result in results:
-        materialize_all_series_outputs(exp_result.series_outputs, force=False)
     exit(0)
 
     for (exp, result) in zip(batch, results):
@@ -78,6 +73,5 @@ def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
     experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
-    exit(0)
     process_experiment_batch_output(experiment_batch)
 
