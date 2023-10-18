@@ -97,6 +97,8 @@ class SolverProxy:
                     proc.finish_time = dt.datetime.now()
                     recently_finished_procs.add(proc)
                     all_finished_procs[proc.params_id] = proc
+                    print(f"[SolverProxy] Finished {proc.params_id} in aprox. {proc.duration()}")
+
                     param = params[n_scheduled]
 
                     print(f"[SolverProxy] Running with {param}", flush=True)
@@ -121,6 +123,7 @@ class SolverProxy:
             proc.process.wait()
             proc.finish_time = dt.datetime.now()
             all_finished_procs[proc.params_id] = proc
+            print(f"[SolverProxy] Finished {proc.params_id} in aprox. {proc.duration()}")
 
         end_time = dt.datetime.now()
         timedelta: dt.timedelta = end_time - start_time

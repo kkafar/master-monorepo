@@ -62,6 +62,7 @@ def handle_cmd_run(args: RunCmdArgs):
     ).run(process_limit=args.procs)
 
     # Dump computation results (metadata) to appropriate directories
+    exit(0)
 
     for exp_result in results:
         materialize_all_series_outputs(exp_result.series_outputs, force=False)
