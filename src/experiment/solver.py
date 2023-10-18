@@ -90,15 +90,22 @@ class SolverProxy:
 
             for proc in running_procs:
                 ret_code = proc.process.poll()
-                if ret_code is not None and n_scheduled < n_procs:
-                    if ret_code != 0:
-                        print(f"[SolverProxy][ERROR] Proc with args {proc.args} failed with nonzero return code {ret_code}")
 
-                    proc.finish_time = dt.datetime.now()
-                    recently_finished_procs.add(proc)
-                    all_finished_procs[proc.params_id] = proc
-                    print(f"[SolverProxy] Finished {proc.params_id} in aprox. {proc.duration()}")
+                # If this process has not completed yet, let it run
+                if ret_code is None:
+                    continue
 
+                # The process has finished
+                proc.finish_time = dt.datetime.now()
+                recently_finished_procs.add(proc)
+                all_finished_procs[proc.params_id] = proc
+                print(f"[SolverProxy] Finished {proc.params_id} in aprox. {proc.duration()}", flush=True)
+
+                if ret_code != 0:
+                    print(f"[SolverProxy][ERROR] Proc with args {proc.args} failed with nonzero return code {ret_code}")
+
+                # If there are any processes left to schedule
+                if n_scheduled < n_procs:
                     param = params[n_scheduled]
 
                     print(f"[SolverProxy] Running with {param}", flush=True)
@@ -114,16 +121,10 @@ class SolverProxy:
             running_procs.difference_update(recently_finished_procs)
             running_procs.update(newly_scheduled_procs)
 
-            if n_scheduled >= n_procs:
+            if len(running_procs) == 0:
                 break
-
-            sleep(poll_interval)
-
-        for proc in running_procs:
-            proc.process.wait()
-            proc.finish_time = dt.datetime.now()
-            all_finished_procs[proc.params_id] = proc
-            print(f"[SolverProxy] Finished {proc.params_id} in aprox. {proc.duration()}")
+            else:
+                sleep(poll_interval)
 
         end_time = dt.datetime.now()
         timedelta: dt.timedelta = end_time - start_time
