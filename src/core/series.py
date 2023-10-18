@@ -56,6 +56,7 @@ def _resolve_series_files_from_dir(directory: Path) -> SeriesOutputFiles:
 
     event_files = _event_file_map_from_data_files(filter(_event_file_filter, all_files))
     run_metadata_file = find_first_or_none(all_files, _run_metadata_file_filter)
+    assert run_metadata_file is not None, "There must be metadata attached to experiment result"
 
     return SeriesOutputFiles(directory, event_files, run_metadata_file)
 

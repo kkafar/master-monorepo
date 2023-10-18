@@ -43,7 +43,7 @@ def experiment_result_from_dir(directory: Path, materialize: bool = False) -> Ex
     # TODO: dump it on the disk & load it here
     result = ExperimentResult([], None)
     for series_dir in filter(lambda file: file.is_dir(), directory.iterdir()):
-        series_output = load_series_output(directory, lazy=materialize)
+        series_output = load_series_output(series_dir, lazy=materialize)
         result.series_outputs.append(series_output)
 
     return result

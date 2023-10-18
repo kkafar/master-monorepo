@@ -126,8 +126,8 @@ class Experiment:
     @classmethod
     def from_dict(cls, exp_dict: dict) -> 'Experiment':
         return cls(name=exp_dict["name"],
-                   instance=InstanceMetadata.from_dict(exp_dict["instance"]),
-                   config=ExperimentConfig.from_dict(exp_dict["config"]))
+                   instance=exp_dict["instance"],
+                   config=exp_dict["config"])
 
 
 
