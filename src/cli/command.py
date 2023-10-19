@@ -18,9 +18,6 @@ from core.tools import (
     attach_timestamp_to_dir,
     current_timestamp
 )
-from core.series import (
-    materialize_all_series_outputs
-)
 from core.fs import initialize_file_hierarchy
 
 

@@ -7,18 +7,12 @@ from typing import Dict, Iterable, Optional
 from pathlib import Path
 from experiment.model import (
     ExperimentResult,
-    ExperimentConfig,
     Experiment,
-    SeriesOutput,
 )
-from .file_resolver import find_result_files_in_dir
-from collections import defaultdict
 from data.model import (
     Col,
     Event,
     EventConfig,
-    config_for_event,
-    EventName,
     InstanceMetadata,
     JoinedExperimentData,
 )
@@ -70,29 +64,6 @@ def data_frame_from_file(data_file: Path, has_header: bool = False) -> pl.DataFr
     df = (pl.read_csv(data_file,
                       has_header=has_header))
     return df
-
-
-def extract_data_for_event_with_config(data: pl.DataFrame, config: EventConfig) -> pl.DataFrame:
-    selected_columns = [data.columns[i] for i in config.raw_columns]
-    df = (data
-          .filter(pl.col(Col.EVENT) == config.name)
-          .select(selected_columns))
-    df.columns = config.record_schema
-    return df
-
-
-def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
-    main_df: Optional[pl.DataFrame] = None
-    for sid, data_file in enumerate(output_files):
-        print(f'Processing data file {data_file} sid {sid}')
-        tmp_df: pl.DataFrame = data_frame_from_file(data_file)
-        series_column = pl.Series("sid", [sid for _ in range(tmp_df.height)])
-        tmp_df = tmp_df.with_columns(series_column).rename({'column_1': Col.EVENT})
-        if main_df is not None:
-            main_df.vstack(tmp_df, in_place=True)
-        else:
-            main_df = tmp_df
-    return main_df
 
 
 def _update_df_with(base_df: pl.DataFrame, new_df: pl.DataFrame) -> pl.DataFrame:
@@ -154,10 +125,8 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
 
 def process_experiment_batch_output(batch: list[Experiment]):
     for exp in batch:
-        print(f'Processing {exp.name}')
         exp_data: JoinedExperimentData = experiment_data_from_all_series(exp)
         process_experiment_data(exp, exp_data)
-        # break
 
 
 def maybe_load_instance_metadata(metadata_file: Optional[Path]) -> Optional[Dict[str, InstanceMetadata]]:
