@@ -37,3 +37,22 @@ def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: s
         x_data = series_data.get_column(Col.GENERATION)
         plt.plot(x_data, y_data, marker='o', linestyle='--', label=f'Series {sid}')
 
+
+def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
+    data_agg = (
+        data.lazy()
+        .groupby(pl.col(Col.GENERATION))
+        .agg(
+            pl.col(Col.FITNESS).mean().alias('fitness_avg'),
+            pl.col(Col.FITNESS).std().alias('fitness_std')
+        )
+        .sort(pl.col(Col.GENERATION))
+        .collect()
+    )
+
+    x_data = data_agg.get_column(Col.GENERATION)
+    y_avg_data = data_agg.get_column('fitness_avg')
+    y_std_data = data_agg.get_column('fitness_std')
+
+    plt.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. fitness', linestyle='--', marker='*', elinewidth=1)
+
