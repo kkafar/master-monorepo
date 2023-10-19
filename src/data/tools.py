@@ -102,24 +102,24 @@ def experiment_data_from_all_series(experiment: Experiment) -> JoinedExperimentD
 
 def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
     print(f"Processing experiment {exp.name}")
-    #
-    # fig, plot = plt.subplots(nrows=1, ncols=1)
-    # plot_best_in_gen(plot, data.bestingen, exp.instance)
-    # plot.set(
-    #     title=f"Best fitness by generation, {exp.name}",
-    #     xlabel="Generation",
-    #     ylabel="Fitness value"
-    # )
-    # plot.legend()
-    #
-    # fig, plot = plt.subplots(nrows=1, ncols=1)
-    # plot_diversity(plot, data.diversity, exp.instance)
-    # plot.set(
-    #     title=f"Diversity rate by generation, {exp.name}",
-    #     xlabel="Generation",
-    #     ylabel="Diversity rate"
-    # )
-    # plot.legend()
+
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_best_in_gen(plot, data.bestingen, exp.instance)
+    plot.set(
+        title=f"Best fitness by generation, {exp.name}",
+        xlabel="Generation",
+        ylabel="Fitness value"
+    )
+    plot.legend()
+
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_diversity(plot, data.diversity, exp.instance)
+    plot.set(
+        title=f"Diversity rate by generation, {exp.name}",
+        xlabel="Generation",
+        ylabel="Diversity rate"
+    )
+    plot.legend()
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
