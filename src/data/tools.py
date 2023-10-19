@@ -106,7 +106,7 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen(plot, data.bestingen, exp.instance)
     plot.set(
-        title=f"Best fitness by generation, {exp.name}",
+        title=f"Best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
         xlabel="Generation",
         ylabel="Fitness value"
     )
@@ -115,7 +115,7 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_diversity(plot, data.diversity, exp.instance)
     plot.set(
-        title=f"Diversity rate by generation, {exp.name}",
+        title=f"Diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
         xlabel="Generation",
         ylabel="Diversity rate"
     )
@@ -124,7 +124,7 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
     plot.set(
-        title=f"Average best fitness by generation, {exp.name}",
+        title=f"Average best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
         xlabel="Generation",
         ylabel="Average best fitness"
     )
