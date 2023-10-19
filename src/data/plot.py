@@ -33,7 +33,6 @@ def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: s
             .sort(Col.GENERATION)
             .collect()
         )
-        print(series_data)
         y_data = series_data.get_column(column_name)
         x_data = series_data.get_column(Col.GENERATION)
         plt.plot(x_data, y_data, marker='o', linestyle='--', label=f'Series {sid}')

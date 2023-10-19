@@ -154,10 +154,8 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
 
 def process_experiment_batch_output(batch: list[Experiment]):
     for exp in batch:
-        print(f'Processing {exp.name}')
         exp_data: JoinedExperimentData = experiment_data_from_all_series(exp)
         process_experiment_data(exp, exp_data)
-        # break
 
 
 def maybe_load_instance_metadata(metadata_file: Optional[Path]) -> Optional[Dict[str, InstanceMetadata]]:
