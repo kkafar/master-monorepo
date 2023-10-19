@@ -66,29 +66,6 @@ def data_frame_from_file(data_file: Path, has_header: bool = False) -> pl.DataFr
     return df
 
 
-def extract_data_for_event_with_config(data: pl.DataFrame, config: EventConfig) -> pl.DataFrame:
-    selected_columns = [data.columns[i] for i in config.raw_columns]
-    df = (data
-          .filter(pl.col(Col.EVENT) == config.name)
-          .select(selected_columns))
-    df.columns = config.record_schema
-    return df
-
-
-def join_data_from_multiple_runs(output_files: Iterable[Path]) -> pl.DataFrame:
-    main_df: Optional[pl.DataFrame] = None
-    for sid, data_file in enumerate(output_files):
-        print(f'Processing data file {data_file} sid {sid}')
-        tmp_df: pl.DataFrame = data_frame_from_file(data_file)
-        series_column = pl.Series("sid", [sid for _ in range(tmp_df.height)])
-        tmp_df = tmp_df.with_columns(series_column).rename({'column_1': Col.EVENT})
-        if main_df is not None:
-            main_df.vstack(tmp_df, in_place=True)
-        else:
-            main_df = tmp_df
-    return main_df
-
-
 def _update_df_with(base_df: pl.DataFrame, new_df: pl.DataFrame) -> pl.DataFrame:
     if base_df is not None:
         base_df.vstack(new_df, in_place=True)
