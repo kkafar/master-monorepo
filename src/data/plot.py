@@ -23,7 +23,7 @@ def plot_diversity(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadat
 def plot_diversity_avg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
     data_agg = (
         data.lazy()
-        .group_by(pl.col(Col.GENERATION))
+        .groupby(pl.col(Col.GENERATION))
         .agg(
             pl.col(Col.DIVERSITY).mean().alias('diversity_avg'),
             pl.col(Col.DIVERSITY).std().alias('diversity_std')
