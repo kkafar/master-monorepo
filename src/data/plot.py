@@ -20,6 +20,24 @@ def plot_diversity(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadat
     plot_column_by_generation(plot, data, Col.DIVERSITY)
 
 
+def plot_diversity_avg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
+    data_agg = (
+        data.lazy()
+        .group_by(pl.col(Col.GENERATION))
+        .agg(
+            pl.col(Col.DIVERSITY).mean().alias('diversity_avg'),
+            pl.col(Col.DIVERSITY).std().alias('diversity_std')
+        )
+        .sort(pl.col(Col.GENERATION))
+        .collect()
+    )
+    x_data = data_agg.get_column(Col.GENERATION)
+    y_avg_data = data_agg.get_column('diversity_avg')
+    y_std_data = data_agg.get_column('diversity_std')
+
+    plt.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. diversity', linestyle='--', marker='*', elinewidth=1)
+
+
 def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: str):
     """ Expects `data` to be filtered data for single event type and column name to exists in `data.columns`.
         Also expects `Col.GENERATION` to exist in `data.columns`."""
