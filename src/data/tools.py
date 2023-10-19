@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import core.fs
 import core.conversion
 import json
-from typing import Dict, Iterable, Optional
+from typing import Dict, Optional
 from pathlib import Path
 from experiment.model import (
     ExperimentResult,
@@ -12,13 +12,13 @@ from experiment.model import (
 from data.model import (
     Col,
     Event,
-    EventConfig,
     InstanceMetadata,
     JoinedExperimentData,
 )
 from .plot import (
     plot_diversity,
-    plot_best_in_gen
+    plot_best_in_gen,
+    plot_best_in_gen_agg,
 )
 from core.series import load_series_output, materialize_series_output
 
@@ -102,24 +102,34 @@ def experiment_data_from_all_series(experiment: Experiment) -> JoinedExperimentD
 
 def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
     print(f"Processing experiment {exp.name}")
+    #
+    # fig, plot = plt.subplots(nrows=1, ncols=1)
+    # plot_best_in_gen(plot, data.bestingen, exp.instance)
+    # plot.set(
+    #     title=f"Best fitness by generation, {exp.name}",
+    #     xlabel="Generation",
+    #     ylabel="Fitness value"
+    # )
+    # plot.legend()
+    #
+    # fig, plot = plt.subplots(nrows=1, ncols=1)
+    # plot_diversity(plot, data.diversity, exp.instance)
+    # plot.set(
+    #     title=f"Diversity rate by generation, {exp.name}",
+    #     xlabel="Generation",
+    #     ylabel="Diversity rate"
+    # )
+    # plot.legend()
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_best_in_gen(plot, data.bestingen, exp.instance)
+    plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
     plot.set(
-        title=f"Best fitness by generation, {exp.name}",
+        title=f"Average best fitness by generation, {exp.name}",
         xlabel="Generation",
-        ylabel="Fitness value"
+        ylabel="Average best fitness"
     )
     plot.legend()
 
-    fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_diversity(plot, data.diversity, exp.instance)
-    plot.set(
-        title=f"Diversity rate by generation, {exp.name}",
-        xlabel="Generation",
-        ylabel="Diversity rate"
-    )
-    plot.legend()
     plt.show()
 
 
