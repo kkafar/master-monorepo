@@ -17,6 +17,7 @@ from data.model import (
 )
 from .plot import (
     plot_diversity,
+    plot_diversity_avg,
     plot_best_in_gen,
     plot_best_in_gen_agg,
 )
@@ -118,6 +119,15 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
         title=f"Diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
         xlabel="Generation",
         ylabel="Diversity rate"
+    )
+    plot.legend()
+
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_diversity_avg(plot, data.diversity, exp.instance)
+    plot.set(
+        title=f"Average diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
+        xlabel="Generation",
+        ylabel="Avgerage diversity rate"
     )
     plot.legend()
 
