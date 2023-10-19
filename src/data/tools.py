@@ -7,18 +7,12 @@ from typing import Dict, Iterable, Optional
 from pathlib import Path
 from experiment.model import (
     ExperimentResult,
-    ExperimentConfig,
     Experiment,
-    SeriesOutput,
 )
-from .file_resolver import find_result_files_in_dir
-from collections import defaultdict
 from data.model import (
     Col,
     Event,
     EventConfig,
-    config_for_event,
-    EventName,
     InstanceMetadata,
     JoinedExperimentData,
 )
