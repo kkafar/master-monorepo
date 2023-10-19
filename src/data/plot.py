@@ -54,5 +54,5 @@ def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceM
     y_avg_data = data_agg.get_column('fitness_avg')
     y_std_data = data_agg.get_column('fitness_std')
 
-    plt.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. fitness', linestyle='--', marker='*', elinewidth=1)
+    plt.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. best fitness', linestyle='--', marker='*', elinewidth=1)
 
