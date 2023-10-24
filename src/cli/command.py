@@ -7,8 +7,8 @@ from experiment.model import (
     Experiment
 )
 from data.file_resolver import resolve_all_input_files
+from data.processing import process_experiment_batch_output
 from data.tools import (
-    process_experiment_batch_output,
     maybe_load_instance_metadata,
     extract_experiments_from_dir,
 )

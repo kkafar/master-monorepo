@@ -9,10 +9,9 @@ def plot_best_in_gen(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetad
     """ Expects rows in `data` to comply to schema for `Event.BEST_IN_GEN` """
     plot_column_by_generation(plot, data, Col.FITNESS)
 
-    if metadata:
+    if metadata and metadata.best_solution:
         x_data = data.get_column(Col.GENERATION).unique().sort()
-        if metadata.best_solution:
-            plt.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
+        plot.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
 
 
 def plot_diversity(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
@@ -35,7 +34,7 @@ def plot_diversity_avg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMet
     y_avg_data = data_agg.get_column('diversity_avg')
     y_std_data = data_agg.get_column('diversity_std')
 
-    plt.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. diversity', linestyle='--', marker='*', elinewidth=1)
+    plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. diversity', linestyle='--', marker='*', elinewidth=1)
 
 
 def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: str):
@@ -53,7 +52,7 @@ def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: s
         )
         y_data = series_data.get_column(column_name)
         x_data = series_data.get_column(Col.GENERATION)
-        plt.plot(x_data, y_data, marker='o', linestyle='--', label=f'Series {sid}')
+        plot.plot(x_data, y_data, marker='o', linestyle='--', label=f'Series {sid}')
 
 
 def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
@@ -72,5 +71,8 @@ def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceM
     y_avg_data = data_agg.get_column('fitness_avg')
     y_std_data = data_agg.get_column('fitness_std')
 
-    plt.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. best fitness', linestyle='--', marker='*', elinewidth=1)
+    plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. best fitness', linestyle='--', marker='*', elinewidth=1)
+
+    if metadata and metadata.best_solution:
+        plot.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
 
