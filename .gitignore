@@ -7,5 +7,6 @@ run.sh
 *local.*
 instances/
 data/
+!src/data/
 .DS_Store
 
