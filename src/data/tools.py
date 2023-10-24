@@ -1,5 +1,4 @@
 import polars as pl
-import matplotlib.pyplot as plt
 import core.fs
 import core.conversion
 import json
@@ -14,12 +13,6 @@ from data.model import (
     Event,
     InstanceMetadata,
     JoinedExperimentData,
-)
-from .plot import (
-    plot_diversity,
-    plot_diversity_avg,
-    plot_best_in_gen,
-    plot_best_in_gen_agg,
 )
 from core.series import load_series_output, materialize_series_output
 
@@ -99,54 +92,6 @@ def experiment_data_from_all_series(experiment: Experiment) -> JoinedExperimentD
         exp_data.iterinfo = _update_df_with(exp_data.iterinfo, _add_sid_column_to_df(series_output.data.data_for_event(Event.ITER_INFO), sid))
 
     return exp_data
-
-
-def process_experiment_data(exp: Experiment, data: JoinedExperimentData):
-    print(f"Processing experiment {exp.name}")
-
-    fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_best_in_gen(plot, data.bestingen, exp.instance)
-    plot.set(
-        title=f"Best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
-        xlabel="Generation",
-        ylabel="Fitness value"
-    )
-    plot.legend()
-
-    fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_diversity(plot, data.diversity, exp.instance)
-    plot.set(
-        title=f"Diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
-        xlabel="Generation",
-        ylabel="Diversity rate"
-    )
-    plot.legend()
-
-    fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_diversity_avg(plot, data.diversity, exp.instance)
-    plot.set(
-        title=f"Average diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
-        xlabel="Generation",
-        ylabel="Avgerage diversity rate"
-    )
-    plot.legend()
-
-    fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
-    plot.set(
-        title=f"Average best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
-        xlabel="Generation",
-        ylabel="Average best fitness"
-    )
-    plot.legend()
-
-    plt.show()
-
-
-def process_experiment_batch_output(batch: list[Experiment]):
-    for exp in batch:
-        exp_data: JoinedExperimentData = experiment_data_from_all_series(exp)
-        process_experiment_data(exp, exp_data)
 
 
 def maybe_load_instance_metadata(metadata_file: Optional[Path]) -> Optional[Dict[str, InstanceMetadata]]:
