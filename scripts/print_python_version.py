@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --partition=plgrid
+#SBATCH --time=00:01:00
+#SBATCH --account=plglscclass23-cpu
 
 import sys
 version_major = sys.version_info.major
