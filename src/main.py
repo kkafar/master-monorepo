@@ -8,6 +8,11 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=2G
 
+import sys
+from pathlib import Path
+print(f"cwd: {Path.cwd()}")
+sys.path.append(str(Path.cwd()))
+
 import polars as pl
 import matplotlib.pyplot as plt
 import cli.cli as cli
