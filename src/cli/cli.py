@@ -25,7 +25,7 @@ def validate_run_cmd_args(args: RunCmdArgs):
             assert os.access(file, os.R_OK), f'{file} does not have read permissions'
 
     if args.output_dir is not None and not args.output_dir.is_dir():
-        args.output_dir.mkdir(parents=True)
+        args.output_dir.mkdir(parents=True, exist_ok=True)
         assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
 
     if args.metadata_file is not None:
