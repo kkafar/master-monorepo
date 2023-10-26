@@ -65,6 +65,14 @@ class AresExpScheduler:
     def __init__(self, solver: SolverProxy):
         self.solver = solver
 
+    def _params_from_configs(self, configs: list[ExperimentConfig]) -> list[SolverParams]:
+        params = []
+        for cfg in configs:
+            for sid in range(0, cfg.n_series):
+                out_dir = simple_output_dir_resolver(cfg.output_dir, sid)
+                params.append(SolverParams(cfg.input_file, out_dir))
+        return params
+
     def run(self, configs: list[ExperimentConfig]) -> None:
         params = self._params_from_configs(configs)
         jobspec = ArrayJobSpec()
