@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --partition=plgrid
+#SBATCH --time=12:00:00
+#SBATCH --account=plglscclass23-cpu
+#SBATCH --array=0-15
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=2G
+
 import polars as pl
 import matplotlib.pyplot as plt
 import cli.cli as cli
