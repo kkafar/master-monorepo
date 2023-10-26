@@ -10,8 +10,8 @@
 
 import sys
 from pathlib import Path
-print(f"cwd: {Path.cwd()}")
-sys.path.append(str(Path.cwd()))
+print(f"cwd/src: {Path.cwd().joinpath('src')}")
+sys.path.append(str(Path.cwd().joinpath('src')))
 
 import polars as pl
 import matplotlib.pyplot as plt
