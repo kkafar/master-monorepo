@@ -9,4 +9,5 @@ instances/
 data/
 !src/data/
 .DS_Store
+bin/
 
