@@ -48,7 +48,7 @@ group_storage_dir="${PLG_GROUPS_STORAGE}/${plggroup}"
 
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 OPTIND=1
-opt_str="hi:o:t:p:m:k"
+opt_str="hi:o:t:p:m:n:b:k"
 
 while getopts "${opt_str}" opt
 do
@@ -78,6 +78,9 @@ do
     n)
       series_count="${OPTARG}"
       ;;
+    b)
+      solver_bin="${OPTARG}"
+      ;;
   esac
 done
 
@@ -86,7 +89,7 @@ shift $((OPTIND-1))
 ${input_files:?"Input files must be set"}
 ${output_dir:?"Output directory must be set"}
 
-if [[ -f $metadata_file -ne 0 ]]; then
+if [[ ! -f $metadata_file ]]; then
   echo "$metadata_file does not exist"
   exit 1
 fi
