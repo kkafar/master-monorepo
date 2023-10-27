@@ -13,6 +13,7 @@ function print_help () {
     -t TIMESPEC: time spec string (sbatch)
     -m MEMSPEC: memspec (per cpu) (sbatch)
     -n SERIESCOUNT: series count
+    -p NCORES: number of cores to run on (sbatch)
    """
 }
 # -s: prepend output directory with path to group storage; DO NOT US
