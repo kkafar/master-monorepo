@@ -6,7 +6,6 @@ from data.model import (
 )
 from experiment.model import (
     Experiment,
-    ExperimentConfig,
     ExperimentResult
 )
 

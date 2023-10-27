@@ -2,11 +2,10 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=plgrid
-#SBATCH --time=12:00:00
+#SBATCH --time=24:00:00
 #SBATCH --account=plglscclass23-cpu
-#SBATCH --array=0-15
-#SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=2G
+#SBATCH --cpus-per-task=36
+#SBATCH --mem-per-cpu=512M
 
 import sys
 from pathlib import Path

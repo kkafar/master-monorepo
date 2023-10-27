@@ -53,21 +53,22 @@ def handle_cmd_run(args: RunCmdArgs):
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
 
-    # Run computations
-    if is_running_on_ares():
-        print('Running on Ares')
-        AresExpScheduler(SolverProxy(args.bin)).run([exp.config for exp in batch])
-    else:
-        LocalExperimentBatchRunner(
-            SolverProxy(args.bin),
-            [exp.config for exp in batch]
-        ).run(process_limit=args.procs)
+    LocalExperimentBatchRunner(
+        SolverProxy(args.bin),
+        [exp.config for exp in batch]
+    ).run(process_limit=args.procs)
 
-    #
-    # for (exp, result) in zip(batch, results):
-    #     exp.result = result
-    #
-    # process_experiment_batch_output(batch)
+    # Run computations
+    # if is_running_on_ares():
+    # print('Running on Ares')
+    # AresExpScheduler(SolverProxy(args.bin)).run([exp.config for exp in batch])
+
+    # Experimenting with multicore setup
+    # else:
+    #     LocalExperimentBatchRunner(
+    #         SolverProxy(args.bin),
+    #         [exp.config for exp in batch]
+    #     ).run(process_limit=args.procs)
 
 
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
