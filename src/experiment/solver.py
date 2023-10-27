@@ -37,7 +37,7 @@ class SolverProxy:
 
     def _run_args_from_params(self, params: SolverParams) -> list[str]:
         return (
-            self.binary,
+            str(self.binary),  # Converted for older version of Python on Ares
             SolverProxy.INPUT_FILE_OPT_NAME,
             params.input_file,
             SolverProxy.OUTPUT_DIR_OPT_NAME,

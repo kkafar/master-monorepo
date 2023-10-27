@@ -1,5 +1,5 @@
 from .args import RunCmdArgs, AnalyzeCmdArgs
-from experiment.runner import ExperimentBatchRunner
+from experiment.runner import LocalExperimentBatchRunner, AresExpScheduler
 from experiment.solver import SolverProxy
 from experiment.model import (
     ExperimentResult,
@@ -19,6 +19,7 @@ from core.tools import (
     current_timestamp
 )
 from core.fs import initialize_file_hierarchy
+from core.env import is_running_on_ares
 
 
 def handle_cmd_run(args: RunCmdArgs):
@@ -30,7 +31,7 @@ def handle_cmd_run(args: RunCmdArgs):
     batch = []
 
     base_dir = args.output_dir
-    if args.attach_timestamp:
+    if not is_running_on_ares() and args.attach_timestamp:
         base_dir = attach_timestamp_to_dir(base_dir, current_timestamp())
 
     for file in input_files:
@@ -53,17 +54,20 @@ def handle_cmd_run(args: RunCmdArgs):
     initialize_file_hierarchy(batch)
 
     # Run computations
-    results: list[ExperimentResult] = ExperimentBatchRunner(
-        SolverProxy(args.bin),
-        [exp.config for exp in batch]
-    ).run(process_limit=args.procs)
+    if is_running_on_ares():
+        print('Running on Ares')
+        AresExpScheduler(SolverProxy(args.bin)).run([exp.config for exp in batch])
+    else:
+        LocalExperimentBatchRunner(
+            SolverProxy(args.bin),
+            [exp.config for exp in batch]
+        ).run(process_limit=args.procs)
 
-    exit(0)
-
-    for (exp, result) in zip(batch, results):
-        exp.result = result
-
-    process_experiment_batch_output(batch)
+    #
+    # for (exp, result) in zip(batch, results):
+    #     exp.result = result
+    #
+    # process_experiment_batch_output(batch)
 
 
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
