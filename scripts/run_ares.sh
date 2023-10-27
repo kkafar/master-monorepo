@@ -91,6 +91,7 @@ if [[ -f $metadata_file -ne 0 ]]; then
 fi
 
 output_dir="$scratch_storage_dir/$output_dir"
+echo "Output will be put in $output_dir"
 
 cd ${ecdk_dir}
 
