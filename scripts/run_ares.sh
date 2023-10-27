@@ -1,7 +1,96 @@
 #!/usr/bin/bash
 
+function print_help () {
+  echo """
+  Usage: $0 options
+
+  Options:
+    -h: print this help message and exit
+    -i FILE/DIR [FILE/DIR ...]: input for jobscript; REMEBER TO QUOTE WHOLE STRING!
+    -o DIR: output directory for the job script; THIS WILL BE PREPENDED WITH APPROPRIATE PREFIX
+    -k: pass --test-only to sbatch call (dry run)
+    -b BIN: path to jssp solver binary
+    -t TIMESPEC: time spec string (sbatch)
+    -m MEMSPEC: memspec (per cpu) (sbatch)
+    -n SERIESCOUNT: series count
+   """
+}
+# -s: prepend output directory with path to group storage; DO NOT US
+# -S: prepend output directory with path to scratch storage
+
+assert_binary_exists () {
+  if ! command -v "$1" &> /dev/null
+  then
+    echo "Look like $1 binary is missing. Aborting"
+    exit 1
+  fi
+}
+
 ecdk_dir=${HOME}/master/ecdk
 ecrs_dir=${HOME}/master/ecrs
+solver_bin=${HOME}/master/bin/jssp
+metadata_file=${HOME}/master/ecdk/data/metadata/instance_metadata_v2.txt
+plggroup="plglscclass"
+grant="plglscclass23-cpu"
+
+input_files=""
+output_dir=""
+series_count=50
+max_proc=36
+dry_run=1
+timespec="24:00:00"
+memspec="512M"
+
+scratch_storage_dir="${SCRATCH}"
+group_storage_dir="${PLG_GROUPS_STORAGE}/${plggroup}"
+
+
+# https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+OPTIND=1
+opt_str="hi:o:t:p:m:k"
+
+while getopts "${opt_str}" opt
+do
+  case "${opt}" in
+    h)
+      print_help
+      exit 0
+      ;;
+    i)
+      input_files="${OPTARG}"
+      ;;
+    o)
+      output_dir="${OPTARG}"
+      ;;
+    p)
+      max_proc="${OPTARG}"
+      ;;
+    k)
+      dry_run=0
+      ;;
+    t)
+      timespec="${OPTARG}"
+      ;;
+    m)
+      memspec="${OPTARG}"
+      ;;
+    n)
+      series_count="${OPTARG}"
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
+${input_files:?"Input files must be set"}
+${output_dir:?"Output directory must be set"}
+
+if [[ -f $metadata_file -ne 0 ]]; then
+  echo "$metadata_file does not exist"
+  exit 1
+fi
+
+output_dir="$scratch_storage_dir/$output_dir"
 
 cd ${ecdk_dir}
 
@@ -10,5 +99,15 @@ module load python/3.10.8-gcccore-12.2.0
 pip install -r requirements.txt
 
 #sbatch ./src/main.py run -i data/instances/ft_instances -m data/metadata/instance_metadata_v2.txt -o output -n 10 -p 10 ./bin/jssp
-sbatch ./src/main.py run -i data/instances/ft_instances data/instances/la_instances -m data/metadata/instance_metadata_v2.txt -o output-ft-la-multicore -n 50 -p 36 ../bin/jssp
+#sbatch ./src/main.py run -i data/instances/ft_instances data/instances/la_instances -m data/metadata/instance_metadata_v2.txt -o output-ft-la-multicore -n 50 -p 36 ../bin/jssp
+
+sbatch \
+  --account $grant \
+  --nodes=1 \
+  --ntasks=1 \
+  --partition=plgrid \
+  --time=${timespec} \
+  --cpus-per-task=$max_proc \
+  --mem-per-cpu=$memspec \
+  ./src/main.py run -i $input_files -o $output_dir -m $metadata_file -n $series_count -p $max_proc $solver_bin
 
