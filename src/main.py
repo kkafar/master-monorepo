@@ -6,6 +6,9 @@
 #SBATCH --account=plglscclass23-cpu
 #SBATCH --cpus-per-task=36
 #SBATCH --mem-per-cpu=512M
+#SBATCH --mail-type=begin
+#SBATCH --mail-type=end
+#SBATCH --mail-user=kkafara@student.agh.edu.pl
 
 import sys
 from pathlib import Path
