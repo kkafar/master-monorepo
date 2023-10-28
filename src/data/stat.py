@@ -21,7 +21,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
     fitness_avg_to_bks_dev_expr = (
         (pl.col(KEY_FITNESS_AVG) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
     )
-    fitness_best_to_bks_dev_exp = (
+    fitness_best_to_bks_dev_expr = (
         (pl.col(KEY_FITNESS_BEST) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
     )
 
@@ -51,7 +51,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             ])
             .with_columns([
                 fitness_avg_to_bks_dev_expr.alias(KEY_FAVGTOBKS),
-                fitness_best_to_bks_dev_exp.alias(KEY_FBTOBKS)
+                fitness_best_to_bks_dev_expr.alias(KEY_FBTOBKS)
             ])
             .collect()
             .hstack(dfdiversity, in_place=True)
