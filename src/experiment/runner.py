@@ -28,7 +28,7 @@ class LocalExperimentRunner:
         for cfg in configs:
             for sid in range(0, cfg.n_series):
                 out_dir = simple_output_dir_resolver(cfg.output_dir, sid)
-                params.append(SolverParams(cfg.input_file, out_dir))
+                params.append(SolverParams(cfg.input_file, out_dir, cfg.config_file))
         return params
 
     def run(self, config: ExperimentConfig) -> ExperimentResult:
@@ -36,7 +36,7 @@ class LocalExperimentRunner:
         series_outputs: list[SeriesOutput] = []
         for sid in range(0, config.n_series):
             out_dir = simple_output_dir_resolver(config.output_dir, sid)
-            params = SolverParams(config.input_file, out_dir)
+            params = SolverParams(config.input_file, out_dir, config.config_file)
             solver_result: SolverResult = self.solver.run(params)
             series_outputs.append(solver_result.series_output)
             run_metadata.append(solver_result.run_metadata)
@@ -70,7 +70,7 @@ class AresExpScheduler:
         for cfg in configs:
             for sid in range(0, cfg.n_series):
                 out_dir = simple_output_dir_resolver(cfg.output_dir, sid)
-                params.append(SolverParams(cfg.input_file, out_dir))
+                params.append(SolverParams(cfg.input_file, out_dir, cfg.config_file))
         return params
 
     def run(self, configs: list[ExperimentConfig]) -> None:

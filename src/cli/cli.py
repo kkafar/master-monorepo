@@ -34,6 +34,9 @@ def validate_run_cmd_args(args: RunCmdArgs):
     if args.procs is not None:
         assert args.procs >= 1, f"Number of processes must be >= 1 but received {args.procs}"
 
+    if args.config_file is not None:
+        assert args.config_file.is_file(), "Specified config file must exist"
+
 
 def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
     assert args.dir.is_dir(), f'{args.dir} is not a directory'
@@ -70,6 +73,7 @@ def build_cli() -> argparse.ArgumentParser:
     run_parser.add_argument('bin', help='Path to jssp instance solver', type=Path)
     run_parser.add_argument('-i', '--input-files', help='Path to jssp instance data file/directory or list of those', nargs='+', type=Path)
     run_parser.add_argument('-o', '--output-dir', help='Output directory; should be specified in case multiple input files / directory/ies were specified', type=Path)
+    run_parser.add_argument('--config-file', help='Solver configuration file', type=Path, required=False)
     run_parser.add_argument('-n', '--runs', help='Number of repetitions for each problem instance. Defaults to 1.', type=int)
     run_parser.add_argument('-m', '--metadata-file', type=Path, required=True, help='Path to file with instance metadata', dest='metadata_file')
     run_parser.add_argument('-p', '--procs', type=int, required=False, help='Number of processes to run in parallel', default=1)

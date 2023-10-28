@@ -45,6 +45,7 @@ def handle_cmd_run(args: RunCmdArgs):
                 instance=metadata,  # WARN: This may fail for few experiments
                 config=ExperimentConfig(file,
                                         out_dir,
+                                        args.config_file,
                                         args.runs if args.runs else 1),
                 result=None
             )

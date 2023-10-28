@@ -14,6 +14,7 @@ class RunCmdArgs(Args):
     bin: Path
     input_files: Optional[list[Path]]
     output_dir: Optional[Path]
+    config_file: Optional[Path]
     runs: Optional[int]
     metadata_file: Optional[Path]
     procs: Optional[int]
