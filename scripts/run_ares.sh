@@ -14,6 +14,7 @@ function print_help () {
     -m MEMSPEC: memspec (per cpu) (sbatch)
     -n SERIESCOUNT: series count
     -p NCORES: number of cores to run on (sbatch)
+    -c CFGFILE: config file for solver (optional & experimental)
    """
 }
 # -s: prepend output directory with path to group storage; DO NOT US
@@ -36,6 +37,7 @@ grant="plglscclass23-cpu"
 
 input_files=""
 output_dir=""
+config_file=""
 series_count=50
 max_proc=36
 dry_run=1
@@ -48,7 +50,7 @@ group_storage_dir="${PLG_GROUPS_STORAGE}/${plggroup}"
 
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 OPTIND=1
-opt_str="hi:o:t:p:m:n:b:k"
+opt_str="hi:o:t:p:m:n:b:c:k"
 
 while getopts "${opt_str}" opt
 do
@@ -81,6 +83,9 @@ do
     b)
       solver_bin="${OPTARG}"
       ;;
+    c)
+      config_file="${OPTARG}"
+      ;;
   esac
 done
 
@@ -91,6 +96,11 @@ ${output_dir:?"Output directory must be set"}
 
 if [[ ! -f $metadata_file ]]; then
   echo "$metadata_file does not exist"
+  exit 1
+fi
+
+if [[ ! -z "$config_file" && ! -f "$config_file}" ]]; then
+  echo "$config_file does not exist"
   exit 1
 fi
 
@@ -106,13 +116,45 @@ pip install -r requirements.txt
 #sbatch ./src/main.py run -i data/instances/ft_instances -m data/metadata/instance_metadata_v2.txt -o output -n 10 -p 10 ./bin/jssp
 #sbatch ./src/main.py run -i data/instances/ft_instances data/instances/la_instances -m data/metadata/instance_metadata_v2.txt -o output-ft-la-multicore -n 50 -p 36 ../bin/jssp
 
-sbatch \
-  --account $grant \
-  --nodes=1 \
-  --ntasks=1 \
-  --partition=plgrid \
-  --time=${timespec} \
-  --cpus-per-task=$max_proc \
-  --mem-per-cpu=$memspec \
-  ./src/main.py run -i $input_files -o $output_dir -m $metadata_file -n $series_count -p $max_proc $solver_bin
+sbatch_args=(
+  "--account=$grant"
+  "--nodes=1"
+  "--ntasks=1"
+  "--partition=plgrid"
+  "--time=$timespec"
+  "--cpus-per-task=$max_proc"
+  "--mem-per-cpu=$memspec"
+)
+
+if [[ $dry_run -eq 0 ]]; then
+  sbatch_args+=("--test-only")
+fi
+
+sbatch_args+=(
+  "./src/main.py"
+  "run"
+  "-i $input_files"
+  "-o $output_dir"
+  "-m $metadata_file"
+  "-n $series_count"
+  "-p $max_proc"
+)
+
+if [[ ! -z "$config_file" ]]; then
+  sbatch_args+=("--config-file $config_file")
+fi
+
+sbatch_args+=("$solver_bin")
+
+sbatch "${sbatch_args[@]}"
+
+# sbatch \
+#   --account $grant \
+#   --nodes=1 \
+#   --ntasks=1 \
+#   --partition=plgrid \
+#   --time=${timespec} \
+#   --cpus-per-task=$max_proc \
+#   --mem-per-cpu=$memspec \
+#   ./src/main.py run -i $input_files -o $output_dir -m $metadata_file -n $series_count -p $max_proc $solver_bin
 
