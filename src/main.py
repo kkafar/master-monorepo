@@ -22,7 +22,7 @@ import cli.cli as cli
 
 def configure_env():
     pl.Config.set_tbl_rows(50)
-    pl.Config.set_tbl_cols(10)
+    pl.Config.set_tbl_cols(12)
     plt.rcParams['figure.figsize'] = (16, 9)
 
 

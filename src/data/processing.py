@@ -19,5 +19,3 @@ def process_experiment_batch_output(batch: list[Experiment]):
 
     compute_global_exp_stats(batch, data)
 
-
-
