@@ -22,9 +22,10 @@
 #
 # echo "${input_files}"
 
+list="one two three four"
+
 array=(
-  "one" "two"
-  "three" "four five"
+  "one" "two" "$list"
 )
 
 for item in "${array[@]}"; do

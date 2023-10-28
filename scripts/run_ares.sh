@@ -133,7 +133,7 @@ fi
 sbatch_args+=(
   "./src/main.py"
   "run"
-  "-i" "$input_files"
+  "-i" $input_files
   "-o" "$output_dir"
   "-m" "$metadata_file"
   "-n" "$series_count"
