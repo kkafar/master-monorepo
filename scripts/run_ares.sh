@@ -146,6 +146,7 @@ fi
 
 sbatch_args+=("$solver_bin")
 
+echo "Args: ${sbatch_args[@]}"
 sbatch "${sbatch_args[@]}"
 
 # sbatch \
