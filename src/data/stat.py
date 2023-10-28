@@ -17,8 +17,10 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
     KEY_FBTOBKS = 'fitness_best_to_bks_dev'
     KEY_DIV_AVG = 'diversity_avg'
     KEY_DIV_STD = 'diversity_std'
-    KEY_FITNESS_IMP_AVG = 'fitness_n_improv_avg'
+    KEY_FITNESS_IMP_AVG = 'fitness_n_improv_avg'  # avg n of fitness improvements
     KEY_FITNESS_IMP_STD = 'fitness_n_improv_std'
+    KEY_NSERIES = 'n_series'
+    KEY_BKS_HITRATIO = 'bks_hitratio'  # fraction of series where bks was achieved
 
     fitness_avg_to_bks_dev_expr = (
         (pl.col(KEY_FITNESS_AVG) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
@@ -26,6 +28,9 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
     fitness_best_to_bks_dev_expr = (
         (pl.col(KEY_FITNESS_BEST) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
     )
+    # bks_hitratio = (
+    #     (pl.col())
+    # )
 
     dfmain: pl.DataFrame | None = None
 
@@ -49,6 +54,14 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             .collect()
             .hstack(df, in_place=True)  # stacking two smaller dframes here
         )
+        dfbks_hitratio = (
+            expdata.bestingen.lazy()
+            .group_by(pl.col(Col.SID))
+            .agg(pl.col(Col.FITNESS).min().alias(KEY_FITNESS_BEST))
+            .filter(pl.col(KEY_FITNESS_BEST) == exp.instance.best_solution)
+            .select((pl.col(KEY_FITNESS_BEST).count() / exp.config.n_series).alias('bks_hitratio'))
+            .collect()
+        )
         dfres = (
             expdata.bestingen.lazy()
             .select([
@@ -59,6 +72,8 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             .with_columns([
                 pl.Series(KEY_EXPNAME, [exp.name]),
                 pl.Series(KEY_BKS, [exp.instance.best_solution]),
+                pl.Series(KEY_NSERIES, [exp.config.n_series]),
+                dfbks_hitratio.get_column(KEY_BKS_HITRATIO)
             ])
             .with_columns([
                 fitness_avg_to_bks_dev_expr.alias(KEY_FAVGTOBKS),
@@ -76,11 +91,11 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
 
     dfmain = (
         dfmain.lazy()
-        .select([  # Column order
+        .select([  # Column order, few columns are excluded: KEY_NSERIES
             KEY_EXPNAME, KEY_FITNESS_AVG, KEY_FITNESS_STD,
             KEY_FITNESS_BEST, KEY_BKS, KEY_FAVGTOBKS,
             KEY_FBTOBKS, KEY_DIV_AVG, KEY_DIV_STD,
-            KEY_FITNESS_IMP_AVG, KEY_FITNESS_IMP_STD
+            KEY_FITNESS_IMP_AVG, KEY_FITNESS_IMP_STD, KEY_BKS_HITRATIO
         ])
         .sort(KEY_EXPNAME)
         .collect()
