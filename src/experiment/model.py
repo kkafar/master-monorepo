@@ -43,8 +43,9 @@ class SeriesOutput:
 
 @dataclass
 class SolverParams:
-    input_file: Path
-    output_dir: Path
+    input_file: Optional[Path]
+    output_dir: Optional[Path]
+    config_file: Optional[Path]
 
 
 @dataclass
@@ -68,13 +69,15 @@ class ExperimentConfig:
     """ Experiment is a series of solver runs over single test case """
     input_file: Path
     output_dir: Path
+    config_file: Optional[Path]
     n_series: int
 
     def as_dict(self) -> dict:
         return {
             "input_file": str(self.input_file),
             "output_dir": str(self.output_dir),
-            "n_series": self.n_series
+            "n_series": self.n_series,
+            "config_file": str(self.config_file),
         }
 
     @classmethod
@@ -82,7 +85,8 @@ class ExperimentConfig:
         return ExperimentConfig(
             input_file=d['input_file'],
             output_dir=d['output_dir'],
-            n_series=d['n_series']
+            n_series=d['n_series'],
+            config_file=d.get('config_file'),
         )
 
 

@@ -31,18 +31,22 @@ class ScheduledProcess:
 class SolverProxy:
     INPUT_FILE_OPT_NAME = '--input-file'
     OUTPUT_DIR_OPT_NAME = '--output-dir'
+    CONFIG_FILE_OPT_NAME = '--config'
 
     def __init__(self, binary: Path):
         self.binary: Path = binary
 
     def _run_args_from_params(self, params: SolverParams) -> list[str]:
-        return (
+        base = [
             str(self.binary),  # Converted for older version of Python on Ares
             SolverProxy.INPUT_FILE_OPT_NAME,
             params.input_file,
             SolverProxy.OUTPUT_DIR_OPT_NAME,
             params.output_dir
-        )
+        ]
+        if params.config_file is not None:
+            base.extend((SolverProxy.CONFIG_FILE_OPT_NAME, params.config_file))
+        return base
 
     def _log_run_start(self, id: int, p: SolverParams):
         print(f"Running id: {id}, input_file: {p.input_file}, output_dir: {p.output_dir}", flush=True)
@@ -52,7 +56,7 @@ class SolverProxy:
         print(f"Finished id: {id} at {proc.finish_time} in aprox. {proc.duration()} | {finished_count}/{total_count} ({complete_percent:.2f}%) ", flush=True)
 
     def _log_run_error(self, id: int, proc: ScheduledProcess):
-        print(f"[ERROR] Proc with args {proc.args} failed with nonzero return code {proc.process.returncode}", flush=True)
+        print(f"[ERROR] Proc with args {proc.process.args} failed with nonzero return code {proc.process.returncode}", flush=True)
 
     def run(self, params: SolverParams) -> SolverResult:
         print(f"Running with {params}", end=' ', flush=True)
