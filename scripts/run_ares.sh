@@ -99,7 +99,7 @@ if [[ ! -f $metadata_file ]]; then
   exit 1
 fi
 
-if [[ ! -z "$config_file" && ! -f "$config_file}" ]]; then
+if [[ (! -z "${config_file}") && (! -f "${config_file}") ]]; then
   echo "$config_file does not exist"
   exit 1
 fi
