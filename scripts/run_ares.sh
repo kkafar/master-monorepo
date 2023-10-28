@@ -133,19 +133,20 @@ fi
 sbatch_args+=(
   "./src/main.py"
   "run"
-  "-i $input_files"
-  "-o $output_dir"
-  "-m $metadata_file"
-  "-n $series_count"
-  "-p $max_proc"
+  "-i" "$input_files"
+  "-o" "$output_dir"
+  "-m" "$metadata_file"
+  "-n" "$series_count"
+  "-p" "$max_proc"
 )
 
 if [[ ! -z "$config_file" ]]; then
-  sbatch_args+=("--config-file $config_file")
+  sbatch_args+=("--config-file" "$config_file")
 fi
 
 sbatch_args+=("$solver_bin")
 
+echo "Args: ${sbatch_args[@]}"
 sbatch "${sbatch_args[@]}"
 
 # sbatch \
