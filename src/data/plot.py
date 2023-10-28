@@ -2,7 +2,48 @@ import polars as pl
 import matplotlib.pyplot as plt
 from .model import Col
 from .filter import filter_sid
-from .model import InstanceMetadata
+from .model import InstanceMetadata, JoinedExperimentData
+from experiment.model import Experiment
+
+
+def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData):
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_best_in_gen(plot, data.bestingen, exp.instance)
+    plot.set(
+        title=f"Best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
+        xlabel="Generation",
+        ylabel="Fitness value"
+    )
+    plot.legend()
+
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_diversity(plot, data.diversity, exp.instance)
+    plot.set(
+        title=f"Diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
+        xlabel="Generation",
+        ylabel="Diversity rate"
+    )
+    plot.legend()
+
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_diversity_avg(plot, data.diversity, exp.instance)
+    plot.set(
+        title=f"Average diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
+        xlabel="Generation",
+        ylabel="Avgerage diversity rate"
+    )
+    plot.legend()
+
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+    plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
+    plot.set(
+        title=f"Average best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
+        xlabel="Generation",
+        ylabel="Average best fitness"
+    )
+    plot.legend()
+
+    plt.show()
 
 
 def plot_best_in_gen(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
