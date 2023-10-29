@@ -1,4 +1,4 @@
-from .args import RunCmdArgs, AnalyzeCmdArgs
+from .args import RunCmdArgs, AnalyzeCmdArgs, PerfcmpCmdArgs
 from experiment.runner import LocalExperimentBatchRunner, AresExpScheduler
 from experiment.solver import SolverProxy
 from experiment.model import (
@@ -7,7 +7,7 @@ from experiment.model import (
     Experiment
 )
 from data.file_resolver import resolve_all_input_files
-from data.processing import process_experiment_batch_output
+from data.processing import process_experiment_batch_output, compare_exp_batch_outputs
 from data.tools import (
     maybe_load_instance_metadata,
     extract_experiments_from_dir,
@@ -81,4 +81,9 @@ def handle_cmd_analyze(args: AnalyzeCmdArgs):
         init_processed_data_file_hierarchy(experiment_batch, args.output_dir)
 
     process_experiment_batch_output(experiment_batch, args.output_dir)
+
+
+def handle_cmd_perfcmp(args: PerfcmpCmdArgs):
+    print(f"PerfcmpCommand run with args: {args}")
+    compare_exp_batch_outputs(args.basepath, args.benchpath)
 

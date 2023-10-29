@@ -1,15 +1,16 @@
 import argparse
 from pathlib import Path
 import os
-from .args import Args, RunCmdArgs, AnalyzeCmdArgs
+from .args import Args, RunCmdArgs, AnalyzeCmdArgs, PerfcmpCmdArgs
 from .command import (
     handle_cmd_run,
     handle_cmd_analyze,
+    handle_cmd_perfcmp
 )
 
 
 def validate_base_args(args: Args):
-    assert args.cmd_name in ['run', 'analyze'], "Unrecognized command name"
+    assert args.cmd_name in ['run', 'analyze', 'perfcmp'], "Unrecognized command name"
 
 
 def validate_run_cmd_args(args: RunCmdArgs):
@@ -47,6 +48,11 @@ def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
     #     assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
 
 
+def validate_perfcmp_cmd_args(args: PerfcmpCmdArgs):
+    assert args.basepath.is_dir()
+    assert args.benchpath.is_dir()
+
+
 def validate_cli_args(args: Args):
     validate_base_args(args)
     match args.cmd_name:
@@ -54,6 +60,8 @@ def validate_cli_args(args: Args):
             validate_run_cmd_args(args)
         case 'analyze':
             validate_analyze_cmd_args(args)
+        case 'perfcmp':
+            validate_perfcmp_cmd_args(args)
         case _:
             assert False, "Unrecognized command type"
 
@@ -91,6 +99,11 @@ def build_cli() -> argparse.ArgumentParser:
     analyze_parser.add_argument('-m', '--metadata-file', type=Path, required=True, help='Path to file with instance metadata', dest='metadata_file')
     analyze_parser.add_argument('--output-dir', type=Path, required=False, help='Ouput directory for analysis result. If not specified, no results are saved')
     analyze_parser.set_defaults(handler=handle_cmd_analyze)
+
+    perfcmp_parser = subparsers.add_parser(name="perfcmp", help="Compare performance information of two experiments: bench against base")
+    perfcmp_parser.add_argument('basepath', type=Path, help='Path to directory with processed data of baseline experiment batch. The CMPPATH will be compared relatively to it.')
+    perfcmp_parser.add_argument('benchpath', type=Path, help='Path to directory with processed data of experiment batch to be compared against BASEPATH')
+    perfcmp_parser.set_defaults(handler=handle_cmd_perfcmp)
 
     return main_parser
 
