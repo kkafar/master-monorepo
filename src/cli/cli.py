@@ -25,6 +25,8 @@ def validate_run_cmd_args(args: RunCmdArgs):
             assert os.access(file, os.R_OK), f'{file} does not have read permissions'
 
     if args.output_dir is not None and not args.output_dir.is_dir():
+        # Hey, nice sideeffects in validation code...
+        # TODO: REMOVE IT FROM HERE
         args.output_dir.mkdir(parents=True, exist_ok=True)
         assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
 
@@ -40,6 +42,9 @@ def validate_run_cmd_args(args: RunCmdArgs):
 
 def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
     assert args.dir.is_dir(), f'{args.dir} is not a directory'
+    # Output directory (if specified) will be initialized in command handler
+    # if args.output_dir is not None:
+    #     assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
 
 
 def validate_cli_args(args: Args):
@@ -84,6 +89,7 @@ def build_cli() -> argparse.ArgumentParser:
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")
     analyze_parser.add_argument('--dir', help='Directory with the result files', type=Path, required=True)
     analyze_parser.add_argument('-m', '--metadata-file', type=Path, required=True, help='Path to file with instance metadata', dest='metadata_file')
+    analyze_parser.add_argument('--output-dir', type=Path, required=False, help='Ouput directory for analysis result. If not specified, no results are saved')
     analyze_parser.set_defaults(handler=handle_cmd_analyze)
 
     return main_parser

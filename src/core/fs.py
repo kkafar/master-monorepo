@@ -52,3 +52,38 @@ def initialize_file_hierarchy(experiments: list[Experiment]):
             json.dump(experiment.as_dict(), file, indent=4)
 
 
+def get_main_plotdir(basedir: Path) -> Path:
+    return basedir.joinpath('plots')
+
+
+def get_plotdir_for_exp(exp: Experiment, basedir: Path) -> Path:
+    return get_main_plotdir(basedir).joinpath(exp.name)
+
+
+def get_main_tabledir(basedir: Path) -> Path:
+    return basedir.joinpath('tables')
+
+
+def get_tabledir_for_exp(exp: Experiment, basedir: Path) -> Path:
+    return get_main_tabledir(basedir).joinpath(exp.name)
+
+
+def init_processed_data_file_hierarchy(exps: list[Experiment], basedir: Path):
+    get_main_plotdir(basedir).mkdir(parents=True, exist_ok=True)
+    get_main_tabledir(basedir).mkdir(parents=True, exist_ok=True)
+
+    for exp in exps:
+        get_plotdir_for_exp(exp, basedir).mkdir(parents=True, exist_ok=True)
+
+        # We do not need tabledir per experiment right now
+        # Uncomment it once there is some per-experiment anaylisis done
+        # get_tabledir_for_exp(exp, basedir).mkdir(parents=True, exist_ok=True)
+
+
+
+
+
+
+
+
+

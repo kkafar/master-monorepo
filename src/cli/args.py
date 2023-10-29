@@ -25,3 +25,4 @@ class RunCmdArgs(Args):
 class AnalyzeCmdArgs(Args):
     dir: Path
     metadata_file: Path
+    output_dir: Optional[Path]

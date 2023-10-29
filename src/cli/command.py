@@ -18,7 +18,7 @@ from core.tools import (
     attach_timestamp_to_dir,
     current_timestamp
 )
-from core.fs import initialize_file_hierarchy
+from core.fs import initialize_file_hierarchy, init_processed_data_file_hierarchy
 from core.env import is_running_on_ares
 
 
@@ -76,5 +76,9 @@ def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
     experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
-    process_experiment_batch_output(experiment_batch, None)
+
+    if args.output_dir is not None:
+        init_processed_data_file_hierarchy(experiment_batch, args.output_dir)
+
+    process_experiment_batch_output(experiment_batch, args.output_dir)
 
