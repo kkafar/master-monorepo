@@ -1,12 +1,14 @@
 import polars as pl
 import matplotlib.pyplot as plt
+from pathlib import Path
+from typing import Optional
 from .model import Col
 from .filter import filter_sid
 from .model import InstanceMetadata, JoinedExperimentData
 from experiment.model import Experiment
 
 
-def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData):
+def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData, plotdir: Optional[Path]):
     # fig, plot = plt.subplots(nrows=1, ncols=1)
     # plot_best_in_gen(plot, data.bestingen, exp.instance)
     # plot.set(
@@ -25,7 +27,7 @@ def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData):
     # )
     # plot.legend()
 
-    fig, plot = plt.subplots(nrows=1, ncols=1)
+    fig_davg, plot = plt.subplots(nrows=1, ncols=1)
     plot_diversity_avg(plot, data.diversity, exp.instance)
     plot.set(
         title=f"Average diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
@@ -34,7 +36,7 @@ def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData):
     )
     plot.legend()
 
-    fig, plot = plt.subplots(nrows=1, ncols=1)
+    fig_bfavg, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
     plot.set(
         title=f"Average best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
@@ -43,7 +45,15 @@ def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData):
     )
     plot.legend()
 
-    plt.show()
+    if plotdir is not None:
+        fig_davg.tight_layout()
+        fig_bfavg.tight_layout()
+        fig_davg.savefig(plotdir.joinpath(f'{exp.name}_div_avg.png'), dpi='figure', format='png')
+        fig_bfavg.savefig(plotdir.joinpath(f'{exp.name}_fit_avg.png'), dpi='figure', format='png')
+        plt.close(fig_davg)
+        plt.close(fig_bfavg)
+
+    # plt.show()
 
 
 def plot_best_in_gen(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):

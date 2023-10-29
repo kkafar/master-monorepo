@@ -62,6 +62,7 @@ class EventConfig:
 
 
 class Event:
+    """ Events produced by the solver """
     NEW_BEST = 'newbest'
     BEST_IN_GEN = 'bestingen'
     DIVERSITY = 'diversity'
@@ -78,6 +79,7 @@ class Event:
 
 
 class Col:
+    """ Column names used by the solver in eventdata files """
     EVENT = 'event_name'
     GENERATION = 'generation'
     TIME = 'time'

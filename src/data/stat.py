@@ -1,26 +1,29 @@
 import polars as pl
+from pathlib import Path
+from typing import Optional
 from experiment.model import Experiment
 from .model import JoinedExperimentData, Col
 
+KEY_EXPNAME = 'expname'
+KEY_FITNESS_AVG = 'fitness_avg'
+KEY_FITNESS_STD = 'fitness_std'
+KEY_FITNESS_BEST = 'fitness_best'
+KEY_BKS = 'bks'
+KEY_FAVGTOBKS = 'fitness_avg_to_bks_dev'
+KEY_FBTOBKS = 'fitness_best_to_bks_dev'
+KEY_DIV_AVG = 'diversity_avg'
+KEY_DIV_STD = 'diversity_std'
+KEY_FITNESS_IMP_AVG = 'fitness_n_improv_avg'  # avg n of fitness improvements
+KEY_FITNESS_IMP_STD = 'fitness_n_improv_std'
+KEY_NSERIES = 'n_series'
+KEY_BKS_HITRATIO = 'bks_hitratio'  # fraction of series where bks was achieved
 
-def compute_per_exp_stats(exp: Experiment, data: JoinedExperimentData) -> pl.DataFrame:
+
+def compute_per_exp_stats(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path]):
     pass
 
 
-def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimentData]):
-    KEY_EXPNAME = 'expname'
-    KEY_FITNESS_AVG = 'fitness_avg'
-    KEY_FITNESS_STD = 'fitness_std'
-    KEY_FITNESS_BEST = 'fitness_best'
-    KEY_BKS = 'bks'
-    KEY_FAVGTOBKS = 'fitness_avg_to_bks_dev'
-    KEY_FBTOBKS = 'fitness_best_to_bks_dev'
-    KEY_DIV_AVG = 'diversity_avg'
-    KEY_DIV_STD = 'diversity_std'
-    KEY_FITNESS_IMP_AVG = 'fitness_n_improv_avg'  # avg n of fitness improvements
-    KEY_FITNESS_IMP_STD = 'fitness_n_improv_std'
-    KEY_NSERIES = 'n_series'
-    KEY_BKS_HITRATIO = 'bks_hitratio'  # fraction of series where bks was achieved
+def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimentData], outdir: Optional[Path]):
 
     fitness_avg_to_bks_dev_expr = (
         (pl.col(KEY_FITNESS_AVG) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
@@ -119,5 +122,21 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
 
     print(f'BKS found in {bks_hit_in} of {dfmain.height} cases ({(bks_hit_in * 100 / dfmain.height):.2f}%)')
     print(f'Avg. deviation to BKS {(avg_dev_to_bks * 100):.2f}%')
+
+    if outdir is not None:
+        dfmain.write_csv(
+            outdir.joinpath('summary_by_exp.csv'),
+            has_header=True,
+            float_precision=2
+        )
+
+        pl.DataFrame({
+            'bks_hit_total': [bks_hit_in],
+            'avg_dev_to_bks': [avg_dev_to_bks]
+        }).write_csv(
+            outdir.joinpath('summary_total.csv'),
+            has_header=True,
+            float_precision=2
+        )
 
 

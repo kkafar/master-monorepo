@@ -10,4 +10,5 @@ data/
 !src/data/
 .DS_Store
 bin/
+*.out
 
