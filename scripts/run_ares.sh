@@ -32,7 +32,7 @@ ecdk_dir=${HOME}/master/ecdk
 ecrs_dir=${HOME}/master/ecrs
 solver_bin=${HOME}/master/bin/jssp
 metadata_file=${HOME}/master/ecdk/data/metadata/instance_metadata_v2.txt
-plggroup="plglscclass"
+plggroup="plgglscclass"
 grant="plglscclass23-cpu"
 
 input_files=""
@@ -45,7 +45,7 @@ timespec="24:00:00"
 memspec="512M"
 
 scratch_storage_dir="${SCRATCH}"
-group_storage_dir="${PLG_GROUPS_STORAGE}/${plggroup}"
+group_storage_dir="${MY_GROUPS_STORAGE}"  # This envvar is defined on Ares in my .bashrc
 
 
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
