@@ -26,3 +26,9 @@ class AnalyzeCmdArgs(Args):
     dir: Path
     metadata_file: Path
     output_dir: Optional[Path]
+
+
+@dataclass
+class PerfcmpCmdArgs(Args):
+    basepath: Path
+    benchpath: Path

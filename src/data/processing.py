@@ -1,10 +1,11 @@
+import polars as pl
 from pathlib import Path
 from typing import Optional
 from experiment.model import Experiment
 from data.model import JoinedExperimentData
 from .tools import experiment_data_from_all_series
-from .plot import create_plots_for_experiment
-from .stat import compute_per_exp_stats, compute_global_exp_stats
+from .plot import create_plots_for_experiment, plot_perf_cmp
+from .stat import compute_per_exp_stats, compute_global_exp_stats, compare_perf_info
 from core.fs import get_plotdir_for_exp, get_main_tabledir
 
 
@@ -29,3 +30,9 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
     compute_global_exp_stats(batch, data, tabledir)
 
+
+def compare_exp_batch_outputs(basedir: Path, benchdir: Path):
+    df_base = pl.read_csv(get_main_tabledir(basedir).joinpath('summary_by_exp.csv'), has_header=True)
+    df_bench = pl.read_csv(get_main_tabledir(benchdir).joinpath('summary_by_exp.csv'), has_header=True)
+    compare_perf_info(df_base, df_bench)
+    plot_perf_cmp(df_base, df_bench)

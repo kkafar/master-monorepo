@@ -152,3 +152,26 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
         )
 
 
+def compare_perf_info(df_base: pl.DataFrame, df_bench: pl.DataFrame):
+    expname_base = df_base.get_column(KEY_EXPNAME)
+    expname_bench = df_bench.get_column(KEY_EXPNAME)
+    assert (expname_base == expname_bench).all(), "Both compared batches must contain results for the same experiments & in the same order"
+
+    s_base_it_avg = df_base.get_column(KEY_ITERTIME_AVG)
+    s_bench_it_avg = df_bench.get_column(KEY_ITERTIME_AVG)
+
+    df_res = pl.DataFrame({
+        'expname': expname_base,
+        'base_it_avg': s_base_it_avg,
+        'base_it_std': df_base.get_column(KEY_ITERTIME_STD),
+        'bench_it_avg': s_bench_it_avg,
+        'bench_it_std': df_bench.get_column(KEY_ITERTIME_STD),
+        'relative_imp': ((s_bench_it_avg - s_base_it_avg) / s_base_it_avg)
+    })
+
+    print(df_res)
+
+
+
+
+

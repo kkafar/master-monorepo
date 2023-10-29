@@ -127,3 +127,8 @@ def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceM
     if metadata and metadata.best_solution:
         plot.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
 
+
+def plot_perf_cmp(dfbase: pl.DataFrame, dfbench: pl.DataFrame):
+    pass
+
+
