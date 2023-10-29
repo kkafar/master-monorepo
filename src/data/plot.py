@@ -7,23 +7,23 @@ from experiment.model import Experiment
 
 
 def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData):
-    fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_best_in_gen(plot, data.bestingen, exp.instance)
-    plot.set(
-        title=f"Best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
-        xlabel="Generation",
-        ylabel="Fitness value"
-    )
-    plot.legend()
+    # fig, plot = plt.subplots(nrows=1, ncols=1)
+    # plot_best_in_gen(plot, data.bestingen, exp.instance)
+    # plot.set(
+    #     title=f"Best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
+    #     xlabel="Generation",
+    #     ylabel="Fitness value"
+    # )
+    # plot.legend()
 
-    fig, plot = plt.subplots(nrows=1, ncols=1)
-    plot_diversity(plot, data.diversity, exp.instance)
-    plot.set(
-        title=f"Diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
-        xlabel="Generation",
-        ylabel="Diversity rate"
-    )
-    plot.legend()
+    # fig, plot = plt.subplots(nrows=1, ncols=1)
+    # plot_diversity(plot, data.diversity, exp.instance)
+    # plot.set(
+    #     title=f"Diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
+    #     xlabel="Generation",
+    #     ylabel="Diversity rate"
+    # )
+    # plot.legend()
 
     fig, plot = plt.subplots(nrows=1, ncols=1)
     plot_diversity_avg(plot, data.diversity, exp.instance)
@@ -75,7 +75,7 @@ def plot_diversity_avg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMet
     y_avg_data = data_agg.get_column('diversity_avg')
     y_std_data = data_agg.get_column('diversity_std')
 
-    plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. diversity', linestyle='--', marker='*', elinewidth=1)
+    plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. diversity', linestyle='', marker='*', elinewidth=0.1)
 
 
 def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: str):
@@ -112,7 +112,7 @@ def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceM
     y_avg_data = data_agg.get_column('fitness_avg')
     y_std_data = data_agg.get_column('fitness_std')
 
-    plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. best fitness', linestyle='--', marker='*', elinewidth=1)
+    plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. best fitness', linestyle='', marker='*', elinewidth=0.1)
 
     if metadata and metadata.best_solution:
         plot.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
