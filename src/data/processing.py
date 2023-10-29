@@ -19,8 +19,8 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Path):
 
     data = [experiment_data_from_all_series(exp) for exp in batch]
 
-    # for exp, expdata in zip(batch, data):
-    #     process_experiment_data(exp, expdata)
+    for exp, expdata in zip(batch, data):
+        process_experiment_data(exp, expdata)
 
     compute_global_exp_stats(batch, data)
 
