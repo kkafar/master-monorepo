@@ -103,4 +103,21 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
 
     print(dfmain.head(100))
 
+    bks_hit_in = (
+        dfmain
+        .filter(pl.col(KEY_FITNESS_BEST) == pl.col(KEY_BKS))
+        .height
+    )
+
+    avg_dev_to_bks = (
+        dfmain.lazy()
+        .select(pl.col(KEY_FBTOBKS).mean())
+        .collect()
+        .to_series()
+        .item()
+    )
+
+    print(f'BKS found in {bks_hit_in} of {dfmain.height} cases ({(bks_hit_in * 100 / dfmain.height):.2f}%)')
+    print(f'Avg. deviation to BKS {(avg_dev_to_bks * 100):.2f}%')
+
 

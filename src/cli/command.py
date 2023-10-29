@@ -76,5 +76,5 @@ def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
     experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
-    process_experiment_batch_output(experiment_batch)
+    process_experiment_batch_output(experiment_batch, None)
 
