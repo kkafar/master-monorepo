@@ -17,6 +17,8 @@ KEY_FITNESS_IMP_AVG = 'fitness_n_improv_avg'  # avg n of fitness improvements
 KEY_FITNESS_IMP_STD = 'fitness_n_improv_std'
 KEY_NSERIES = 'n_series'
 KEY_BKS_HITRATIO = 'bks_hitratio'  # fraction of series where bks was achieved
+KEY_ITERTIME_AVG = 'itertime_avg'
+KEY_ITERTIME_STD = 'itertime_std'
 
 
 def compute_per_exp_stats(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path]):
@@ -24,20 +26,17 @@ def compute_per_exp_stats(exp: Experiment, data: JoinedExperimentData, outdir: O
 
 
 def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimentData], outdir: Optional[Path]):
-
     fitness_avg_to_bks_dev_expr = (
         (pl.col(KEY_FITNESS_AVG) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
     )
     fitness_best_to_bks_dev_expr = (
         (pl.col(KEY_FITNESS_BEST) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
     )
-    # bks_hitratio = (
-    #     (pl.col())
-    # )
 
     dfmain: pl.DataFrame | None = None
 
     for exp, expdata in zip(batch, data):
+        # Diversity stats
         df = (
             expdata.diversity.lazy()
             .select([
@@ -46,6 +45,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             ])
             .collect()
         )
+        # Avg. number of improvements
         df = (
             expdata.newbest.lazy()
             .group_by(pl.col(Col.SID))
@@ -56,6 +56,16 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             ])
             .collect()
             .hstack(df, in_place=True)  # stacking two smaller dframes here
+        )
+        # Iteration time stats
+        df = (
+            expdata.iterinfo.lazy()
+            .select([
+                pl.col(Col.ITER_TIME).mean().alias(KEY_ITERTIME_AVG),
+                pl.col(Col.ITER_TIME).std().alias(KEY_ITERTIME_STD)
+            ])
+            .collect()
+            .hstack(df, in_place=True)
         )
         dfbks_hitratio = (
             expdata.bestingen.lazy()
@@ -98,7 +108,8 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             KEY_EXPNAME, KEY_FITNESS_AVG, KEY_FITNESS_STD,
             KEY_FITNESS_BEST, KEY_BKS, KEY_FAVGTOBKS,
             KEY_FBTOBKS, KEY_DIV_AVG, KEY_DIV_STD,
-            KEY_FITNESS_IMP_AVG, KEY_FITNESS_IMP_STD, KEY_BKS_HITRATIO
+            KEY_FITNESS_IMP_AVG, KEY_FITNESS_IMP_STD, KEY_BKS_HITRATIO,
+            KEY_ITERTIME_AVG, KEY_ITERTIME_STD
         ])
         .sort(KEY_EXPNAME)
         .collect()
@@ -131,6 +142,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
         )
 
         pl.DataFrame({
+            'n_instances': [dfmain.height],
             'bks_hit_total': [bks_hit_in],
             'avg_dev_to_bks': [avg_dev_to_bks]
         }).write_csv(

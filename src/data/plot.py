@@ -50,8 +50,8 @@ def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData, plo
         fig_bfavg.tight_layout()
         fig_davg.savefig(plotdir.joinpath(f'{exp.name}_div_avg.png'), dpi='figure', format='png')
         fig_bfavg.savefig(plotdir.joinpath(f'{exp.name}_fit_avg.png'), dpi='figure', format='png')
-        plt.close(fig_davg)
-        plt.close(fig_bfavg)
+    plt.close(fig_davg)
+    plt.close(fig_bfavg)
 
     # plt.show()
 

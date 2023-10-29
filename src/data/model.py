@@ -161,3 +161,4 @@ class JoinedExperimentData:
     bestingen: DataFrame
     popgentime: DataFrame
     iterinfo: DataFrame
+    # run_metadata: list[SeriesOutputMetadata]
