@@ -14,6 +14,8 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
 
     print(f"Processing experiment {exp.name}")
 
+    # validate_experiment_results
+
     exp_plotdir = get_plotdir_for_exp(exp, outdir) if outdir is not None else None
     create_plots_for_experiment(exp, data, exp_plotdir)
     # compute_per_exp_stats(exp, data)
