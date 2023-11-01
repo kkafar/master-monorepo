@@ -4,13 +4,13 @@ from core.util import iter_batched
 from typing import Optional
 
 
-@dataclass
+@dataclass()
 class IdSpan:
-    first: int
-    last: int
+    start: int
+    end: int
 
-    def __contains__(self, id: int) -> bool:
-        return id >= self.first and id <= self.last
+    def __contains__(self, item: int) -> bool:
+        return item >= self.start and item <= self.end
 
 
 @dataclass
@@ -23,7 +23,7 @@ class Operation:
 
 @dataclass
 class Job:
-    ops: list[Operation] = list()  # ops[0] = None, ops are numbered from 1
+    ops: list[Operation]  # ops[0] = None, ops are numbered from 1
     span: IdSpan
 
 
@@ -36,8 +36,8 @@ class JsspInstance:
     n_machines: int
 
     def job_for_op_with_id(self, opid: int) -> Optional[Job]:
-        for job in self.jobs:
-            if id in job.span:
+        for job in self.jobs[1:]:
+            if opid in job.span:
                 return job
         return None
 
@@ -46,7 +46,7 @@ class JsspInstance:
         :returns: operation with given id, raises error in case op was not found
         """
         if (job := self.job_for_op_with_id(id)) is not None:
-            op = job.ops[id - job.span.first]
+            op = job.ops[id - job.span.start]
             assert op.id == id
             return op
         else:
@@ -59,8 +59,8 @@ class JsspInstance:
         """
         if (job := self.job_for_op_with_id(id)) is not None:
             # looking for pred
-            if id - 1 >= job.span.first:
-                return job.ops[id - job.span.first - 1]
+            if id - 1 >= job.span.start:
+                return job.ops[id - job.span.start - 1]
             else:
                 return None
         else:
@@ -116,6 +116,10 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
     False otherwise.
     """
 
+    assert solstr is not None
+    assert instance is not None
+    assert fitness is not None
+
     def last_schedule_time_for_machine(machines: list[list[Operation]], mid: int) -> int:
         machine = machines[mid]
         if len(machine) == 0:
@@ -127,7 +131,6 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
 
     def find_makespan(machines: list[list[Operation]]) -> int:
         return max(map(lambda m: m[-1].finish_time, machines))
-
 
     # Jobs in order of their finish time. In case of tie, operation with lower machine index is first.
     # There is also special ordering rule for operations with 0 duration. Take a look into the docs of this repo
@@ -142,7 +145,7 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
             # been scheduled...
             pred = instance.pred_for_op_with_id(id)
             if pred is not None:
-                assert pred.finish_time is not None
+                assert pred.finish_time is not None, f"Predecesor {pred.id} of op {op.id} has not been scheduled yet"
             machine_earliest_schedule_time = last_schedule_time_for_machine(machine_schedules, op.machine)
             earliest_schedule_time = max(machine_earliest_schedule_time, pred.finish_time)
             op.finish_time = earliest_schedule_time + op.duration
