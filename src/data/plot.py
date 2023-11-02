@@ -6,6 +6,7 @@ from .model import Col
 from .filter import filter_sid
 from .model import InstanceMetadata, JoinedExperimentData
 from experiment.model import Experiment
+from problem import Operation, JsspInstance
 
 
 def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData, plotdir: Optional[Path]):
@@ -131,4 +132,32 @@ def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceM
 def plot_perf_cmp(dfbase: pl.DataFrame, dfbench: pl.DataFrame):
     pass
 
+
+def visualise_instance_solution(exp: Experiment, instance: JsspInstance, series_id: int, plotdir: Optional[Path]):
+    fig, plot = plt.subplots(nrows=1, ncols=1)
+
+    for job in instance.jobs[1:]:
+        x_ranges = []
+        y_data = []
+        for op in job.ops:
+            y_data.extend([op.machine for _ in range(op.finish_time - op.duration, op.finish_time)])
+            x_ranges.extend(range(op.finish_time - op.duration, op.finish_time))
+
+        plt.scatter(x_ranges, y_data, label=f'Job {op.job_id}')
+
+    plot.set_ylim(bottom=-1, top=instance.n_machines)
+    plot.set_yticks(range(0, instance.n_machines))
+    plot.set(
+        title=f"{exp.name} solution, {exp.instance.jobs}j/{exp.instance.machines}m",
+        xlabel="Time",
+        ylabel="Machine"
+    )
+    plot.legend()
+    plot.grid()
+
+    if plotdir is not None:
+        fig.savefig(plotdir.joinpath(f'{exp.name}_sol_{series_id}.png'), dpi='figure', format='png')
+    else:
+        plt.show()
+    plt.close(fig)
 
