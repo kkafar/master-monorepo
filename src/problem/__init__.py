@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from core.util import iter_batched
 from typing import Optional
+from pprint import pprint
 
 
 @dataclass()
@@ -144,16 +145,19 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
             # We need to find direct predecessor of this op and confirm that it has already
             # been scheduled...
             pred = instance.pred_for_op_with_id(id)
+            pred_ft = 0
             if pred is not None:
                 assert pred.finish_time is not None, f"Predecesor {pred.id} of op {op.id} has not been scheduled yet"
+                pred_ft = pred.finish_time
             machine_earliest_schedule_time = last_schedule_time_for_machine(machine_schedules, op.machine)
-            earliest_schedule_time = max(machine_earliest_schedule_time, pred.finish_time)
+            earliest_schedule_time = max(machine_earliest_schedule_time, pred_ft)
             op.finish_time = earliest_schedule_time + op.duration
             machine_schedules[op.machine].append(op)
         else:
             raise ValueError(f"Received None for op with id: {id}")
 
+    pprint(machine_schedules)
     makespan = find_makespan(machine_schedules)
-    assert makespan == fitness
+    assert makespan == fitness, f"Reconstructed solution has different fitness than reported by solver. {makespan} vs {fitness}"
     return True
 
