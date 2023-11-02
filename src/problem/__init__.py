@@ -77,7 +77,6 @@ class JsspInstance:
             for op in job.ops:
                 op.finish_time = None
 
-
     @staticmethod
     def from_instance_file(file: Path) -> 'JsspInstance':
         assert file.is_file(), f"File {file} does not exist"
