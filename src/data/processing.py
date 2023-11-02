@@ -34,7 +34,7 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
         visualise_instance_solution(exp, instance, sid, exp_plotdir)
         instance.reset()
 
-    # create_plots_for_experiment(exp, data, exp_plotdir)
+    create_plots_for_experiment(exp, data, exp_plotdir)
     # compute_per_exp_stats(exp, data)
 
 
@@ -46,8 +46,8 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     for exp, expdata in zip(batch, data):
         process_experiment_data(exp, expdata, outdir)
 
-    # tabledir = get_main_tabledir(outdir) if outdir is not None else None
-    # compute_global_exp_stats(batch, data, tabledir)
+    tabledir = get_main_tabledir(outdir) if outdir is not None else None
+    compute_global_exp_stats(batch, data, tabledir)
 
 
 def compare_exp_batch_outputs(basedir: Path, benchdir: Path):
