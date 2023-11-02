@@ -26,10 +26,10 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
         print(f"\tProcessing series {sid}: ")
         ok, schedule, errstr = validate_solution_string_in_context_of_instance(md.solution_string, instance, md.fitness)
 
-        # if len(errstr) > 0:
-        #     print('ERR')
-        # else:
-        #     print('OK')
+        if ok:
+            print('OK')
+        else:
+            print(f'ERR ({errstr})')
 
         visualise_instance_solution(exp, instance, sid, exp_plotdir)
         instance.reset()
