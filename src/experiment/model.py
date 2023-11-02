@@ -83,8 +83,8 @@ class ExperimentConfig:
     @classmethod
     def from_dict(cls, d: dict) -> 'ExperimentConfig':
         return ExperimentConfig(
-            input_file=d['input_file'],
-            output_dir=d['output_dir'],
+            input_file=Path(d['input_file']),
+            output_dir=Path(d['output_dir']),
             n_series=d['n_series'],
             config_file=d.get('config_file'),
         )

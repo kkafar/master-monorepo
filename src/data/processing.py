@@ -7,6 +7,10 @@ from .tools import experiment_data_from_all_series
 from .plot import create_plots_for_experiment, plot_perf_cmp
 from .stat import compute_per_exp_stats, compute_global_exp_stats, compare_perf_info
 from core.fs import get_plotdir_for_exp, get_main_tabledir
+from problem import (
+    validate_solution_string_in_context_of_instance,
+    JsspInstance
+)
 
 
 def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path]):
@@ -14,9 +18,16 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
 
     print(f"Processing experiment {exp.name}")
 
+
+    instance = JsspInstance.from_instance_file(exp.config.input_file)
+    for sid, series_output in enumerate(exp.result.series_outputs):
+        md = series_output.data.metadata
+        print(f"\tProcessing series {sid}")
+        validate_solution_string_in_context_of_instance(md.solution_string, instance, md.fitness)
+
     exp_plotdir = get_plotdir_for_exp(exp, outdir) if outdir is not None else None
     create_plots_for_experiment(exp, data, exp_plotdir)
-    # compute_per_exp_stats(exp, data)
+    compute_per_exp_stats(exp, data)
 
 
 def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Path]):
