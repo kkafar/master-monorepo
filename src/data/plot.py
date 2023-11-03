@@ -148,7 +148,7 @@ def visualise_instance_solution(exp: Experiment, instance: JsspInstance, series_
     plot.set_ylim(bottom=-1, top=instance.n_machines)
     plot.set_yticks(range(0, instance.n_machines))
     plot.set(
-        title=f"{exp.name} solution, {exp.instance.jobs}j/{exp.instance.machines}m",
+        title=f"{exp.name} solution, series: {series_id}, {exp.instance.jobs}j/{exp.instance.machines}m",
         xlabel="Time",
         ylabel="Machine"
     )
