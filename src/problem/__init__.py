@@ -77,7 +77,6 @@ class JsspInstance:
             for op in job.ops:
                 op.finish_time = None
 
-
     @staticmethod
     def from_instance_file(file: Path) -> 'JsspInstance':
         assert file.is_file(), f"File {file} does not exist"
@@ -173,7 +172,9 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
             raise ValueError(f"Received None for op with id: {id}")
 
     # pprint(machine_schedules)
-    # makespan = find_makespan(machine_schedules)
-    # assert makespan == fitness, f"Reconstructed solution has different fitness than reported by solver. {makespan} vs {fitness}"
+    makespan = find_makespan(machine_schedules)
+    if makespan != fitness:
+        err = f"Reconstructed solution has different fitness than reported by solver. {makespan} vs {fitness}"
+        return False, machine_schedules, err
     return True, machine_schedules, ""
 
