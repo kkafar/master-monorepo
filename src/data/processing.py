@@ -1,4 +1,5 @@
 import polars as pl
+import itertools as it
 from pathlib import Path
 from typing import Optional
 from experiment.model import Experiment
@@ -26,10 +27,10 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
         print(f"\tProcessing series {sid}: ")
         ok, schedule, errstr = validate_solution_string_in_context_of_instance(md.solution_string, instance, md.fitness)
 
-        if ok:
-            print('OK')
-        else:
-            print(f'ERR ({errstr})')
+        # if ok:
+        #     print('OK')
+        # else:
+        #     print(f'ERR ({errstr})')
 
         visualise_instance_solution(exp, instance, sid, exp_plotdir)
         instance.reset()
@@ -38,14 +39,20 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
     # compute_per_exp_stats(exp, data)
 
 
-def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Path]):
+def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Path], process_count: int = 1):
     """ :param outdir: directory for saving processed data """
 
     data = [experiment_data_from_all_series(exp) for exp in batch]
 
-    for exp, expdata in zip(batch, data):
-        process_experiment_data(exp, expdata, outdir)
+    if process_count == 1:
+        for exp, expdata in zip(batch, data):
+            process_experiment_data(exp, expdata, outdir)
+    else:
+        from multiprocessing import get_context
+        with get_context("spawn").Pool(process_count) as pool:
+            pool.starmap(process_experiment_data, zip(batch, data, it.cycle([outdir])))
 
+    print("computing global stats")
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
     compute_global_exp_stats(batch, data, tabledir)
 

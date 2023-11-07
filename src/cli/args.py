@@ -26,6 +26,7 @@ class AnalyzeCmdArgs(Args):
     dir: Path
     metadata_file: Path
     output_dir: Optional[Path]
+    procs: Optional[int]
 
 
 @dataclass
