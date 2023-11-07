@@ -59,18 +59,6 @@ def handle_cmd_run(args: RunCmdArgs):
         [exp.config for exp in batch]
     ).run(process_limit=args.procs)
 
-    # Run computations
-    # if is_running_on_ares():
-    # print('Running on Ares')
-    # AresExpScheduler(SolverProxy(args.bin)).run([exp.config for exp in batch])
-
-    # Experimenting with multicore setup
-    # else:
-    #     LocalExperimentBatchRunner(
-    #         SolverProxy(args.bin),
-    #         [exp.config for exp in batch]
-    #     ).run(process_limit=args.procs)
-
 
 def handle_cmd_analyze(args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
