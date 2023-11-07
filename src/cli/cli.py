@@ -43,6 +43,8 @@ def validate_run_cmd_args(args: RunCmdArgs):
 
 def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
     assert args.dir.is_dir(), f'{args.dir} is not a directory'
+    if args.procs is not None:
+        assert args.procs > 0, f'Number of processes must be > 0. Received {args.procs}'
     # Output directory (if specified) will be initialized in command handler
     # if args.output_dir is not None:
     #     assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
@@ -98,6 +100,7 @@ def build_cli() -> argparse.ArgumentParser:
     analyze_parser.add_argument('--dir', help='Directory with the result files', type=Path, required=True)
     analyze_parser.add_argument('-m', '--metadata-file', type=Path, required=True, help='Path to file with instance metadata', dest='metadata_file')
     analyze_parser.add_argument('--output-dir', type=Path, required=False, help='Ouput directory for analysis result. If not specified, no results are saved')
+    analyze_parser.add_argument('-p', '--procs', type=int, required=False, help='Number of processes to run in parallel', default=1)
     analyze_parser.set_defaults(handler=handle_cmd_analyze)
 
     perfcmp_parser = subparsers.add_parser(name="perfcmp", help="Compare performance information of two experiments: bench against base")
