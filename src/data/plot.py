@@ -20,7 +20,7 @@ def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData, plo
     # plot.legend()
 
     # fig, plot = plt.subplots(nrows=1, ncols=1)
-    # plot_diversity(plot, data.diversity, exp.instance)
+    # plot_diversity(plot, data.popmetrics, exp.instance)
     # plot.set(
     #     title=f"Diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
     #     xlabel="Generation",
@@ -28,30 +28,19 @@ def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData, plo
     # )
     # plot.legend()
 
-    fig_davg, plot = plt.subplots(nrows=1, ncols=1)
-    plot_diversity_avg(plot, data.diversity, exp.instance)
-    plot.set(
-        title=f"Average diversity rate by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
-        xlabel="Generation",
-        ylabel="Avgerage diversity rate"
-    )
-    plot.legend()
+    fig_popmet, axes = plt.subplots(nrows=1, ncols=2)
+    plot_diversity_avg(axes[0], data.popmetrics, exp.instance)
+    plot_distance_avg(axes[1], data.popmetrics, exp.instance)
 
     fig_bfavg, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
-    plot.set(
-        title=f"Average best fitness by generation, {exp.name}, {exp.instance.jobs}j/{exp.instance.machines}m",
-        xlabel="Generation",
-        ylabel="Average best fitness"
-    )
-    plot.legend()
 
     if plotdir is not None:
-        fig_davg.tight_layout()
+        fig_popmet.tight_layout()
         fig_bfavg.tight_layout()
-        fig_davg.savefig(plotdir.joinpath(f'{exp.name}_div_avg.png'), dpi='figure', format='png')
+        fig_popmet.savefig(plotdir.joinpath(f'{exp.name}_pop_met.png'), dpi='figure', format='png')
         fig_bfavg.savefig(plotdir.joinpath(f'{exp.name}_fit_avg.png'), dpi='figure', format='png')
-    plt.close(fig_davg)
+    plt.close(fig_popmet)
     plt.close(fig_bfavg)
 
     # plt.show()
@@ -87,11 +76,41 @@ def plot_diversity_avg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMet
     y_std_data = data_agg.get_column('diversity_std')
 
     plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. diversity', linestyle='', marker='*', elinewidth=0.1)
+    plot.set(
+        title=f"Average diversity rate by generation, {metadata.id}, {metadata.jobs}j/{metadata.machines}m",
+        xlabel="Generation",
+        ylabel="Avgerage diversity rate"
+    )
+    plot.legend()
+
+
+def plot_distance_avg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
+    data_agg = (
+        data.lazy()
+        .group_by(pl.col(Col.GENERATION))
+        .agg(
+            pl.col(Col.DISTANCE).mean().alias('distance_avg'),
+            pl.col(Col.DISTANCE).std().alias('distance_std')
+        )
+        .sort(pl.col(Col.GENERATION))
+        .collect()
+    )
+    x_data = data_agg.get_column(Col.GENERATION)
+    y_data = data_agg.get_column('distance_avg')
+    yerr_data = data_agg.get_column('distance_std')
+
+    plot.errorbar(x_data, y_data, yerr=yerr_data, linestyle='', marker='.', elinewidth=0.1)
+    plot.set(
+        title=f"Average average euc. dist. by generation, {metadata.id}, {metadata.jobs}j/{metadata.machines}m",
+        xlabel="Generation",
+        ylabel="Avgerage euc. dist."
+    )
+    plot.legend()
 
 
 def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: str):
     """ Expects `data` to be filtered data for single event type and column name to exists in `data.columns`.
-        Also expects `Col.GENERATION` to exist in `data.columns`."""
+        Also expects `Col.GENERATION` to exist in `data.columns` """
     series_ids = data.get_column(Col.SID).unique()
     x_data = None
     for sid in series_ids:
@@ -127,6 +146,13 @@ def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceM
 
     if metadata and metadata.best_solution:
         plot.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
+
+    plot.set(
+        title=f"Average best fitness by generation, {metadata.id}, {metadata.jobs}j/{metadata.machines}m",
+        xlabel="Generation",
+        ylabel="Average best fitness"
+    )
+    plot.legend()
 
 
 def plot_perf_cmp(dfbase: pl.DataFrame, dfbench: pl.DataFrame):

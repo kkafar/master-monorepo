@@ -75,7 +75,7 @@ def _add_sid_column_to_df(df: pl.DataFrame, sid: int) -> pl.DataFrame:
 def experiment_data_from_all_series(experiment: Experiment) -> JoinedExperimentData:
     exp_data = JoinedExperimentData(
         newbest=None,
-        diversity=None,
+        popmetrics=None,
         bestingen=None,
         popgentime=None,
         iterinfo=None
@@ -86,7 +86,7 @@ def experiment_data_from_all_series(experiment: Experiment) -> JoinedExperimentD
             materialize_series_output(series_output, force=False)
 
         exp_data.newbest = _update_df_with(exp_data.newbest, _add_sid_column_to_df(series_output.data.data_for_event(Event.NEW_BEST), sid))
-        exp_data.diversity = _update_df_with(exp_data.diversity, _add_sid_column_to_df(series_output.data.data_for_event(Event.DIVERSITY), sid))
+        exp_data.popmetrics = _update_df_with(exp_data.popmetrics, _add_sid_column_to_df(series_output.data.data_for_event(Event.POP_METRICS), sid))
         exp_data.bestingen = _update_df_with(exp_data.bestingen, _add_sid_column_to_df(series_output.data.data_for_event(Event.BEST_IN_GEN), sid))
         exp_data.popgentime = _update_df_with(exp_data.popgentime, _add_sid_column_to_df(series_output.data.data_for_event(Event.POP_GEN_TIME), sid))
         exp_data.iterinfo = _update_df_with(exp_data.iterinfo, _add_sid_column_to_df(series_output.data.data_for_event(Event.ITER_INFO), sid))
