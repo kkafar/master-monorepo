@@ -36,7 +36,7 @@ def output_dir_for_experiment_with_name(name: str, base_dir: Path) -> Path:
 
 
 def current_timestamp() -> str:
-    timestamp = dt.datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+    timestamp = dt.datetime.now().strftime("%y-%m-%dT%H-%M-%S")
     return timestamp
 
 

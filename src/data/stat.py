@@ -38,7 +38,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
     for exp, expdata in zip(batch, data):
         # Diversity stats
         df = (
-            expdata.diversity.lazy()
+            expdata.popmetrics.lazy()
             .select([
                 pl.col(Col.DIVERSITY).mean().alias(KEY_DIV_AVG),
                 pl.col(Col.DIVERSITY).std().alias(KEY_DIV_STD),

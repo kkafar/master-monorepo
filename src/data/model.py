@@ -65,14 +65,14 @@ class Event:
     """ Events produced by the solver """
     NEW_BEST = 'newbest'
     BEST_IN_GEN = 'bestingen'
-    DIVERSITY = 'diversity'
+    POP_METRICS = 'popmetrics'
     POP_GEN_TIME = 'popgentime'
     ITER_INFO = 'iterinfo'
 
     ALL_EVENTS = [
         NEW_BEST,
         BEST_IN_GEN,
-        DIVERSITY,
+        POP_METRICS,
         POP_GEN_TIME,
         ITER_INFO,
     ]
@@ -94,8 +94,9 @@ class Col:
     REPL_TIME = 'repl_time'
     ITER_TIME = 'iter_time'
     SID = 'sid'
+    DISTANCE = 'distance_avg'
 
-    ALL_COLLS = [
+    ALL_COLLS = (
         EVENT,
         GENERATION,
         TIME,
@@ -110,7 +111,8 @@ class Col:
         REPL_TIME,
         ITER_TIME,
         SID,
-    ]
+        DISTANCE
+    )
 
 
 EVENT_COL_INDEX = 0
@@ -120,7 +122,7 @@ SID_COL_INDEX = -1
 # We append series_id column which is not present in original result
 SCHEMA_FOR_EVENT = dict(map(lambda kv: (kv[0], [Col.EVENT] + kv[1] + [Col.SID]), [
     (Event.NEW_BEST, [Col.GENERATION, Col.TIME, Col.FITNESS]),
-    (Event.DIVERSITY, [Col.GENERATION, Col.TIME, Col.POP_SIZE, Col.DIVERSITY]),
+    (Event.POP_METRICS, [Col.GENERATION, Col.TIME, Col.POP_SIZE, Col.DIVERSITY, Col.DISTANCE]),
     (Event.BEST_IN_GEN, [Col.GENERATION, Col.TIME, Col.FITNESS]),
     (Event.POP_GEN_TIME, [Col.DURATION]),
     (Event.ITER_INFO, [Col.GENERATION, Col.EVAL_TIME, Col.SEL_TIME,
@@ -129,7 +131,7 @@ SCHEMA_FOR_EVENT = dict(map(lambda kv: (kv[0], [Col.EVENT] + kv[1] + [Col.SID]),
 
 COLUMN_INDICES_FOR_EVENT = dict(map(lambda kv: (kv[0], [EVENT_COL_INDEX] + kv[1] + [SID_COL_INDEX]), [
     (Event.NEW_BEST, [1, 2, 3]),
-    (Event.DIVERSITY, [1, 2, 3, 4]),
+    (Event.POP_METRICS, [1, 2, 3, 4, 5]),
     (Event.BEST_IN_GEN, [1, 2, 3]),
     (Event.POP_GEN_TIME, [1]),
     (Event.ITER_INFO, list(range(1, 7 + 1)))
@@ -157,7 +159,7 @@ def config_for_event(event: EventName) -> EventConfig:
 @dataclass
 class JoinedExperimentData:
     newbest: DataFrame
-    diversity: DataFrame
+    popmetrics: DataFrame
     bestingen: DataFrame
     popgentime: DataFrame
     iterinfo: DataFrame
