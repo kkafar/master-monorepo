@@ -11,6 +11,7 @@ class SeriesOutputFiles:
     directory: Path
     event_files: Dict[str, Path]
     run_metadata_file: Path
+    logfile: Optional[Path]
 
 
 @dataclass(frozen=True)
@@ -46,6 +47,7 @@ class SolverParams:
     input_file: Optional[Path]
     output_dir: Optional[Path]
     config_file: Optional[Path]
+    stdout_file: Optional[Path]
 
 
 @dataclass
@@ -85,8 +87,8 @@ class ExperimentConfig:
         return ExperimentConfig(
             input_file=Path(d['input_file']),
             output_dir=Path(d['output_dir']),
+            config_file=Path(d.get('config_file')),
             n_series=d['n_series'],
-            config_file=d.get('config_file'),
         )
 
 

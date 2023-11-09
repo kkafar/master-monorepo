@@ -11,12 +11,16 @@ import polars as pl
 import json
 
 
-def _event_file_filter(file: Path) -> bool:
+def __event_file_filter(file: Path) -> bool:
     return file.stem.startswith("event_")
 
 
-def _run_metadata_file_filter(file: Path) -> bool:
+def __run_metadata_file_filter(file: Path) -> bool:
     return file.stem == "run_metadata"
+
+
+def __solver_logfile_filter(file: Path) -> bool:
+    return file.stem.startswith('stdout')
 
 
 def _event_name_from_data_file(event_data_file: Path) -> str:
@@ -54,11 +58,12 @@ def _resolve_series_files_from_dir(directory: Path) -> SeriesOutputFiles:
     all_files = list(filter(lambda file: file.is_file(), directory.iterdir()))
     assert len(all_files) > 0, f"Ill formed series result - no files found in directory {directory}"
 
-    event_files = _event_file_map_from_data_files(filter(_event_file_filter, all_files))
-    run_metadata_file = find_first_or_none(all_files, _run_metadata_file_filter)
+    event_files = _event_file_map_from_data_files(filter(__event_file_filter, all_files))
+    run_metadata_file = find_first_or_none(all_files, __run_metadata_file_filter)
+    logfile = find_first_or_none(all_files, __solver_logfile_filter)
     assert run_metadata_file is not None, "There must be metadata attached to experiment result"
 
-    return SeriesOutputFiles(directory, event_files, run_metadata_file)
+    return SeriesOutputFiles(directory, event_files, run_metadata_file, logfile)
 
 
 def materialize_series_output(output: SeriesOutput, force: bool = False):
