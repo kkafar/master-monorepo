@@ -180,6 +180,6 @@ class MultiProcessTaskRunner:
 
         assert len(completed_tasks) == n_tasks
 
-        print(f"Completed batch of {len(tasks)} in {runinfo.duration}")
+        print(f"Completed batch of {len(tasks)} (OK: {runinfo.success_count}, ERR: {runinfo.failed_count}) in {runinfo.duration}")
         return completed_tasks, runinfo
 
