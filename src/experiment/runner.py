@@ -1,7 +1,7 @@
 from .solver import SolverProxy, SolverParams, SolverRunMetadata, SolverResult
 from .model import ExperimentResult, ExperimentConfig, SeriesOutput
 from core.util import iter_batched
-from core.fs import simple_output_dir_resolver
+from core.fs import output_dir_for_series, solver_logfile_for_series
 from core.env import ArrayJobSpec, input_range_from_jobspec
 
 
@@ -23,29 +23,31 @@ class LocalExperimentRunner:
     def __init__(self, solver: SolverProxy):
         self.solver: SolverProxy = solver
 
-    def _params_from_configs(self, configs: list[ExperimentConfig]) -> list[SolverParams]:
+    def __params_from_configs(self, configs: list[ExperimentConfig]) -> list[SolverParams]:
         params = []
         for cfg in configs:
             for sid in range(0, cfg.n_series):
-                out_dir = simple_output_dir_resolver(cfg.output_dir, sid)
-                params.append(SolverParams(cfg.input_file, out_dir, cfg.config_file))
+                out_dir = output_dir_for_series(cfg.output_dir, sid)
+                solver_logfile = solver_logfile_for_series(cfg.output_dir, sid)
+                params.append(SolverParams(cfg.input_file, out_dir, cfg.config_file, solver_logfile))
         return params
 
     def run(self, config: ExperimentConfig) -> ExperimentResult:
         run_metadata: list[SolverRunMetadata] = []
         series_outputs: list[SeriesOutput] = []
         for sid in range(0, config.n_series):
-            out_dir = simple_output_dir_resolver(config.output_dir, sid)
-            params = SolverParams(config.input_file, out_dir, config.config_file)
+            out_dir = output_dir_for_series(config.output_dir, sid)
+            solver_logfile = solver_logfile_for_series(config.output_dir, sid)
+            params = SolverParams(config.input_file, out_dir, config.config_file, solver_logfile)
             solver_result: SolverResult = self.solver.run(params)
             series_outputs.append(solver_result.series_output)
             run_metadata.append(solver_result.run_metadata)
         return ExperimentResult(series_outputs=series_outputs, metadata=run_metadata)
 
     def run_multiprocess(self, configs: list[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
-        params = self._params_from_configs(configs)
+        params = self.__params_from_configs(configs)
 
-        solver_results = self.solver.run_nonblocking(params, process_limit)
+        solver_results = self.solver.run_multiprocess(params, process_limit)
 
         # lets assert that chunks are equal
         n_series = configs[0].n_series
@@ -69,8 +71,9 @@ class AresExpScheduler:
         params = []
         for cfg in configs:
             for sid in range(0, cfg.n_series):
-                out_dir = simple_output_dir_resolver(cfg.output_dir, sid)
-                params.append(SolverParams(cfg.input_file, out_dir, cfg.config_file))
+                out_dir = output_dir_for_series(cfg.output_dir, sid)
+                logfile = solver_logfile_for_series(cfg.output_dir, sid)
+                params.append(SolverParams(cfg.input_file, out_dir, cfg.config_file, logfile))
         return params
 
     def run(self, configs: list[ExperimentConfig]) -> None:

@@ -11,11 +11,17 @@ def experiment_file_resolver(experiment: Experiment) -> Path:
     return experiment_file_from_directory(experiment.config.output_dir)
 
 
-def simple_output_dir_resolver(base_output_dir: Path, series_id: int) -> Path:
+def output_dir_for_series(base_output_dir: Path, series_id: int) -> Path:
     dir_name = base_output_dir.stem + \
         '-series-' + \
         str(series_id)
     return base_output_dir.joinpath(dir_name)
+
+
+def solver_logfile_for_series(base_output_dir: Path, series_id: int) -> Path:
+    directory = output_dir_for_series(base_output_dir, series_id)
+    directory.joinpath('stdout.log')
+    return directory
 
 
 # TODO: This function should not be here
@@ -44,7 +50,7 @@ def initialize_file_hierarchy(experiments: list[Experiment]):
     for experiment in experiments:
         experiment.config.output_dir.mkdir(parents=True, exist_ok=True)
         for series_i in range(0, experiment.config.n_series):
-            series_dir = simple_output_dir_resolver(experiment.config.output_dir, series_i)
+            series_dir = output_dir_for_series(experiment.config.output_dir, series_i)
             series_dir.mkdir(parents=True, exist_ok=True)
 
         experiment_file = experiment_file_resolver(experiment)
