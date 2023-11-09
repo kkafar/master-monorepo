@@ -16,7 +16,7 @@ class LocalExperimentBatchRunner:
         if process_limit == 1:
             return [self.runner.run(desc) for desc in self.configs]
         else:
-            return self.runner.run_in_parallel(self.configs, process_limit)
+            return self.runner.run_multiprocess(self.configs, process_limit)
 
 
 class LocalExperimentRunner:
@@ -42,7 +42,7 @@ class LocalExperimentRunner:
             run_metadata.append(solver_result.run_metadata)
         return ExperimentResult(series_outputs=series_outputs, metadata=run_metadata)
 
-    def run_in_parallel(self, configs: list[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
+    def run_multiprocess(self, configs: list[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
         params = self._params_from_configs(configs)
 
         solver_results = self.solver.run_nonblocking(params, process_limit)
