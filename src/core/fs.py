@@ -20,8 +20,7 @@ def output_dir_for_series(base_output_dir: Path, series_id: int) -> Path:
 
 def solver_logfile_for_series(base_output_dir: Path, series_id: int) -> Path:
     directory = output_dir_for_series(base_output_dir, series_id)
-    directory.joinpath('stdout.log')
-    return directory
+    return directory.joinpath('stdout.log')
 
 
 # TODO: This function should not be here

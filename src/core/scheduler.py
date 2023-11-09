@@ -154,7 +154,7 @@ class MultiProcessTaskRunner:
                 just_finished_tasks.add(task)
                 finished_count += 1
 
-                if not completed_tasks.is_ok():
+                if not completed_task.is_ok():
                     self.__log_complete_error(completed_task)
                     failed_count += 1
                 else:
