@@ -68,6 +68,7 @@ class Event:
     POP_METRICS = 'popmetrics'
     POP_GEN_TIME = 'popgentime'
     ITER_INFO = 'iterinfo'
+    DIVERSITY = 'diversity'  # backward compat
 
     ALL_EVENTS = [
         NEW_BEST,

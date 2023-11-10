@@ -37,7 +37,8 @@ def handle_cmd_run(args: RunCmdArgs):
     for file in input_files:
         name = exp_name_from_input_file(file)
         metadata = metadata_store.get(name)
-        print(f"Looking up metadata for {name}: {metadata}")
+        if metadata is None:
+            print(f"Missing metadata for {metadata}")
         out_dir = output_dir_for_experiment_with_name(name, base_dir)
         batch.append(
             Experiment(
@@ -68,7 +69,7 @@ def handle_cmd_analyze(args: AnalyzeCmdArgs):
     if args.output_dir is not None:
         init_processed_data_file_hierarchy(experiment_batch, args.output_dir)
 
-    process_experiment_batch_output(experiment_batch, args.output_dir, args.procs)
+    process_experiment_batch_output(experiment_batch, args.output_dir, args.procs, args.plot)
 
 
 def handle_cmd_perfcmp(args: PerfcmpCmdArgs):

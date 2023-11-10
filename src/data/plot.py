@@ -30,7 +30,8 @@ def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData, plo
 
     fig_popmet, axes = plt.subplots(nrows=1, ncols=2)
     plot_diversity_avg(axes[0], data.popmetrics, exp.instance)
-    plot_distance_avg(axes[1], data.popmetrics, exp.instance)
+    if Col.DISTANCE in data.popmetrics.columns:  # Fix it by doing some kind of data-migration (insert empty column and rename files in old results)
+        plot_distance_avg(axes[1], data.popmetrics, exp.instance)
 
     fig_bfavg, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
