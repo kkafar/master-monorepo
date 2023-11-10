@@ -69,7 +69,7 @@ def handle_cmd_analyze(args: AnalyzeCmdArgs):
     if args.output_dir is not None:
         init_processed_data_file_hierarchy(experiment_batch, args.output_dir)
 
-    process_experiment_batch_output(experiment_batch, args.output_dir, args.procs)
+    process_experiment_batch_output(experiment_batch, args.output_dir, args.procs, args.plot)
 
 
 def handle_cmd_perfcmp(args: PerfcmpCmdArgs):
