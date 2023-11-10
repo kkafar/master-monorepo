@@ -97,9 +97,9 @@ def build_cli() -> argparse.ArgumentParser:
     run_parser.set_defaults(handler=handle_cmd_run)
 
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")
-    analyze_parser.add_argument('--dir', help='Directory with the result files', type=Path, required=True)
+    analyze_parser.add_argument('-i', '--dir', help='Directory with the result files', type=Path, required=True)
     analyze_parser.add_argument('-m', '--metadata-file', type=Path, required=True, help='Path to file with instance metadata', dest='metadata_file')
-    analyze_parser.add_argument('--output-dir', type=Path, required=False, help='Ouput directory for analysis result. If not specified, no results are saved')
+    analyze_parser.add_argument('-o', '--output-dir', type=Path, required=False, help='Ouput directory for analysis result. If not specified, no results are saved')
     analyze_parser.add_argument('-p', '--procs', type=int, required=False, help='Number of processes to run in parallel', default=1)
     analyze_parser.set_defaults(handler=handle_cmd_analyze)
 
