@@ -60,7 +60,7 @@ def data_frame_from_file(data_file: Path, has_header: bool = False) -> pl.DataFr
     return df
 
 
-def _update_df_with(base_df: pl.DataFrame, new_df: pl.DataFrame) -> pl.DataFrame:
+def __update_df_with(base_df: pl.DataFrame, new_df: pl.DataFrame) -> pl.DataFrame:
     if base_df is not None:
         base_df.vstack(new_df, in_place=True)
     else:
@@ -68,7 +68,7 @@ def _update_df_with(base_df: pl.DataFrame, new_df: pl.DataFrame) -> pl.DataFrame
     return base_df
 
 
-def _add_sid_column_to_df(df: pl.DataFrame, sid: int) -> pl.DataFrame:
+def __add_sid_column_to_df(df: pl.DataFrame, sid: int) -> pl.DataFrame:
     return df.with_columns(pl.Series(Col.SID, [sid for _ in range(0, df.shape[0])]))
 
 
@@ -85,11 +85,14 @@ def experiment_data_from_all_series(experiment: Experiment) -> JoinedExperimentD
         if not series_output.is_materialized():
             materialize_series_output(series_output, force=False)
 
-        exp_data.newbest = _update_df_with(exp_data.newbest, _add_sid_column_to_df(series_output.data.data_for_event(Event.NEW_BEST), sid))
-        exp_data.popmetrics = _update_df_with(exp_data.popmetrics, _add_sid_column_to_df(series_output.data.data_for_event(Event.POP_METRICS), sid))
-        exp_data.bestingen = _update_df_with(exp_data.bestingen, _add_sid_column_to_df(series_output.data.data_for_event(Event.BEST_IN_GEN), sid))
-        exp_data.popgentime = _update_df_with(exp_data.popgentime, _add_sid_column_to_df(series_output.data.data_for_event(Event.POP_GEN_TIME), sid))
-        exp_data.iterinfo = _update_df_with(exp_data.iterinfo, _add_sid_column_to_df(series_output.data.data_for_event(Event.ITER_INFO), sid))
+        # I've messed up some time ago and changed name (and structure) of the file, paying the debt here
+        popmetrics_filename = Event.POP_METRICS if series_output.data.data_for_event(Event.POP_METRICS) is not None else Event.DIVERSITY
+
+        exp_data.newbest = __update_df_with(exp_data.newbest, __add_sid_column_to_df(series_output.data.data_for_event(Event.NEW_BEST), sid))
+        exp_data.popmetrics = __update_df_with(exp_data.popmetrics, __add_sid_column_to_df(series_output.data.data_for_event(popmetrics_filename), sid))
+        exp_data.bestingen = __update_df_with(exp_data.bestingen, __add_sid_column_to_df(series_output.data.data_for_event(Event.BEST_IN_GEN), sid))
+        exp_data.popgentime = __update_df_with(exp_data.popgentime, __add_sid_column_to_df(series_output.data.data_for_event(Event.POP_GEN_TIME), sid))
+        exp_data.iterinfo = __update_df_with(exp_data.iterinfo, __add_sid_column_to_df(series_output.data.data_for_event(Event.ITER_INFO), sid))
 
     return exp_data
 

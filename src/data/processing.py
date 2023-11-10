@@ -14,7 +14,7 @@ from problem import (
 )
 
 
-def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path]):
+def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path], should_plot: bool = True):
     """ :param outdir: directory for saving processed data """
 
     print(f"Processing experiment {exp.name}")
@@ -32,27 +32,28 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
         # else:
         #     print(f'ERR ({errstr})')
 
-        visualise_instance_solution(exp, instance, sid, exp_plotdir)
+        if should_plot:
+            visualise_instance_solution(exp, instance, sid, exp_plotdir)
         instance.reset()
 
-    create_plots_for_experiment(exp, data, exp_plotdir)
+    if should_plot:
+        create_plots_for_experiment(exp, data, exp_plotdir)
     # compute_per_exp_stats(exp, data)
 
 
-def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Path], process_count: int = 1):
+def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Path], process_count: int = 1, should_plot: bool = True):
     """ :param outdir: directory for saving processed data """
 
     data = [experiment_data_from_all_series(exp) for exp in batch]
 
     if process_count == 1:
         for exp, expdata in zip(batch, data):
-            process_experiment_data(exp, expdata, outdir)
+            process_experiment_data(exp, expdata, outdir, should_plot)
     else:
         from multiprocessing import get_context
         with get_context("spawn").Pool(process_count) as pool:
-            pool.starmap(process_experiment_data, zip(batch, data, it.cycle([outdir])))
+            pool.starmap(process_experiment_data, zip(batch, data, it.repeat(outdir), it.repeat(should_plot)))
 
-    print("computing global stats")
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
     compute_global_exp_stats(batch, data, tabledir)
 

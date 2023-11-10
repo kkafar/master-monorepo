@@ -37,7 +37,8 @@ def handle_cmd_run(args: RunCmdArgs):
     for file in input_files:
         name = exp_name_from_input_file(file)
         metadata = metadata_store.get(name)
-        print(f"Looking up metadata for {name}: {metadata}")
+        if metadata is None:
+            print(f"Missing metadata for {metadata}")
         out_dir = output_dir_for_experiment_with_name(name, base_dir)
         batch.append(
             Experiment(
