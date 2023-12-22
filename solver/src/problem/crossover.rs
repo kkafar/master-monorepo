@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use ecrs::{ga::individual::IndividualTrait, prelude::crossover::CrossoverOperator};
 use rand::{thread_rng, Rng};
 
@@ -66,3 +68,32 @@ impl CrossoverOperator<JsspIndividual> for NoopCrossover {
         (parent_1.clone(), parent_2.clone())
     }
 }
+
+pub struct MidPoint;
+
+impl MidPoint {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl CrossoverOperator<JsspIndividual> for MidPoint {
+    fn apply(&mut self, parent_1: &JsspIndividual, parent_2: &JsspIndividual) -> (JsspIndividual, JsspIndividual) {
+        let mut child_1 = parent_1.clone();
+        let mut child_2 = parent_2.clone();
+
+        let chromosome_len = parent_1.chromosome.len();
+        let midpoint = chromosome_len / 2;
+
+        for i in midpoint..chromosome_len {
+            child_1.chromosome[i] = parent_2.chromosome[i];
+            child_2.chromosome[i] = parent_1.chromosome[i];
+        }
+
+        child_1.is_fitness_valid = false;
+        child_2.is_fitness_valid = false;
+
+        (child_1, child_2)
+    }
+}
+
