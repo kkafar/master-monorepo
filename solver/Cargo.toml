@@ -1,0 +1,22 @@
+[package]
+name = "solver"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/kkafar/master-monorepo.git"
+homepage = "https://github.com/kkafar/master-monorepo.git"
+description = "Solvers for JSSP"
+keywords = ["evolution", "evolutionary", "algorithms", "genetic", "jssp"]
+categories = ["science"]
+license = "MIT OR Apache-2.0"
+exclude = [".github/*", "Cargo.lock", "coco/"]
+
+[dependencies]
+ecrs = { path = "../ecrs/" }
+log4rs = { version = "1.2.0" }
+clap = { version = "4.2.7", features = ["derive"] }
+md5 = { version = "0.7.0" }
+log = { version = "0.4.17" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1.0.79"
+itertools = "0.10.2"
+rand = "0.8.5"
