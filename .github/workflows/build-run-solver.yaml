@@ -23,12 +23,12 @@ jobs:
         with:
           submodules: true
       - name: Update toolchain
-        working_directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: rustup update
       - name: Build
-        working_directory: ${{ env.WORKING_DIRECTORY }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: cargo build --example jssp --release
       - name: Run JSSP example on mock data
-        working_directory: ${{ env.WORKING_DIRECTORY }}
-        run: cargo run --example jssp --release -- --input-file examples/jssp/instances/test-case.txt --output-dir output
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo run --release -- --input-file instances/test-case.txt --output-dir output
 
