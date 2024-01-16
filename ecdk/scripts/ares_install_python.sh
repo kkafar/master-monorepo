@@ -5,8 +5,8 @@
 #SBATCH --time=00:20:00
 #SBATCH --account=plglscclass23-cpu
 
-ecdk_dir=${HOME}/master/ecdk
-ecrs_dir=${HOME}/master/ecrs
+ecdk_dir=${HOME}/master/master-monorepo/ecdk
+ecrs_dir=${HOME}/master/master-monorepo/ecrs
 
 # $1: module name
 function load_module_if_needed() {

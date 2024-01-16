@@ -28,10 +28,10 @@ assert_binary_exists () {
   fi
 }
 
-ecdk_dir=${HOME}/master/ecdk
-ecrs_dir=${HOME}/master/ecrs
-solver_bin=${HOME}/master/bin/jssp
-metadata_file=${HOME}/master/ecdk/data/metadata/instance_metadata_v2.txt
+ecdk_dir=${HOME}/master/master-monorepo/ecdk
+ecrs_dir=${HOME}/master/master-monorepo/ecrs
+solver_bin=${HOME}/master/master-monorepo/bin/solver
+metadata_file=${HOME}/master/master-monorepo/ecdk/data/metadata/instance_metadata_v2.txt
 plggroup="plgglscclass"
 grant="plglscclass23-cpu"
 
