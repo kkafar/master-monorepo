@@ -1,0 +1,4 @@
+{
+  "n_gen": 600,
+  "solver_type": "custom_crossover"
+}
