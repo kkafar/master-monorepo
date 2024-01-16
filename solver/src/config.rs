@@ -10,6 +10,11 @@ use serde::Deserialize;
 
 use crate::cli::Args;
 
+pub const SOLVER_TYPE_DEFAULT: &'static str = "default";
+pub const SOLVER_TYPE_RANDOMSEARCH: &'static str = "randomsearch";
+pub const SOLVER_TYPE_CUSTOM_CROSSOVER: &'static str = "custom_crossover";
+
+
 #[derive(Debug, Clone)]
 pub struct Config {
     /// Path to file with instance specification
@@ -30,8 +35,8 @@ pub struct Config {
     /// Delay = Gene_{n+g} * delay_const_factor * maxdur. If not specified, defaults to 1.5.
     pub delay_const_factor: Option<f64>,
 
-    /// Whether to use randomsearch instead of "normal" solver
-    pub perform_randomsearch: bool,
+    /// Solver type to run. Available options: `default`, `randomsearch`, `custom_crossover`
+    pub solver_type: String
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -41,7 +46,7 @@ pub struct PartialConfig {
     pub n_gen: Option<usize>,
     pub pop_size: Option<usize>,
     pub delay_const_factor: Option<f64>,
-    pub perform_randomsearch: Option<bool>,
+    pub solver_type: Option<String>,
 }
 
 impl PartialConfig {
@@ -52,7 +57,7 @@ impl PartialConfig {
             n_gen: None,
             pop_size: None,
             delay_const_factor: None,
-            perform_randomsearch: None,
+            solver_type: None,
         }
     }
 }
@@ -83,7 +88,7 @@ impl TryFrom<PartialConfig> for Config {
             n_gen: partial_cfg.n_gen,
             pop_size: partial_cfg.pop_size,
             delay_const_factor: partial_cfg.delay_const_factor,
-            perform_randomsearch: partial_cfg.perform_randomsearch.unwrap_or(false),
+            solver_type: partial_cfg.solver_type.unwrap_or(String::from(SOLVER_TYPE_DEFAULT)),
         })
     }
 }
@@ -116,8 +121,8 @@ impl TryFrom<Args> for Config {
         if let Some(factor) = args.delay_const_factor {
             partial_cfg.delay_const_factor = Some(factor);
         }
-        if let Some(randomsearch) = args.perform_randomseach {
-            partial_cfg.perform_randomsearch = Some(randomsearch);
+        if let Some(solver_type) = args.solver_type {
+            partial_cfg.solver_type = Some(solver_type);
         }
 
         Config::try_from(partial_cfg)
