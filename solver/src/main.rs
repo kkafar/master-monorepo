@@ -30,26 +30,34 @@ use problem::population::JsspPopProvider;
 use problem::probe::JsspProbe;
 use problem::replacement::JsspReplacement;
 
+use crate::problem::crossover::MidPoint;
 use crate::problem::{JsspConfig, JsspInstance};
+
+struct RunConfig {
+    pop_size: usize,
+    n_gen: usize,
+}
+
+fn get_run_config(instance: &JsspInstance, config: &Config) -> RunConfig {
+    let pop_size = if let Some(ps) = config.pop_size {
+        ps  // Overrided by user
+    } else {
+        instance.cfg.n_ops * 2  // Defined in paper
+    };
+
+    let n_gen = if let Some(ng) = config.n_gen {
+        ng  // Overrided by user
+    } else {
+        400  // Defined in paper
+    };
+
+    RunConfig { pop_size, n_gen }
+}
 
 fn run_randomsearch(instance: JsspInstance, config: Config) {
     info!("Running jssp solver with random search");
 
-    let pop_size = if let Some(ps) = config.pop_size {
-        // Overrided by user
-        ps
-    } else {
-        // Defined in paper
-        instance.cfg.n_ops * 2
-    };
-
-    let n_gen = if let Some(ng) = config.n_gen {
-        // Overrided by user
-        ng
-    } else {
-        // Defined in paper
-        400
-    };
+    let run_config = get_run_config(&instance, &config);
 
     // let probe = AggregatedProbe::new()
     //     .add_probe(JsspProbe::new())
@@ -74,30 +82,17 @@ fn run_randomsearch(instance: JsspInstance, config: Config) {
             JsspPopProvider::new(instance),
         ))
         .set_probe(JsspProbe::new())
-        .set_max_generation_count(n_gen)
-        .set_population_size(pop_size)
+        .set_max_generation_count(run_config.n_gen)
+        .set_population_size(run_config.pop_size)
         .build()
         .run();
 }
 
-fn run_jssp_solver(instance: JsspInstance, config: Config) {
+fn run_paper_solver(instance: JsspInstance, config: Config) {
     info!("Running JSSP solver");
 
-    let pop_size = if let Some(ps) = config.pop_size {
-        // Overrided by user
-        ps
-    } else {
-        // Defined in paper
-        instance.cfg.n_ops * 2
-    };
+    let run_config = get_run_config(&instance, &config);
 
-    let n_gen = if let Some(ng) = config.n_gen {
-        // Overrided by user
-        ng
-    } else {
-        // Defined in paper
-        400
-    };
 
     // let probe = AggregatedProbe::new()
     //     .add_probe(JsspProbe::new())
@@ -121,8 +116,28 @@ fn run_jssp_solver(instance: JsspInstance, config: Config) {
         .set_fitness(JsspFitness::new(1.5))
         .set_probe(JsspProbe::new())
         // .set_max_duration(std::time::Duration::from_secs(30))
-        .set_max_generation_count(n_gen)
-        .set_population_size(pop_size)
+        .set_max_generation_count(run_config.n_gen)
+        .set_population_size(run_config.pop_size)
+        .build()
+        .run();
+}
+
+fn run_paper_solver_with_custom_operators(instance: JsspInstance, config: Config) {
+    info!("Running jssp solver with custom operators");
+
+    let run_config = get_run_config(&instance, &config);
+
+    ga::Builder::new()
+        .set_selection_operator(selection::Rank::new())
+        .set_crossover_operator(MidPoint::new())
+        .set_mutation_operator(mutation::Identity::new())
+        .set_population_generator(JsspPopProvider::new(instance.clone()))
+        .set_replacement_operator(JsspReplacement::new(JsspPopProvider::new(instance), 0.1, 0.2))
+        .set_fitness(JsspFitness::new(1.5))
+        .set_probe(JsspProbe::new())
+        // .set_max_duration(std::time::Duration::from_secs(30))
+        .set_max_generation_count(run_config.n_gen)
+        .set_population_size(run_config.pop_size)
         .build()
         .run();
 }
@@ -146,7 +161,7 @@ fn run() {
 
     match config.perform_randomsearch {
         true => run_randomsearch(instance, config),
-        false => run_jssp_solver(instance, config),
+        false => run_paper_solver(instance, config),
     }
 }
 
