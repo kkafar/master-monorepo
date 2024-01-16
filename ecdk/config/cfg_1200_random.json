@@ -1,4 +1,4 @@
 {
   "n_gen": 1200,
-  "perform_randomsearch": true
+  "solver_type": "randomsearch"
 }
