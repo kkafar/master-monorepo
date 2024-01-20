@@ -23,11 +23,11 @@ class SolverProxy:
     def __task_from_params(self, id: int, params: SolverParams) -> Task:
         return Task(
             id=id,
-            process_args=self.__run_args_from_params(params),
+            process_args=self.exec_cmd_from_params(params),
             stdout_file=params.stdout_file
         )
 
-    def __run_args_from_params(self, params: SolverParams) -> list[str]:
+    def exec_cmd_from_params(self, params: SolverParams) -> list[str]:
         base = [
             self.binary,  # Converted for older version of Python on Ares
             SolverProxy.INPUT_FILE_OPT_NAME,
@@ -42,7 +42,7 @@ class SolverProxy:
     def run(self, params: SolverParams) -> SolverResult:
         print(f"Running with {params}", end=' ', flush=True)
         start_time = dt.datetime.now()
-        args = self.__run_args_from_params(params)
+        args = self.exec_cmd_from_params(params)
         completed_process: sp.CompletedProcess = sp.run(args, stdout=sp.DEVNULL)
         end_time = dt.datetime.now()
 
