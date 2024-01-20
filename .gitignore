@@ -3,4 +3,6 @@
 *.out
 .venv/
 *.debug
+raw-data-archive/*
+!raw-data-archive/.gitkeep
 
