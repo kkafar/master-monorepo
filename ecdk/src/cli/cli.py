@@ -94,6 +94,7 @@ def build_cli() -> argparse.ArgumentParser:
     run_parser.add_argument('-p', '--procs', type=int, required=False, help='Number of processes to run in parallel', default=1)
     run_parser.add_argument('--attach-timestamp', action=argparse.BooleanOptionalAction, type=bool,
                             required=False, help='Whether a timestamp should be attached to output file name', default=True, dest='attach_timestamp')
+    run_parser.add_argument('--hq', action=argparse.BooleanOptionalAction, type=bool, required=False, default=False, dest='hq', help='Whether HyperQueue should be used')
     run_parser.set_defaults(handler=handle_cmd_run)
 
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")

@@ -1,5 +1,5 @@
 from .args import RunCmdArgs, AnalyzeCmdArgs, PerfcmpCmdArgs
-from experiment.runner import LocalExperimentBatchRunner, AresExpScheduler
+from experiment.runner import LocalExperimentBatchRunner, AresExpScheduler, HyperQueueRunner
 from experiment.solver import SolverProxy
 from experiment.model import (
     ExperimentResult,
@@ -55,10 +55,13 @@ def handle_cmd_run(args: RunCmdArgs):
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
 
-    LocalExperimentBatchRunner(
-        SolverProxy(args.bin),
-        [exp.config for exp in batch]
-    ).run(process_limit=args.procs)
+    if args.hq and is_running_on_ares():
+        HyperQueueRunner()
+    else:
+        LocalExperimentBatchRunner(
+            SolverProxy(args.bin),
+            [exp.config for exp in batch]
+        ).run(process_limit=args.procs)
 
 
 def handle_cmd_analyze(args: AnalyzeCmdArgs):

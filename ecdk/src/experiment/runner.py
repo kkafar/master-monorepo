@@ -86,3 +86,25 @@ class AresExpScheduler:
 
         return None
 
+
+class HyperQueueRunner:
+    def __init__(self, solver: SolverProxy):
+        self.solver = solver
+
+
+    def run(self, configs: list[ExperimentConfig]) -> None:
+        # Important thing here is that we only dispatch the jobs, without waiting for their completion, at least now
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
