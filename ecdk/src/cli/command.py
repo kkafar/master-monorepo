@@ -56,7 +56,7 @@ def handle_cmd_run(args: RunCmdArgs):
     initialize_file_hierarchy(batch)
 
     if args.hq and is_running_on_ares():
-        HyperQueueRunner()
+        HyperQueueRunner(SolverProxy(args.bin))
     else:
         LocalExperimentBatchRunner(
             SolverProxy(args.bin),
