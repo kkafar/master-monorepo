@@ -96,8 +96,15 @@ class HyperQueueRunner:
         # We run on single job as the scheduling can be done on task level
         job = hq.Job(max_fails=1)
 
-        for params in params_iter:
-            job.program(self._solver.exec_cmd_from_params(params, stringify_args=True))
+        for id, params in enumerate(params_iter):
+            # With current implemntation this will be True, however it is not guaranteed in general
+            if params.stdout_file is not None:
+                job.program(self._solver.exec_cmd_from_params(params, stringify_args=True),
+                            name=f'Task_{i}',
+                            stdout=params.stdout_file,
+                            stderr=params.stdout_file)
+            else:
+                job.program(self._solver.exec_cmd_from_params(params, stringify_args=True), name=f'Task_{i}')
 
         self._client.submit(job)
 
