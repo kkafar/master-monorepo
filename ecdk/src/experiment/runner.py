@@ -97,7 +97,7 @@ class HyperQueueRunner:
         job = hq.Job(max_fails=1)
 
         for params in params_iter:
-            job.program(self._solver.exec_cmd_from_params(params))
+            job.program(self._solver.exec_cmd_from_params(params, stringify_binary=True))
 
         self._client.submit(job)
 

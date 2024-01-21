@@ -28,9 +28,9 @@ class SolverProxy:
             stdout_file=params.stdout_file
         )
 
-    def exec_cmd_from_params(self, params: SolverParams) -> list[str]:
+    def exec_cmd_from_params(self, params: SolverParams, stringify_binary: bool = False) -> list[str]:
         base = [
-            self.binary,  # Converted for older version of Python on Ares
+            self.binary if not stringify_binary else str(self.binary),  # Converted for older version of Python on Ares
             SolverProxy.INPUT_FILE_OPT_NAME,
             params.input_file,
             SolverProxy.OUTPUT_DIR_OPT_NAME,
