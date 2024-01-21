@@ -55,12 +55,14 @@ def handle_cmd_run(args: RunCmdArgs):
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
 
+    experiment_configs = [exp.config for exp in batch]
+
     if args.hq and is_running_on_ares():
-        HyperQueueRunner(SolverProxy(args.bin)).run()
+        HyperQueueRunner(SolverProxy(args.bin)).run(experiment_configs)
     else:
         LocalExperimentBatchRunner(
             SolverProxy(args.bin),
-            [exp.config for exp in batch]
+            experiment_configs
         ).run(process_limit=args.procs)
 
 
