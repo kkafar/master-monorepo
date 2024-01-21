@@ -1,5 +1,6 @@
 import subprocess as sp
 import datetime as dt
+from typing import Iterable
 from pathlib import Path
 from time import sleep
 from .model import (
@@ -58,7 +59,7 @@ class SolverProxy:
             series_output=load_series_output(params.output_dir, lazy=True),
             run_metadata=SolverRunMetadata(duration=timedelta, status=completed_process.returncode))
 
-    def run_multiprocess(self, params: list[SolverParams], process_limit: int = 1, poll_interval: float = 0.1) -> list[SolverResult]:
+    def run_multiprocess(self, params: Iterable[SolverParams], process_limit: int = 1, poll_interval: float = 0.1) -> list[SolverResult]:
         tasks = list(map(lambda x: self.__task_from_params(x[0], x[1]), enumerate(params)))
         completed_tasks, runinfo = MultiProcessTaskRunner().run(tasks, process_limit, poll_interval)
 

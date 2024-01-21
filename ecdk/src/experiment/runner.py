@@ -1,8 +1,22 @@
+import hyperqueue as hq
+import itertools as it
+from typing import Generator, Iterable
 from .solver import SolverProxy, SolverParams, SolverRunMetadata, SolverResult
 from .model import ExperimentResult, ExperimentConfig, SeriesOutput
 from core.util import iter_batched
 from core.fs import output_dir_for_series, solver_logfile_for_series
 from core.env import ArrayJobSpec, input_range_from_jobspec
+
+
+def solver_params_from_exp_config(config: ExperimentConfig) -> Generator[SolverParams, None, None]:
+    for series_id in range(0, config.n_series):
+        series_outdir = output_dir_for_series(config.output_dir, series_id)
+        solver_logfile = solver_logfile_for_series(config.output_dir, series_id)
+        yield SolverParams(config.input_file, series_outdir, config.config_file, solver_logfile)
+
+
+def solver_params_from_exp_config_collection(config_coll: Iterable[ExperimentConfig]) -> Iterable[SolverParams]:
+    return it.chain.from_iterable((solver_params_from_exp_config(config) for config in config_coll))
 
 
 class LocalExperimentBatchRunner:
@@ -23,31 +37,21 @@ class LocalExperimentRunner:
     def __init__(self, solver: SolverProxy):
         self.solver: SolverProxy = solver
 
-    def __params_from_configs(self, configs: list[ExperimentConfig]) -> list[SolverParams]:
-        params = []
-        for cfg in configs:
-            for sid in range(0, cfg.n_series):
-                out_dir = output_dir_for_series(cfg.output_dir, sid)
-                solver_logfile = solver_logfile_for_series(cfg.output_dir, sid)
-                params.append(SolverParams(cfg.input_file, out_dir, cfg.config_file, solver_logfile))
-        return params
 
     def run(self, config: ExperimentConfig) -> ExperimentResult:
         run_metadata: list[SolverRunMetadata] = []
         series_outputs: list[SeriesOutput] = []
-        for sid in range(0, config.n_series):
-            out_dir = output_dir_for_series(config.output_dir, sid)
-            solver_logfile = solver_logfile_for_series(config.output_dir, sid)
-            params = SolverParams(config.input_file, out_dir, config.config_file, solver_logfile)
+        for params in solver_params_from_exp_config(config):
             solver_result: SolverResult = self.solver.run(params)
             series_outputs.append(solver_result.series_output)
             run_metadata.append(solver_result.run_metadata)
         return ExperimentResult(series_outputs=series_outputs, metadata=run_metadata)
 
-    def run_multiprocess(self, configs: list[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
-        params = self.__params_from_configs(configs)
 
-        solver_results = self.solver.run_multiprocess(params, process_limit)
+    def run_multiprocess(self, configs: Iterable[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
+        params_iter = solver_params_from_exp_config_collection(configs)
+
+        solver_results = self.solver.run_multiprocess(params_iter, process_limit)
 
         # lets assert that chunks are equal
         n_series = configs[0].n_series
@@ -67,17 +71,9 @@ class AresExpScheduler:
     def __init__(self, solver: SolverProxy):
         self.solver = solver
 
-    def _params_from_configs(self, configs: list[ExperimentConfig]) -> list[SolverParams]:
-        params = []
-        for cfg in configs:
-            for sid in range(0, cfg.n_series):
-                out_dir = output_dir_for_series(cfg.output_dir, sid)
-                logfile = solver_logfile_for_series(cfg.output_dir, sid)
-                params.append(SolverParams(cfg.input_file, out_dir, cfg.config_file, logfile))
-        return params
 
     def run(self, configs: list[ExperimentConfig]) -> None:
-        params = self._params_from_configs(configs)
+        params = [param for param in solver_params_from_exp_config_collection(configs)]
         jobspec = ArrayJobSpec()
         indices = input_range_from_jobspec(jobspec, len(params))
 
@@ -89,22 +85,20 @@ class AresExpScheduler:
 
 class HyperQueueRunner:
     def __init__(self, solver: SolverProxy):
-        self.solver = solver
+        self._solver: SolverProxy = solver
+        self._client = hq.Client()  # We try to create client from default options, not passing path to server files rn
 
 
     def run(self, configs: list[ExperimentConfig]) -> None:
-        # Important thing here is that we only dispatch the jobs, without waiting for their completion, at least now
+        # Important thing here is that we only dispatch the jobs, without waiting for their completion, at for least now
+        params_iter = solver_params_from_exp_config_collection(configs)
 
-        
+        # We run on single job as the scheduling can be done on task level
+        job = hq.Job(max_fails=1)
 
+        for params in params_iter:
+            job.program(self._solver.exec_cmd_from_params(params))
 
-
-
-
-
-
-
-
-
+        self._client.submit(job)
 
 
