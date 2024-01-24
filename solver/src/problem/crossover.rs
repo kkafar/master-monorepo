@@ -137,8 +137,6 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
         //
         // }
 
-        println!("Selected {left_midpoint}, {right_midpoint} split points");
-
         for i in left_midpoint..self.midpoint {
             child_1.chromosome[i] = parent_2.chromosome[i];
             child_2.chromosome[i] = parent_1.chromosome[i];
