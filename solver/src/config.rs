@@ -13,6 +13,7 @@ use crate::cli::Args;
 pub const SOLVER_TYPE_DEFAULT: &'static str = "default";
 pub const SOLVER_TYPE_RANDOMSEARCH: &'static str = "randomsearch";
 pub const SOLVER_TYPE_CUSTOM_CROSSOVER: &'static str = "custom_crossover";
+pub const SOLVER_TYPE_DOUBLED_CROSSOVER: &'static str = "doubled_crossover";
 
 
 #[derive(Debug, Clone)]
