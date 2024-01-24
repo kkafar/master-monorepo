@@ -3,7 +3,9 @@
 module load python/3.10.8-gcccore-12.2.0
 pip install -r requirements.txt
 
-module load hyperqueue/0.17.0-liberec
+# Had issues starting a server after a restrat with liberec
+# module load hyperqueue/0.17.0-liberec
+module load hyperqueue/0.17.0
 
 nohup hq server start &
 
