@@ -240,8 +240,8 @@ mod test {
 
         let mut iter_1_1 = child_1.chromosome.iter().zip(parent_1_chromosome.iter()).skip(midpoint);
         let mut iter_2_2 = child_2.chromosome.iter().zip(parent_2_chromosome.iter()).skip(midpoint);
-        let mut iter_1_2 = child_1.chromosome.iter().zip(parent_2_chromosome.iter()).skip(midpoint);
-        let mut iter_2_1 = child_2.chromosome.iter().zip(parent_1_chromosome.iter()).skip(midpoint);
+        let iter_1_2 = child_1.chromosome.iter().zip(parent_2_chromosome.iter()).skip(midpoint);
+        let iter_2_1 = child_2.chromosome.iter().zip(parent_1_chromosome.iter()).skip(midpoint);
 
         let left_midpoint_1 = iter_1_1.find_position(|(&gene_a, &gene_b)| gene_a != gene_b);
         let left_midpoint_2 = iter_2_2.find_position(|(&gene_a, &gene_b)| gene_a != gene_b);
@@ -272,7 +272,5 @@ mod test {
         assert!(left_midpoint_idx_2 < midpoint);
         assert_eq!(left_midpoint_idx_1, left_midpoint_idx_2);
     }
-
-
 }
 
