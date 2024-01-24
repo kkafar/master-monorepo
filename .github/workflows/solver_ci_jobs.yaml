@@ -16,7 +16,7 @@ jobs:
   build-run:
     runs-on: ubuntu-latest
     concurrency:
-      group: solver-ci-${{ github.ref }}
+      group: solver-ci-build-run-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     concurrency:
-      group: solver-ci-${{ github.ref }}
+      group: solver-ci-test-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
