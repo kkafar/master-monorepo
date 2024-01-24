@@ -3,7 +3,7 @@
 module load python/3.10.8-gcccore-12.2.0
 pip install -r requirements.txt
 
-module load hyperqueue/0.17.0
+module load hyperqueue/0.17.0-liberec
 
 nohup hq server start &
 
