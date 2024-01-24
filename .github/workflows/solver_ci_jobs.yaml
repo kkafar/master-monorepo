@@ -13,7 +13,7 @@ env:
   CARGO_TERM_COLOR: always
   WORKING_DIRECTORY: solver
 jobs:
-  build_run:
+  build-run:
     runs-on: ubuntu-latest
     concurrency:
       group: solver-ci-${{ github.ref }}
