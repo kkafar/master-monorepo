@@ -9,14 +9,15 @@ nohup hq server start &
 
 # Enable automatic allocation (create queue)
 hq alloc add slurm \
-  --time-limit 2h \
+  --time-limit 5h \
   --workers-per-alloc 1 \
-  --max-worker-count 36 \
+  --max-worker-count 48 \
   --backlog 36 \
-  --idle-timeout 5m \
+  --idle-timeout 1m \
   -- \
   --partition=plgrid \
   --account=plglscclass23-cpu \
+  --mem-per-cpu=256M \
   --mail-type=begin \
   --mail-type=end \
   --mail-user=kkafara@student.agh.edu.pl
