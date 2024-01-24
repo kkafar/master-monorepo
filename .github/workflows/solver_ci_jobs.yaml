@@ -1,4 +1,4 @@
-name: Build & Run JSSP example on mock data
+name: Solver CI
 
 on:
   push:
@@ -13,10 +13,10 @@ env:
   CARGO_TERM_COLOR: always
   WORKING_DIRECTORY: solver
 jobs:
-  build:
+  build-run:
     runs-on: ubuntu-latest
     concurrency:
-      group: run-jssp-solver-${{ github.ref }}
+      group: solver-ci-build-run-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
@@ -31,4 +31,23 @@ jobs:
       - name: Run JSSP example on mock data
         working-directory: ${{ env.WORKING_DIRECTORY }}
         run: cargo run --release -- --input-file instances/test-case.txt --output-dir output
+
+  test:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: solver-ci-test-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update toolchain
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: rustup update
+      - name: Build
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo build --release
+      - name: Run tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo test --release
 

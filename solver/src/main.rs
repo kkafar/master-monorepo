@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use cli::Args;
-use config::{Config, SOLVER_TYPE_RANDOMSEARCH, SOLVER_TYPE_CUSTOM_CROSSOVER};
+use config::{Config, SOLVER_TYPE_RANDOMSEARCH, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_DOUBLED_CROSSOVER};
 use ecrs::ga::probe::{AggregatedProbe, ElapsedTime, PolicyDrivenProbe, ProbingPolicy};
 use ecrs::prelude::{crossover, ga, ops, replacement, selection};
 use ecrs::{
@@ -30,7 +30,7 @@ use problem::population::JsspPopProvider;
 use problem::probe::JsspProbe;
 use problem::replacement::JsspReplacement;
 
-use crate::problem::crossover::MidPoint;
+use crate::problem::crossover::{MidPoint, DoubledCrossover};
 use crate::problem::{JsspConfig, JsspInstance};
 
 struct RunConfig {
@@ -142,6 +142,26 @@ fn run_paper_solver_with_custom_operators(instance: JsspInstance, config: Config
         .run();
 }
 
+fn run_paper_solver_with_doubled_operator(instance: JsspInstance, config: Config) {
+    info!("Running jssp solver with doubled crossover operator");
+
+    let run_config = get_run_config(&instance, &config);
+
+    ga::Builder::new()
+        .set_selection_operator(selection::Rank::new())
+        .set_crossover_operator(DoubledCrossover::new(instance.cfg.n_ops * 2))
+        .set_mutation_operator(mutation::Identity::new())
+        .set_population_generator(JsspPopProvider::new(instance.clone()))
+        .set_replacement_operator(JsspReplacement::new(JsspPopProvider::new(instance), 0.1, 0.2))
+        .set_fitness(JsspFitness::new(1.5))
+        .set_probe(JsspProbe::new())
+        // .set_max_duration(std::time::Duration::from_secs(30))
+        .set_max_generation_count(run_config.n_gen)
+        .set_population_size(run_config.pop_size)
+        .build()
+        .run();
+}
+
 fn run() {
     let args = cli::parse_args();
     let config = match Config::try_from(args) {
@@ -162,6 +182,7 @@ fn run() {
     match config.solver_type.as_str() {
         SOLVER_TYPE_RANDOMSEARCH => run_randomsearch(instance, config),
         SOLVER_TYPE_CUSTOM_CROSSOVER => run_paper_solver_with_custom_operators(instance, config),
+        SOLVER_TYPE_DOUBLED_CROSSOVER => run_paper_solver_with_doubled_operator(instance, config),
         _ => run_paper_solver(instance, config),
     }
 }
