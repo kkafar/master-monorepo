@@ -172,7 +172,7 @@ def compare_perf_info(df_base: pl.DataFrame, df_bench: pl.DataFrame):
     print(df_res)
 
 
-def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[JoinedExperimentData], outdir: Optional[Path]):
+def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[JoinedExperimentData], outdir: Optional[Path]) -> pl.DataFrame:
     main_df = pl.DataFrame()
     colgen = pl.col(Col.GENERATION)
 
@@ -215,9 +215,10 @@ def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[Jo
         # print(avg_cvg_iter)
         # print(n_converged)
         # break
-    main_df = main_df.drop_nulls().sort('avg_cvg_iter')
+    main_df = main_df.drop_nulls().sort(KEY_EXPNAME)
     print(main_df)
 
+    return main_df
 
 
 

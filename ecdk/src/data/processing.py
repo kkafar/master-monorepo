@@ -60,7 +60,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     #         pool.starmap(process_experiment_data, zip(batch, data, it.repeat(outdir), it.repeat(should_plot)))
     #
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
-    # compute_global_exp_stats(batch, data, tabledir)
+    compute_global_exp_stats(batch, data, tabledir)
     compute_convergence_iteration_per_exp(batch, data, tabledir)
 
 
