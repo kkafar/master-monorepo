@@ -4,6 +4,7 @@ from .args import (
     AnalyzeCmdArgs,
     PerfcmpCmdArgs,
 )
+from core.env import EnvContext
 
 def validate_base_args(args: Args):
     assert args.cmd_name in ['run', 'analyze', 'perfcmp'], "Unrecognized command name"

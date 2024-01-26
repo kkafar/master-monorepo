@@ -14,6 +14,7 @@ from .validation import (
     validate_analyze_cmd_args,
     validate_perfcmp_cmd_args,
 )
+from core.env import EnvContext
 
 
 def build_cli() -> argparse.ArgumentParser:
@@ -61,7 +62,15 @@ def build_cli() -> argparse.ArgumentParser:
     return main_parser
 
 
-def parse_cli_args() -> Args:
+def merge_run_args_with_context(args: RunCmdArgs, ctx: EnvContext):
+    pass
+
+
+def parse_cli_args(ctx: EnvContext) -> Args:
     args: Args = build_cli().parse_args()
+
+    if args.cmd_name == 'run':
+        merge_run_args_with_context(args, ctx)
+
     validate_cli_args(args)
     return args
