@@ -17,7 +17,7 @@ sys.path.append(str(Path.cwd().joinpath('src')))
 
 import polars as pl
 import matplotlib.pyplot as plt
-import cli.cli as cli
+import cli
 
 
 def configure_env():
