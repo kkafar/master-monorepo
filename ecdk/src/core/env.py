@@ -1,9 +1,11 @@
 import os
-from typing import Callable, Optional, TypeVar
+from typing import Callable, Optional, TypeVar, Literal
+from pathlib import Path
 
 RT_LOCAL = 'local'
 RT_ARES = 'ares'
 RT_UNKNOWN = 'unknown'
+RuntimeName = Literal[RT_ARES] | Literal[RT_LOCAL] | Literal[RT_UNKNOWN]
 
 
 T = TypeVar('T')
@@ -57,7 +59,7 @@ def getmap_env(var: str, mapfunc: Callable[[str], T]) -> Optional[T]:
     return mapfunc(var_as_str)
 
 
-def get_runtime_name() -> str:
+def get_runtime_name() -> RuntimeName:
     """ Hacky way to detect whether we are running on Ares or not """
     username = os.getenv('USER', default=None)
     if username is None:
@@ -72,5 +74,17 @@ def is_running_on_ares() -> bool:
     return get_runtime_name() == RT_ARES
 
 
+class EnvContext:
+    def __init__(self, strict: bool = False):
+        self.runtime: RuntimeName = get_runtime_name()
+        self.is_ares: bool = self.runtime == RT_ARES
+        self.repo_path: Optional[Path] = getmap_env('MY_MASTER_REPO', Path)
+        self.short_term_cache_path: Optional[Path] = getmap_env('MY_SCRATCH', Path)
+        self.long_term_cache_path: Optional[Path] = getmap_env('MY_GROUPS_STORAGE', Path)
 
+        if strict:
+            assert self.runtime != RT_UNKNOWN
+            assert self.repo_path is not None and self.repo_path.is_dir()
+            assert self.short_term_cache_path is not None and self.short_term_cache_path.is_dir()
+            assert self.long_term_cache_path is not None and self.long_term_cache_path.is_dir()
 
