@@ -34,6 +34,8 @@ def handle_cmd_run(args: RunCmdArgs):
     if not is_running_on_ares() and args.attach_timestamp:
         base_dir = attach_timestamp_to_dir(base_dir, current_timestamp())
 
+
+
     for file in input_files:
         name = exp_name_from_input_file(file)
         metadata = metadata_store.get(name)
