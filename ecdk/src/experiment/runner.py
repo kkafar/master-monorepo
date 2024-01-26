@@ -84,13 +84,13 @@ class AresExpScheduler:
 
 class HyperQueueRunner:
     def __init__(self, solver: SolverProxy):
-        import hyperqueue
+        import hyperqueue as hq
         self._solver: SolverProxy = solver
         self._client = hq.Client()  # We try to create client from default options, not passing path to server files rn
 
 
     def run(self, configs: list[ExperimentConfig]) -> None:
-        import hyperqueue
+        import hyperqueue as hq
         # Important thing here is that we only dispatch the jobs, without waiting for their completion, at for least now
         params_iter = solver_params_from_exp_config_collection(configs)
 
