@@ -5,6 +5,7 @@ output.csv
 output/
 run.sh
 *local.*
+*.local
 instances/
 data/
 !src/data/

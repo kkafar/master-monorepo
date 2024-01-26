@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Callable
+from core.env import EnvContext
 
 
 @dataclass
 class Args:
     cmd_name: str
-    handler: Callable
+    handler: Callable[[EnvContext, Args], None]
 
 
 @dataclass
