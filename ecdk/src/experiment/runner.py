@@ -5,7 +5,6 @@ from .model import ExperimentResult, ExperimentConfig, SeriesOutput
 from core.util import iter_batched
 from core.fs import output_dir_for_series, solver_logfile_for_series
 from core.env import ArrayJobSpec, input_range_from_jobspec
-from core.lazymodule import LazyModule
 
 
 def solver_params_from_exp_config(config: ExperimentConfig) -> Generator[SolverParams, None, None]:
@@ -84,19 +83,19 @@ class AresExpScheduler:
 
 
 class HyperQueueRunner:
-    hq = LazyModule('hyperqueue')
-
     def __init__(self, solver: SolverProxy):
+        import hyperqueue
         self._solver: SolverProxy = solver
-        self._client = HyperQueueRunner.hq.Client()  # We try to create client from default options, not passing path to server files rn
+        self._client = hq.Client()  # We try to create client from default options, not passing path to server files rn
 
 
     def run(self, configs: list[ExperimentConfig]) -> None:
+        import hyperqueue
         # Important thing here is that we only dispatch the jobs, without waiting for their completion, at for least now
         params_iter = solver_params_from_exp_config_collection(configs)
 
         # We run on single job as the scheduling can be done on task level
-        job = HyperQueueRunner.hq.Job(max_fails=1)
+        job = hq.Job(max_fails=1)
 
         for id, params in enumerate(params_iter):
             # With current implemntation this will be True, however it is not guaranteed in general
