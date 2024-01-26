@@ -23,3 +23,7 @@ class LazyModule:
             assert self._instance is not None
         return self._instance
 
+
+    def get(self):
+        return self.__get__(None)
+
