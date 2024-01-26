@@ -9,6 +9,9 @@ module load hyperqueue/0.17.0
 
 nohup hq server start &
 
+# Let the server start
+sleep 3
+
 # Enable automatic allocation (create queue)
 hq alloc add slurm \
   --time-limit 5h \

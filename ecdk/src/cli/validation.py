@@ -4,7 +4,7 @@ from .args import (
     AnalyzeCmdArgs,
     PerfcmpCmdArgs,
 )
-from core.env import EnvContext
+
 
 def validate_base_args(args: Args):
     assert args.cmd_name in ['run', 'analyze', 'perfcmp'], "Unrecognized command name"
@@ -22,11 +22,9 @@ def validate_run_cmd_args(args: RunCmdArgs):
             assert file.is_file() or file.is_dir(), f'{file} is neither a file nor a directory'
             assert os.access(file, os.R_OK), f'{file} does not have read permissions'
 
-    if args.output_dir is not None and not args.output_dir.is_dir():
-        # Hey, nice sideeffects in validation code...
-        # TODO: REMOVE IT FROM HERE
-        args.output_dir.mkdir(parents=True, exist_ok=True)
-        assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
+            if file.is_dir():
+                assert str(file).endswith('_instances'), f"Data directory name must end with '_instances'. Received {file}"
+
 
     if args.metadata_file is not None:
         assert args.metadata_file.is_file(), f"Metadata file {args.metadata_file} is not a file"
@@ -42,9 +40,6 @@ def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
     assert args.dir.is_dir(), f'{args.dir} is not a directory'
     if args.procs is not None:
         assert args.procs > 0, f'Number of processes must be > 0. Received {args.procs}'
-    # Output directory (if specified) will be initialized in command handler
-    # if args.output_dir is not None:
-    #     assert args.output_dir.is_dir(), "Output directory was specified but it does not exist and couldn't be created"
 
 
 def validate_perfcmp_cmd_args(args: PerfcmpCmdArgs):

@@ -19,28 +19,30 @@ from core.tools import (
     current_timestamp
 )
 from core.fs import initialize_file_hierarchy, init_processed_data_file_hierarchy
-from core.env import is_running_on_ares, EnvContext
+from core.env import is_running_on_ares
+from context import Context
 
 
-def handle_cmd_run(ctx: EnvContext, args: RunCmdArgs):
-    print(f"RunCommand run with args: {args}")
-    metadata_store = maybe_load_instance_metadata(args.metadata_file)
+
+def handle_cmd_run(ctx: Context, args: RunCmdArgs):
+    print(f"RunCommand run with args: {args}, ctx: {ctx}")
+    metadata_store = maybe_load_instance_metadata(args.metadata_file or ctx.instance_metadata_file)
 
     # Not recursive as we don't want to load Taillard specification
     input_files = resolve_all_input_files(args.input_files, recursive=False)
-    batch = []
 
     base_dir = args.output_dir
+
     if not ctx.is_ares and args.attach_timestamp:
         base_dir = attach_timestamp_to_dir(base_dir, current_timestamp())
 
-
-
+    batch = []
     for file in input_files:
         name = exp_name_from_input_file(file)
         metadata = metadata_store.get(name)
-        if metadata is None:
-            print(f"Missing metadata for {metadata}")
+        assert metadata is not None, f"Missing metadata for {metadata}. Aborting."
+        # if metadata is None:
+        #     print(f"Missing metadata for {metadata}")
         out_dir = output_dir_for_experiment_with_name(name, base_dir)
         batch.append(
             Experiment(
@@ -68,7 +70,7 @@ def handle_cmd_run(ctx: EnvContext, args: RunCmdArgs):
         ).run(process_limit=args.procs)
 
 
-def handle_cmd_analyze(ctx: EnvContext, args: AnalyzeCmdArgs):
+def handle_cmd_analyze(ctx: Context, args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
     experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
@@ -79,7 +81,7 @@ def handle_cmd_analyze(ctx: EnvContext, args: AnalyzeCmdArgs):
     process_experiment_batch_output(experiment_batch, args.output_dir, args.procs, args.plot)
 
 
-def handle_cmd_perfcmp(ctx: EnvContext, args: PerfcmpCmdArgs):
+def handle_cmd_perfcmp(ctx: Context, args: PerfcmpCmdArgs):
     print(f"PerfcmpCommand run with args: {args}")
     compare_exp_batch_outputs(args.basepath, args.benchpath)
 
