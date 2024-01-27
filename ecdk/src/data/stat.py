@@ -33,7 +33,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
         (pl.col(KEY_FITNESS_BEST) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
     )
 
-    dfmain: pl.DataFrame | None = None
+    dfmain = pl.DataFrame()
 
     for exp, expdata in zip(batch, data):
         # Diversity stats
@@ -96,10 +96,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             .hstack(df, in_place=True)
         )
 
-        if dfmain is not None:
-            dfmain.vstack(dfres, in_place=True)
-        else:
-            dfmain = dfres
+        dfmain.vstack(dfres, in_place=True)
         # break
 
     dfmain = (
@@ -150,6 +147,8 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             has_header=True,
             float_precision=2
         )
+
+    return dfmain
 
 
 def compare_perf_info(df_base: pl.DataFrame, df_bench: pl.DataFrame):
