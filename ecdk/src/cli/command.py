@@ -23,33 +23,25 @@ from core.tools import (
     current_timestamp
 )
 from core.fs import initialize_file_hierarchy, init_processed_data_file_hierarchy
-from core.env import is_running_on_ares, EnvContext
+from core.env import EnvContext
 
 
 def handle_cmd_run(ctx: EnvContext, args: RunCmdArgs):
     print(f"RunCommand run with args: {args}")
-
     from command.run import run
     run(ctx, args)
 
 
-
-
-
 def handle_cmd_analyze(ctx: EnvContext, args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
-
-    experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
-
-    if args.output_dir is not None:
-        init_processed_data_file_hierarchy(experiment_batch, args.output_dir)
-
-    process_experiment_batch_output(experiment_batch, args.output_dir, args.procs, args.plot)
+    from command.analyze import analyze
+    analyze(ctx, args)
 
 
 def handle_cmd_perfcmp(ctx: EnvContext, args: PerfcmpCmdArgs):
     print(f"PerfcmpCommand run with args: {args}")
-    compare_exp_batch_outputs(args.basepath, args.benchpath)
+    from command.perfcmp import perfcmp
+    perfcmp(ctx, args)
 
 
 def handle_cmd_compare(args: CompareCmdArgs):
