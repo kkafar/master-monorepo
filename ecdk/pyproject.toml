@@ -1,0 +1,22 @@
+[project]
+name = "ecdk"
+version = "0.0.1-beta.1"
+authors = [
+  { name="Kacper Kafara", email="kacperkafara@gmail.com" }
+]
+description = "Simple CLI tool to orchestrate ECRS JSSP experiments"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License"
+]
+
+[project.urls]
+Homepage = "https://github.com/kkafar/master-monorepo"
+Issues = "https://github.com/kkafar/master-monorepo/issues"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
