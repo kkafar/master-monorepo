@@ -7,7 +7,7 @@ from core.env import EnvContext
 @dataclass
 class Args:
     cmd_name: str
-    handler: Callable[[EnvContext, Args], None]
+    handler: Callable[[EnvContext, 'Args'], None]
 
 
 @dataclass

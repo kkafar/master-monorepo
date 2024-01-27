@@ -32,8 +32,7 @@ def configure_env():
 def main():
     configure_env()
     ctx = EnvContext(strict=True)
-    args = cli.parse_cli_args(ctx)  # TODO: This should be other way around. 
-                                    # Context should be create basing on args and then validated
+    args = cli.parse_cli_args(ctx)  # TODO: This should be other way around. Context should be create basing on args and then validated
     args.handler(ctx, args)
 
 
