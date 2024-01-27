@@ -10,7 +10,4 @@ assignees: kkafar
 ## Bug description
 
 
-## Expected behaviour
-
-<!-- This is optional section, fill only if you have some ideas -->
-<!-- ## Possible solution suggestion -->
+## Expected behaviour <!-- ## Optinoal, possible solution suggestion -->
