@@ -23,10 +23,10 @@ from core.tools import (
     current_timestamp
 )
 from core.fs import initialize_file_hierarchy, init_processed_data_file_hierarchy
-from core.env import is_running_on_ares
+from core.env import is_running_on_ares, EnvContext
 
 
-def handle_cmd_run(args: RunCmdArgs):
+def handle_cmd_run(ctx: EnvContext, args: RunCmdArgs):
     print(f"RunCommand run with args: {args}")
     metadata_store = maybe_load_instance_metadata(args.metadata_file)
 
@@ -35,8 +35,10 @@ def handle_cmd_run(args: RunCmdArgs):
     batch = []
 
     base_dir = args.output_dir
-    if not is_running_on_ares() and args.attach_timestamp:
+    if not ctx.is_ares and args.attach_timestamp:
         base_dir = attach_timestamp_to_dir(base_dir, current_timestamp())
+
+
 
     for file in input_files:
         name = exp_name_from_input_file(file)
@@ -61,7 +63,7 @@ def handle_cmd_run(args: RunCmdArgs):
 
     experiment_configs = [exp.config for exp in batch]
 
-    if args.hq and is_running_on_ares():
+    if args.hq and ctx.is_ares:
         HyperQueueRunner(SolverProxy(args.bin)).run(experiment_configs)
     else:
         LocalExperimentBatchRunner(
@@ -70,7 +72,7 @@ def handle_cmd_run(args: RunCmdArgs):
         ).run(process_limit=args.procs)
 
 
-def handle_cmd_analyze(args: AnalyzeCmdArgs):
+def handle_cmd_analyze(ctx: EnvContext, args: AnalyzeCmdArgs):
     print(f"AnalyzeCommand run with args: {args}")
 
     experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
@@ -81,7 +83,7 @@ def handle_cmd_analyze(args: AnalyzeCmdArgs):
     process_experiment_batch_output(experiment_batch, args.output_dir, args.procs, args.plot)
 
 
-def handle_cmd_perfcmp(args: PerfcmpCmdArgs):
+def handle_cmd_perfcmp(ctx: EnvContext, args: PerfcmpCmdArgs):
     print(f"PerfcmpCommand run with args: {args}")
     compare_exp_batch_outputs(args.basepath, args.benchpath)
 

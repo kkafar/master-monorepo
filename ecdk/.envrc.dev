@@ -1,0 +1,14 @@
+export MY_MASTER_REPO=$(pwd)/../
+export MY_SCRATCH="$MY_MASTER_REPO/raw-data-archive"
+export MY_GROUPS_STORAGE="$MY_MASTER_REPO/ecdk/raw.out"
+export MY_USERNAME=$USER
+
+export MY_ECDK="$MY_MASTER_REPO/ecdk"
+export MY_SOLVER="$MY_MASTER_REPO/solver"
+export MY_BIN="$MY_MASTER_REPO/bin"
+
+export MY_INSTANCE_METADATA_FILE="$MY_ECDK/data/metadata/instance_metadata_v2.txt"
+export MY_INSTANCES_DIR="$MY_ECDK/data/instances"
+
+# 0 means true!
+export MY_IS_ARES=1
