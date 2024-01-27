@@ -1,10 +1,12 @@
+import os
 from .args import (
     Args,
     RunCmdArgs,
     AnalyzeCmdArgs,
     PerfcmpCmdArgs,
+    CompareCmdArgs
 )
-from core.env import EnvContext
+
 
 def validate_base_args(args: Args):
     assert args.cmd_name in ['run', 'analyze', 'perfcmp', 'compare'], "Unrecognized command name"
@@ -50,6 +52,7 @@ def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
 def validate_perfcmp_cmd_args(args: PerfcmpCmdArgs):
     assert args.basepath.is_dir()
     assert args.benchpath.is_dir()
+
 
 def validate_compare_cmd_args(args: CompareCmdArgs):
     assert len(args.exp_dirs) > 1
