@@ -7,7 +7,7 @@ from .args import (
 from core.env import EnvContext
 
 def validate_base_args(args: Args):
-    assert args.cmd_name in ['run', 'analyze', 'perfcmp'], "Unrecognized command name"
+    assert args.cmd_name in ['run', 'analyze', 'perfcmp', 'compare'], "Unrecognized command name"
 
 
 def validate_run_cmd_args(args: RunCmdArgs):
@@ -51,6 +51,11 @@ def validate_perfcmp_cmd_args(args: PerfcmpCmdArgs):
     assert args.basepath.is_dir()
     assert args.benchpath.is_dir()
 
+def validate_compare_cmd_args(args: CompareCmdArgs):
+    assert len(args.exp_dirs) > 1
+    if args.output_dir is not None:
+        assert args.output_dir.is_dir()
+
 
 def validate_cli_args(args: Args):
     validate_base_args(args)
@@ -61,5 +66,7 @@ def validate_cli_args(args: Args):
             validate_analyze_cmd_args(args)
         case 'perfcmp':
             validate_perfcmp_cmd_args(args)
+        case 'compare':
+            validate_compare_cmd_args(args)
         case _:
             assert False, "Unrecognized command type"

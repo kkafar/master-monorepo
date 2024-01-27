@@ -24,6 +24,7 @@ from core.env import EnvContext
 def configure_env():
     pl.Config.set_tbl_rows(50)
     pl.Config.set_tbl_cols(20)
+    pl.Config.set_fmt_float('mixed')
     pl.Config.set_float_precision(2)
     plt.rcParams['figure.figsize'] = (16, 9)
 

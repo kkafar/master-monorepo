@@ -33,7 +33,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
         (pl.col(KEY_FITNESS_BEST) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
     )
 
-    dfmain: pl.DataFrame | None = None
+    dfmain = pl.DataFrame()
 
     for exp, expdata in zip(batch, data):
         # Diversity stats
@@ -96,10 +96,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             .hstack(df, in_place=True)
         )
 
-        if dfmain is not None:
-            dfmain.vstack(dfres, in_place=True)
-        else:
-            dfmain = dfres
+        dfmain.vstack(dfres, in_place=True)
         # break
 
     dfmain = (
@@ -151,6 +148,8 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             float_precision=2
         )
 
+    return dfmain
+
 
 def compare_perf_info(df_base: pl.DataFrame, df_bench: pl.DataFrame):
     expname_base = df_base.get_column(KEY_EXPNAME)
@@ -172,6 +171,53 @@ def compare_perf_info(df_base: pl.DataFrame, df_bench: pl.DataFrame):
     print(df_res)
 
 
+def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[JoinedExperimentData], outdir: Optional[Path]) -> pl.DataFrame:
+    main_df = pl.DataFrame()
+    colgen = pl.col(Col.GENERATION)
+
+    for exp, nb_df in zip(batch, map(lambda jd: jd.newbest, data)):
+        nb_df: pl.DataFrame = nb_df
+        # print(nb_df)
+        nb_df = (nb_df.lazy()
+            .group_by(pl.col(Col.SID))
+            .agg([
+                pl.all().sort_by(colgen).last()
+            ])
+            .collect()
+            .sort(pl.col(Col.SID))
+        )
+
+        n_series = nb_df.height
+
+        # Assuming that best_solution exists here in the first place
+        bks = exp.instance.best_solution
+
+        converged_exps_df = nb_df.filter(pl.col(Col.FITNESS) == bks)
+        pre400_df = converged_exps_df.filter(pl.col(Col.GENERATION) <= 400)
+
+        n_converged = converged_exps_df.height
+        avg_cvg_iter = (converged_exps_df
+            .select([
+                pl.lit(pl.Series(KEY_EXPNAME, (exp.name,))),
+                colgen.mean().alias('avg_cvg_iter'),
+                colgen.std().alias('std_cvg_iter'),
+                colgen.median().alias('median_cvg_iter'),
+                colgen.min().alias('min_cvg_iter'),
+                colgen.max().alias('max_cvg_iter'),
+                pl.lit(pl.Series(KEY_BKS_HITRATIO, (n_converged * 100 / n_series,))),
+                pl.lit(pl.Series('pre400_bks_hitratio', (pre400_df.height * 100 / n_series,)))
+            ])
+        )
+
+        main_df.vstack(avg_cvg_iter, in_place=True)
+
+        # print(avg_cvg_iter)
+        # print(n_converged)
+        # break
+    main_df = main_df.drop_nulls().sort(KEY_EXPNAME)
+    print(main_df)
+
+    return main_df
 
 
 
