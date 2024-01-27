@@ -1,20 +1,13 @@
 import argparse
-import os
-from .args import Args, RunCmdArgs, AnalyzeCmdArgs, PerfcmpCmdArgs, CompareCmdArgs
+from pathlib import Path
+from .args import Args
 from .command import (
     handle_cmd_run,
     handle_cmd_analyze,
     handle_cmd_perfcmp,
     handle_cmd_compare
 )
-from .validation import (
-    validate_cli_args,
-    validate_base_args,
-    validate_run_cmd_args,
-    validate_analyze_cmd_args,
-    validate_perfcmp_cmd_args,
-    validate_compare_cmd_args,
-)
+from .validation import validate_cli_args
 from core.env import EnvContext
 
 
@@ -68,15 +61,8 @@ def build_cli() -> argparse.ArgumentParser:
     return main_parser
 
 
-def merge_run_args_with_context(args: RunCmdArgs, ctx: EnvContext):
-    pass
-
-
 def parse_cli_args(ctx: EnvContext) -> Args:
     args: Args = build_cli().parse_args()
-
-    if args.cmd_name == 'run':
-        merge_run_args_with_context(args, ctx)
 
     validate_cli_args(args)
     return args
