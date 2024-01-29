@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use cli::Args;
-use config::{Config, SOLVER_TYPE_RANDOMSEARCH, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_DOUBLED_CROSSOVER};
+use config::{Config, ST_RANDOMSEARCH, ST_MIDPOINT, ST_DOUBLE_SINGLEPOINT};
 use ecrs::ga::probe::{AggregatedProbe, ElapsedTime, PolicyDrivenProbe, ProbingPolicy};
 use ecrs::prelude::{crossover, ga, ops, replacement, selection};
 use ecrs::{
@@ -180,9 +180,9 @@ fn run() {
     let instance = JsspInstance::try_from(&config.input_file).unwrap();
 
     match config.solver_type.as_str() {
-        SOLVER_TYPE_RANDOMSEARCH => run_randomsearch(instance, config),
-        SOLVER_TYPE_CUSTOM_CROSSOVER => run_paper_solver_with_custom_operators(instance, config),
-        SOLVER_TYPE_DOUBLED_CROSSOVER => run_paper_solver_with_doubled_operator(instance, config),
+        ST_RANDOMSEARCH => run_randomsearch(instance, config),
+        ST_MIDPOINT => run_paper_solver_with_custom_operators(instance, config),
+        ST_DOUBLE_SINGLEPOINT => run_paper_solver_with_doubled_operator(instance, config),
         _ => run_paper_solver(instance, config),
     }
 }
