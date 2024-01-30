@@ -15,7 +15,7 @@ def solver_params_from_exp_config(config: ExperimentConfig) -> Generator[SolverP
 
 
 def solver_params_from_exp_config_collection(config_coll: Iterable[ExperimentConfig]) -> Iterable[SolverParams]:
-    return it.chain.from_iterable((solver_params_from_exp_config(config) for config in config_coll))
+    return it.chain.from_iterable(solver_params_from_exp_config(config) for config in config_coll)
 
 
 class LocalExperimentBatchRunner:
