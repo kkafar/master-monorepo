@@ -36,7 +36,6 @@ class LocalExperimentRunner:
     def __init__(self, solver: SolverProxy):
         self.solver: SolverProxy = solver
 
-
     def run(self, config: ExperimentConfig) -> ExperimentResult:
         run_metadata: list[SolverRunMetadata] = []
         series_outputs: list[SeriesOutput] = []
@@ -45,7 +44,6 @@ class LocalExperimentRunner:
             series_outputs.append(solver_result.series_output)
             run_metadata.append(solver_result.run_metadata)
         return ExperimentResult(series_outputs=series_outputs, metadata=run_metadata)
-
 
     def run_multiprocess(self, configs: Iterable[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
         params_iter = solver_params_from_exp_config_collection(configs)
@@ -70,7 +68,6 @@ class AresExpScheduler:
     def __init__(self, solver: SolverProxy):
         self.solver = solver
 
-
     def run(self, configs: list[ExperimentConfig]) -> None:
         params = [param for param in solver_params_from_exp_config_collection(configs)]
         jobspec = ArrayJobSpec()
@@ -87,7 +84,6 @@ class HyperQueueRunner:
         import hyperqueue as hq
         self._solver: SolverProxy = solver
         self._client = hq.Client()  # We try to create client from default options, not passing path to server files rn
-
 
     def run(self, configs: list[ExperimentConfig]) -> None:
         import hyperqueue as hq
@@ -108,5 +104,4 @@ class HyperQueueRunner:
                 job.program(self._solver.exec_cmd_from_params(params, stringify_args=True), name=f'Task_{id}')
 
         self._client.submit(job)
-
 
