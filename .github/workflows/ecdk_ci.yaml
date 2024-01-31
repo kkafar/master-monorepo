@@ -1,4 +1,4 @@
-name: ecdk CI
+name: ECDataKit CI
 
 on:
   push:
