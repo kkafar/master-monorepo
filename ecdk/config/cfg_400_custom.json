@@ -1,4 +1,4 @@
 {
   "n_gen": 400,
-  "solver_type": "custom_crossover"
+  "solver_type": "midpoint"
 }
