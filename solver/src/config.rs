@@ -15,7 +15,6 @@ pub const SOLVER_TYPE_RANDOMSEARCH: &'static str = "randomsearch";
 pub const SOLVER_TYPE_CUSTOM_CROSSOVER: &'static str = "custom_crossover";
 pub const SOLVER_TYPE_DOUBLED_CROSSOVER: &'static str = "doubled_crossover";
 
-
 #[derive(Debug, Clone)]
 pub struct Config {
     /// Path to file with instance specification
@@ -37,7 +36,7 @@ pub struct Config {
     pub delay_const_factor: Option<f64>,
 
     /// Solver type to run. Available options: `default`, `randomsearch`, `custom_crossover`
-    pub solver_type: String
+    pub solver_type: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -89,7 +88,9 @@ impl TryFrom<PartialConfig> for Config {
             n_gen: partial_cfg.n_gen,
             pop_size: partial_cfg.pop_size,
             delay_const_factor: partial_cfg.delay_const_factor,
-            solver_type: partial_cfg.solver_type.unwrap_or(String::from(SOLVER_TYPE_DEFAULT)),
+            solver_type: partial_cfg
+                .solver_type
+                .unwrap_or(String::from(SOLVER_TYPE_DEFAULT)),
         })
     }
 }

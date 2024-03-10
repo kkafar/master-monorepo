@@ -4,13 +4,14 @@ mod config;
 mod logging;
 mod parse;
 mod problem;
+mod solver;
 mod util;
 
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use cli::Args;
-use config::{Config, SOLVER_TYPE_RANDOMSEARCH, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_DOUBLED_CROSSOVER};
+use config::{Config, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_DOUBLED_CROSSOVER, SOLVER_TYPE_RANDOMSEARCH};
 use ecrs::ga::probe::{AggregatedProbe, ElapsedTime, PolicyDrivenProbe, ProbingPolicy};
 use ecrs::prelude::{crossover, ga, ops, replacement, selection};
 use ecrs::{
@@ -30,7 +31,7 @@ use problem::population::JsspPopProvider;
 use problem::probe::JsspProbe;
 use problem::replacement::JsspReplacement;
 
-use crate::problem::crossover::{MidPoint, DoubledCrossover};
+use crate::problem::crossover::{DoubledCrossover, MidPoint};
 use crate::problem::{JsspConfig, JsspInstance};
 
 struct RunConfig {
@@ -40,15 +41,15 @@ struct RunConfig {
 
 fn get_run_config(instance: &JsspInstance, config: &Config) -> RunConfig {
     let pop_size = if let Some(ps) = config.pop_size {
-        ps  // Overrided by user
+        ps // Overrided by user
     } else {
-        instance.cfg.n_ops * 2  // Defined in paper
+        instance.cfg.n_ops * 2 // Defined in paper
     };
 
     let n_gen = if let Some(ng) = config.n_gen {
-        ng  // Overrided by user
+        ng // Overrided by user
     } else {
-        400  // Defined in paper
+        400 // Defined in paper
     };
 
     RunConfig { pop_size, n_gen }
@@ -92,7 +93,6 @@ fn run_paper_solver(instance: JsspInstance, config: Config) {
     info!("Running JSSP solver");
 
     let run_config = get_run_config(&instance, &config);
-
 
     // let probe = AggregatedProbe::new()
     //     .add_probe(JsspProbe::new())
