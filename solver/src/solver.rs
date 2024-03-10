@@ -1,3 +1,5 @@
+pub mod registry;
+
 use ecrs::ga::{
     self,
     operators::{mutation, selection},
@@ -5,7 +7,7 @@ use ecrs::ga::{
 use log::info;
 
 use crate::{
-    config::Config,
+    config::{Config, SOLVER_TYPE_DOUBLED_CROSSOVER, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_RANDOMSEARCH, SOLVER_TYPE_DEFAULT},
     problem::{
         crossover::{DoubledCrossover, JsspCrossover, MidPoint, NoopCrossover},
         fitness::JsspFitness,
@@ -48,13 +50,19 @@ pub trait Solver {
     fn describe(&self) -> Option<String> {
         None
     }
+
+    /// Return codename of this solver. This is used by CLI to indicate which solver should be run.
+    fn codename(&self) -> String;
 }
 
 pub struct Goncalves2005;
 
 impl Solver for Goncalves2005 {
     fn run(&mut self, instance: JsspInstance, run_config: RunConfig) {
-        info!("Running {} solver", self.describe().expect("No solver description provided"));
+        info!(
+            "Running {} solver",
+            self.describe().expect("No solver description provided")
+        );
 
         ga::Builder::new()
             .set_selection_operator(selection::Rank::new())
@@ -74,13 +82,20 @@ impl Solver for Goncalves2005 {
     fn describe(&self) -> Option<String> {
         Some("Goncalves2005".into())
     }
+
+    fn codename(&self) -> String {
+        SOLVER_TYPE_DEFAULT.into()
+    }
 }
 
 pub struct RandomSearch;
 
 impl Solver for RandomSearch {
     fn run(&mut self, instance: JsspInstance, run_config: RunConfig) {
-        info!("Running {} solver", self.describe().expect("No solver description provided"));
+        info!(
+            "Running {} solver",
+            self.describe().expect("No solver description provided")
+        );
 
         ga::Builder::new()
             .set_population_generator(JsspPopProvider::new(instance.clone()))
@@ -99,13 +114,20 @@ impl Solver for RandomSearch {
     fn describe(&self) -> Option<String> {
         Some("RandomSearch".into())
     }
+
+    fn codename(&self) -> String {
+        SOLVER_TYPE_RANDOMSEARCH.into()
+    }
 }
 
 pub struct Goncalves2005MidPoint;
 
 impl Solver for Goncalves2005MidPoint {
     fn run(&mut self, instance: JsspInstance, run_config: RunConfig) {
-        info!("Running {} solver", self.describe().expect("No solver description provided"));
+        info!(
+            "Running {} solver",
+            self.describe().expect("No solver description provided")
+        );
 
         ga::Builder::new()
             .set_selection_operator(selection::Rank::new())
@@ -125,13 +147,20 @@ impl Solver for Goncalves2005MidPoint {
     fn describe(&self) -> Option<String> {
         Some("Goncalves2005 with MidPoint crossover operator".into())
     }
+
+    fn codename(&self) -> String {
+        SOLVER_TYPE_CUSTOM_CROSSOVER.into()
+    }
 }
 
 pub struct Goncalves2005DoubleMidPoint;
 
 impl Solver for Goncalves2005DoubleMidPoint {
     fn run(&mut self, instance: JsspInstance, run_config: RunConfig) {
-        info!("Running {} solver", self.describe().expect("No solver description provided"));
+        info!(
+            "Running {} solver",
+            self.describe().expect("No solver description provided")
+        );
 
         ga::Builder::new()
             .set_selection_operator(selection::Rank::new())
@@ -153,5 +182,9 @@ impl Solver for Goncalves2005DoubleMidPoint {
             "Goncalves2005 with Doubled crossover operator (midpoint on both halves of chromosome)"
                 .to_string(),
         )
+    }
+
+    fn codename(&self) -> String {
+        SOLVER_TYPE_DOUBLED_CROSSOVER.into()
     }
 }
