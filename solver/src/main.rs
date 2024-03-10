@@ -1,4 +1,3 @@
-#![allow(unused_imports)]
 mod cli;
 mod config;
 mod logging;
@@ -7,40 +6,13 @@ mod problem;
 mod solver;
 mod util;
 
-use std::borrow::BorrowMut;
-use std::path::{Path, PathBuf};
-use std::time::Duration;
-
-use cli::Args;
-use config::{
-    Config, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER,
-    SOLVER_TYPE_RANDOMSEARCH,
-};
-use ecrs::ga::probe::{AggregatedProbe, ElapsedTime, PolicyDrivenProbe, ProbingPolicy};
-use ecrs::prelude::{crossover, ga, ops, replacement, selection};
-use ecrs::{
-    ga::{GAMetadata, Individual, StdoutProbe},
-    prelude::{
-        crossover::{CrossoverOperator, UniformParameterized},
-        mutation::{self, Identity},
-        replacement::{BothParents, ReplacementOperator},
-        selection::{Rank, SelectionOperator},
-    },
-};
-use log::info;
-use problem::crossover::JsspCrossover;
-use problem::fitness::JsspFitness;
-use problem::individual::JsspIndividual;
-use problem::population::JsspPopProvider;
-use problem::probe::JsspProbe;
-use problem::replacement::JsspReplacement;
+use config::Config;
 use solver::registry::SolverRegistry;
 use solver::{
-    get_run_config, Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005MidPoint, RandomSearch, Solver,
+    get_run_config, Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005MidPoint, RandomSearch,
 };
 
-use crate::problem::crossover::{DoubledCrossover, MidPoint};
-use crate::problem::{JsspConfig, JsspInstance};
+use crate::problem::JsspInstance;
 
 fn register_solvers(registry: &mut SolverRegistry) {
     registry.insert(Box::new(Goncalves2005));
@@ -48,10 +20,6 @@ fn register_solvers(registry: &mut SolverRegistry) {
     registry.insert(Box::new(Goncalves2005DoubleMidPoint));
     registry.insert(Box::new(RandomSearch));
 }
-
-// fn get_default_solver() -> Box<dyn Solver> {
-//     Box::new(Goncalves2005)
-// }
 
 fn run() {
     let args = cli::parse_args();

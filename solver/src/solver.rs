@@ -7,7 +7,10 @@ use ecrs::ga::{
 use log::info;
 
 use crate::{
-    config::{Config, SOLVER_TYPE_DOUBLED_CROSSOVER, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_RANDOMSEARCH, SOLVER_TYPE_DEFAULT},
+    config::{
+        Config, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER,
+        SOLVER_TYPE_RANDOMSEARCH,
+    },
     problem::{
         crossover::{DoubledCrossover, JsspCrossover, MidPoint, NoopCrossover},
         fitness::JsspFitness,

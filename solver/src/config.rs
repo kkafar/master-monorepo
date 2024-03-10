@@ -1,9 +1,8 @@
 use std::{
     error::Error,
-    fmt::Display,
     fs::File,
-    io::{self, BufReader},
-    path::{Path, PathBuf},
+    io::BufReader,
+    path::PathBuf,
 };
 
 use serde::Deserialize;

@@ -1,5 +1,4 @@
 use clap::Parser;
-use log::error;
 use std::path::PathBuf;
 
 /// Jssp instance solver
