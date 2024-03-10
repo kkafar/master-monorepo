@@ -49,9 +49,9 @@ fn register_solvers(registry: &mut SolverRegistry) {
     registry.insert(Box::new(RandomSearch));
 }
 
-fn get_default_solver() -> Box<dyn Solver> {
-    Box::new(Goncalves2005)
-}
+// fn get_default_solver() -> Box<dyn Solver> {
+//     Box::new(Goncalves2005)
+// }
 
 fn run() {
     let args = cli::parse_args();
@@ -70,14 +70,13 @@ fn run() {
     // Existance of input file is asserted during cli args parsing
     let instance = JsspInstance::try_from(&config.input_file).expect("Error while parsing instance file");
 
-    let mut default_solver = get_default_solver();
     let mut solver_registry = SolverRegistry::new();
     register_solvers(&mut solver_registry);
 
     let run_config = get_run_config(&instance, &config);
     let solver = solver_registry
         .get(&config.solver_type)
-        .unwrap_or(&mut default_solver);
+        .expect("Failed to find solver of given name");
     solver.run(instance, run_config);
 }
 
