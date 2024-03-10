@@ -36,7 +36,6 @@ class LocalExperimentRunner:
     def __init__(self, solver: SolverProxy):
         self.solver: SolverProxy = solver
 
-
     def run(self, config: ExperimentConfig) -> ExperimentResult:
         run_metadata: list[SolverRunMetadata] = []
         series_outputs: list[SeriesOutput] = []
@@ -45,7 +44,6 @@ class LocalExperimentRunner:
             series_outputs.append(solver_result.series_output)
             run_metadata.append(solver_result.run_metadata)
         return ExperimentResult(series_outputs=series_outputs, metadata=run_metadata)
-
 
     def run_multiprocess(self, configs: Iterable[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
         params_iter = solver_params_from_exp_config_collection(configs)
@@ -70,7 +68,6 @@ class AresExpScheduler:
     def __init__(self, solver: SolverProxy):
         self.solver = solver
 
-
     def run(self, configs: list[ExperimentConfig]) -> None:
         params = [param for param in solver_params_from_exp_config_collection(configs)]
         jobspec = ArrayJobSpec()
@@ -88,8 +85,7 @@ class HyperQueueRunner:
         self._solver: SolverProxy = solver
         self._client = hq.Client()  # We try to create client from default options, not passing path to server files rn
 
-
-    def run(self, configs: list[ExperimentConfig]) -> None:
+    def run(self, configs: list[ExperimentConfig], postprocess: bool = False) -> None:
         import hyperqueue as hq
         # Important thing here is that we only dispatch the jobs, without waiting for their completion, at for least now
         params_iter = solver_params_from_exp_config_collection(configs)
@@ -108,5 +104,22 @@ class HyperQueueRunner:
                 job.program(self._solver.exec_cmd_from_params(params, stringify_args=True), name=f'Task_{id}')
 
         self._client.submit(job)
+
+        if not postprocess:
+            return
+
+        # We need to submit either another job here, or create another task in previous one.
+        # TODO: Find info how to set dependency between tasks / jobs and add such dependency between
+        # computation and postprocessing.
+        # The post processing should include following:
+        # 1. zipping all the files in the expeiment directory,
+        # 2. making sure created archive is not empty (all files are present),
+        # 3. copying the archive to target loaction (if one is provided via CLI args),
+        # 4. making sure, nothing copy process returned successfully,
+        # 5. removing raw files to save the disk space.
+        #
+        # Maybe it would actually make more sense to create separate postprocess command from it
+        # and just run it after completing computations? This looks like more than few lines of code.
+
 
 

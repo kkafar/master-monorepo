@@ -23,7 +23,6 @@ from core.env import is_running_on_ares
 from context import Context
 
 
-
 def handle_cmd_run(ctx: Context, args: RunCmdArgs):
     print(f"RunCommand run with args: {args}, ctx: {ctx}")
     metadata_store = maybe_load_instance_metadata(args.metadata_file or ctx.instance_metadata_file)
@@ -41,8 +40,6 @@ def handle_cmd_run(ctx: Context, args: RunCmdArgs):
         name = exp_name_from_input_file(file)
         metadata = metadata_store.get(name)
         assert metadata is not None, f"Missing metadata for {metadata}. Aborting."
-        # if metadata is None:
-        #     print(f"Missing metadata for {metadata}")
         out_dir = output_dir_for_experiment_with_name(name, base_dir)
         batch.append(
             Experiment(
@@ -52,7 +49,8 @@ def handle_cmd_run(ctx: Context, args: RunCmdArgs):
                                         out_dir,
                                         args.config_file,
                                         args.runs if args.runs else 1),
-                result=None
+                result=None,
+                batch_dir=base_dir
             )
         )
 
@@ -62,7 +60,7 @@ def handle_cmd_run(ctx: Context, args: RunCmdArgs):
     experiment_configs = [exp.config for exp in batch]
 
     if args.hq and ctx.is_ares:
-        HyperQueueRunner(SolverProxy(args.bin)).run(experiment_configs)
+        HyperQueueRunner(SolverProxy(args.bin)).run(experiment_configs, postprocess=args.experimental_postprocess)
     else:
         LocalExperimentBatchRunner(
             SolverProxy(args.bin),
