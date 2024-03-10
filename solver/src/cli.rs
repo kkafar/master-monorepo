@@ -34,7 +34,8 @@ pub struct Args {
     #[arg(short = 'c', long = "config")]
     pub cfg_file: Option<PathBuf>,
 
-    /// Solver type to run. Available options: `default`, `randomsearch`, `custom_crossover`
+    /// Solver type to run. Available options: `default`, `randomsearch`, `custom_crossover`,
+    /// `doubled_crossover`.
     #[arg(short = 's', long = "solver-type")]
     pub solver_type: Option<String>,
 }
