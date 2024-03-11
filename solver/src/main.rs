@@ -44,7 +44,7 @@ fn run() {
     let run_config = get_run_config(&instance, &config);
     let solver = solver_registry
         .get(&config.solver_type)
-        .expect("Failed to find solver of given name");
+        .expect(&format!("Failed to find solver of type {} in registry", &config.solver_type));
     solver.run(instance, run_config);
 }
 
