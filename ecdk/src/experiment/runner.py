@@ -121,5 +121,3 @@ class HyperQueueRunner:
         # Maybe it would actually make more sense to create separate postprocess command from it
         # and just run it after completing computations? This looks like more than few lines of code.
 
-
-
