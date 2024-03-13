@@ -1,165 +1,24 @@
-#![allow(unused_imports)]
 mod cli;
 mod config;
 mod logging;
 mod parse;
 mod problem;
+mod solver;
 mod util;
 
-use std::path::{Path, PathBuf};
-use std::time::Duration;
-
-use cli::Args;
-use config::{Config, ST_RANDOMSEARCH, ST_MIDPOINT, ST_DOUBLE_SINGLEPOINT};
-use ecrs::ga::probe::{AggregatedProbe, ElapsedTime, PolicyDrivenProbe, ProbingPolicy};
-use ecrs::prelude::{crossover, ga, ops, replacement, selection};
-use ecrs::{
-    ga::{GAMetadata, Individual, StdoutProbe},
-    prelude::{
-        crossover::{CrossoverOperator, UniformParameterized},
-        mutation::{self, Identity},
-        replacement::{BothParents, ReplacementOperator},
-        selection::{Rank, SelectionOperator},
-    },
+use config::Config;
+use solver::registry::SolverRegistry;
+use solver::{
+    get_run_config, Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005MidPoint, RandomSearch,
 };
-use log::info;
-use problem::crossover::JsspCrossover;
-use problem::fitness::JsspFitness;
-use problem::individual::JsspIndividual;
-use problem::population::JsspPopProvider;
-use problem::probe::JsspProbe;
-use problem::replacement::JsspReplacement;
 
-use crate::problem::crossover::{MidPoint, DoubledCrossover};
-use crate::problem::{JsspConfig, JsspInstance};
+use crate::problem::JsspInstance;
 
-struct RunConfig {
-    pop_size: usize,
-    n_gen: usize,
-}
-
-fn get_run_config(instance: &JsspInstance, config: &Config) -> RunConfig {
-    let pop_size = if let Some(ps) = config.pop_size {
-        ps  // Overrided by user
-    } else {
-        instance.cfg.n_ops * 2  // Defined in paper
-    };
-
-    let n_gen = if let Some(ng) = config.n_gen {
-        ng  // Overrided by user
-    } else {
-        400  // Defined in paper
-    };
-
-    RunConfig { pop_size, n_gen }
-}
-
-fn run_randomsearch(instance: JsspInstance, config: Config) {
-    info!("Running jssp solver with random search");
-
-    let run_config = get_run_config(&instance, &config);
-
-    // let probe = AggregatedProbe::new()
-    //     .add_probe(JsspProbe::new())
-    //     .add_probe(PolicyDrivenProbe::new(
-    //         ElapsedTime::new(Duration::from_millis(1000), Duration::from_millis(0)),
-    //         StdoutProbe::new(),
-    //     ));
-
-    // Only for debugging purposes. TODO: Remove it
-    // let population_provider = JsspPopProvider::new(instance.clone());
-    // for op in population_provider.operations.iter() {
-    //     info!("{op:?}");
-    // }
-
-    ga::Builder::new()
-        .set_population_generator(JsspPopProvider::new(instance.clone()))
-        .set_fitness(JsspFitness::new(1.5))
-        .set_selection_operator(problem::selection::EmptySelection::new())
-        .set_crossover_operator(problem::crossover::NoopCrossover::new())
-        .set_mutation_operator(mutation::Identity::new())
-        .set_replacement_operator(problem::replacement::ReplaceWithRandomPopulation::new(
-            JsspPopProvider::new(instance),
-        ))
-        .set_probe(JsspProbe::new())
-        .set_max_generation_count(run_config.n_gen)
-        .set_population_size(run_config.pop_size)
-        .build()
-        .run();
-}
-
-fn run_paper_solver(instance: JsspInstance, config: Config) {
-    info!("Running JSSP solver");
-
-    let run_config = get_run_config(&instance, &config);
-
-
-    // let probe = AggregatedProbe::new()
-    //     .add_probe(JsspProbe::new())
-    //     .add_probe(PolicyDrivenProbe::new(
-    //         ElapsedTime::new(Duration::from_millis(1000), Duration::from_millis(0)),
-    //         StdoutProbe::new(),
-    //     ));
-
-    // Only for debugging purposes. TODO: Remove it
-    // let population_provider = JsspPopProvider::new(instance.clone());
-    // for op in population_provider.operations.iter() {
-    //     info!("{op:?}");
-    // }
-
-    ga::Builder::new()
-        .set_selection_operator(selection::Rank::new())
-        .set_crossover_operator(JsspCrossover::new())
-        .set_mutation_operator(mutation::Identity::new())
-        .set_population_generator(JsspPopProvider::new(instance.clone()))
-        .set_replacement_operator(JsspReplacement::new(JsspPopProvider::new(instance), 0.1, 0.2))
-        .set_fitness(JsspFitness::new(1.5))
-        .set_probe(JsspProbe::new())
-        // .set_max_duration(std::time::Duration::from_secs(30))
-        .set_max_generation_count(run_config.n_gen)
-        .set_population_size(run_config.pop_size)
-        .build()
-        .run();
-}
-
-fn run_paper_solver_with_custom_operators(instance: JsspInstance, config: Config) {
-    info!("Running jssp solver with custom operators");
-
-    let run_config = get_run_config(&instance, &config);
-
-    ga::Builder::new()
-        .set_selection_operator(selection::Rank::new())
-        .set_crossover_operator(MidPoint::new())
-        .set_mutation_operator(mutation::Identity::new())
-        .set_population_generator(JsspPopProvider::new(instance.clone()))
-        .set_replacement_operator(JsspReplacement::new(JsspPopProvider::new(instance), 0.1, 0.2))
-        .set_fitness(JsspFitness::new(1.5))
-        .set_probe(JsspProbe::new())
-        // .set_max_duration(std::time::Duration::from_secs(30))
-        .set_max_generation_count(run_config.n_gen)
-        .set_population_size(run_config.pop_size)
-        .build()
-        .run();
-}
-
-fn run_paper_solver_with_doubled_operator(instance: JsspInstance, config: Config) {
-    info!("Running jssp solver with doubled crossover operator");
-
-    let run_config = get_run_config(&instance, &config);
-
-    ga::Builder::new()
-        .set_selection_operator(selection::Rank::new())
-        .set_crossover_operator(DoubledCrossover::new(instance.cfg.n_ops * 2))
-        .set_mutation_operator(mutation::Identity::new())
-        .set_population_generator(JsspPopProvider::new(instance.clone()))
-        .set_replacement_operator(JsspReplacement::new(JsspPopProvider::new(instance), 0.1, 0.2))
-        .set_fitness(JsspFitness::new(1.5))
-        .set_probe(JsspProbe::new())
-        // .set_max_duration(std::time::Duration::from_secs(30))
-        .set_max_generation_count(run_config.n_gen)
-        .set_population_size(run_config.pop_size)
-        .build()
-        .run();
+fn register_solvers(registry: &mut SolverRegistry) {
+    registry.insert(Box::new(Goncalves2005));
+    registry.insert(Box::new(Goncalves2005MidPoint));
+    registry.insert(Box::new(Goncalves2005DoubleMidPoint));
+    registry.insert(Box::new(RandomSearch));
 }
 
 fn run() {
@@ -177,14 +36,17 @@ fn run() {
     }
 
     // Existance of input file is asserted during cli args parsing
-    let instance = JsspInstance::try_from(&config.input_file).unwrap();
+    let instance = JsspInstance::try_from(&config.input_file).expect("Error while parsing instance file");
 
-    match config.solver_type.as_str() {
-        ST_RANDOMSEARCH => run_randomsearch(instance, config),
-        ST_MIDPOINT => run_paper_solver_with_custom_operators(instance, config),
-        ST_DOUBLE_SINGLEPOINT => run_paper_solver_with_doubled_operator(instance, config),
-        _ => run_paper_solver(instance, config),
-    }
+    let mut solver_registry = SolverRegistry::new();
+    register_solvers(&mut solver_registry);
+
+    let run_config = get_run_config(&instance, &config);
+    let solver = solver_registry.get(&config.solver_type).expect(&format!(
+        "Failed to find solver of type {} in registry",
+        &config.solver_type
+    ));
+    solver.run(instance, run_config);
 }
 
 fn main() -> Result<(), ()> {

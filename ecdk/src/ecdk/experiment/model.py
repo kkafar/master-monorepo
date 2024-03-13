@@ -114,8 +114,12 @@ class Experiment:
     """ Instance description, run configuration, result obtained """
     name: str
     instance: InstanceMetadata
-    config: ExperimentConfig
+    config: ExperimentConfig  # TODO: Flatten the structure and pass whole Experiment around
     result: Optional[ExperimentResult] = None
+
+    # Directory of the batch this experiment belongs to. Usually the file hierarchy would be
+    # batch_dir/config.output_dir.
+    batch_dir: Optional[Path] = None  # TODO: Make this not optional
 
     def has_result(self) -> bool:
         return self.result is not None

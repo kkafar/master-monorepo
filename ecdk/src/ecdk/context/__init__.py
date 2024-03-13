@@ -10,6 +10,8 @@ from core.env import (
 
 class Context:
     def __init__(self, strict: bool = True):
+        """ :param strict: whether to run assertions """
+
         self.runtime: RuntimeName = get_runtime_name()
         self.is_ares: bool = self.runtime == RT_ARES
         self.repo_dir: Optional[Path] = getmap_env('MY_MASTER_REPO', Path)

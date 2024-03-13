@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use ecrs::{ga::individual::IndividualTrait, prelude::crossover::CrossoverOperator};
-use rand::{thread_rng, Rng, rngs::ThreadRng};
+use rand::{rngs::ThreadRng, thread_rng, Rng};
 
 use super::individual::JsspIndividual;
 
@@ -78,7 +78,11 @@ impl MidPoint {
 }
 
 impl CrossoverOperator<JsspIndividual> for MidPoint {
-    fn apply(&mut self, parent_1: &JsspIndividual, parent_2: &JsspIndividual) -> (JsspIndividual, JsspIndividual) {
+    fn apply(
+        &mut self,
+        parent_1: &JsspIndividual,
+        parent_2: &JsspIndividual,
+    ) -> (JsspIndividual, JsspIndividual) {
         let mut child_1 = parent_1.clone();
         let mut child_2 = parent_2.clone();
 
@@ -122,7 +126,11 @@ impl DoubledCrossover {
 }
 
 impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
-    fn apply(&mut self, parent_1: &JsspIndividual, parent_2: &JsspIndividual) -> (JsspIndividual, JsspIndividual) {
+    fn apply(
+        &mut self,
+        parent_1: &JsspIndividual,
+        parent_2: &JsspIndividual,
+    ) -> (JsspIndividual, JsspIndividual) {
         let mut child_1 = parent_1.clone();
         let mut child_2 = parent_2.clone();
 
@@ -130,7 +138,6 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
         // integers is not supported. Need to work on that.
         let left_midpoint = self.rng.sample(self.left_dist);
         let right_midpoint = self.rng.sample(self.right_dist);
-
 
         // Already in place in this implementation
         // for i in 0..left_midpoint {
@@ -150,7 +157,6 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
         for i in right_midpoint..self.chromosome_len {
             child_1.chromosome[i] = parent_2.chromosome[i];
             child_2.chromosome[i] = parent_1.chromosome[i];
-
         }
 
         child_1.is_fitness_valid = false;
@@ -160,13 +166,15 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use ecrs::ga::{Individual, operators::crossover::CrossoverOperator};
+    use ecrs::ga::{operators::crossover::CrossoverOperator, Individual};
     use itertools::Itertools;
 
-    use crate::problem::{crossover::{MidPoint, DoubledCrossover}, individual::JsspIndividual};
+    use crate::problem::{
+        crossover::{DoubledCrossover, MidPoint},
+        individual::JsspIndividual,
+    };
 
     #[test]
     fn midpoint_works_as_expected() {
@@ -200,7 +208,10 @@ mod test {
         let p2 = JsspIndividual::from(parent_2_chromosome.clone());
 
         let (child_1, child_2) = op.apply(&p1, &p2);
-        println!("{parent_1_chromosome:?}\n{parent_2_chromosome:?}\n{:?}\n{:?}", &child_1.chromosome, &child_2.chromosome);
+        println!(
+            "{parent_1_chromosome:?}\n{parent_2_chromosome:?}\n{:?}\n{:?}",
+            &child_1.chromosome, &child_2.chromosome
+        );
 
         let mut iter_1_1 = child_1.chromosome.iter().zip(parent_1_chromosome.iter());
         let mut iter_2_2 = child_2.chromosome.iter().zip(parent_2_chromosome.iter());
@@ -238,10 +249,26 @@ mod test {
         assert!(left_midpoint_idx_2 < midpoint);
         assert_eq!(left_midpoint_idx_1, left_midpoint_idx_2);
 
-        let mut iter_1_1 = child_1.chromosome.iter().zip(parent_1_chromosome.iter()).skip(midpoint);
-        let mut iter_2_2 = child_2.chromosome.iter().zip(parent_2_chromosome.iter()).skip(midpoint);
-        let iter_1_2 = child_1.chromosome.iter().zip(parent_2_chromosome.iter()).skip(midpoint);
-        let iter_2_1 = child_2.chromosome.iter().zip(parent_1_chromosome.iter()).skip(midpoint);
+        let mut iter_1_1 = child_1
+            .chromosome
+            .iter()
+            .zip(parent_1_chromosome.iter())
+            .skip(midpoint);
+        let mut iter_2_2 = child_2
+            .chromosome
+            .iter()
+            .zip(parent_2_chromosome.iter())
+            .skip(midpoint);
+        let iter_1_2 = child_1
+            .chromosome
+            .iter()
+            .zip(parent_2_chromosome.iter())
+            .skip(midpoint);
+        let iter_2_1 = child_2
+            .chromosome
+            .iter()
+            .zip(parent_1_chromosome.iter())
+            .skip(midpoint);
 
         let left_midpoint_1 = iter_1_1.find_position(|(&gene_a, &gene_b)| gene_a != gene_b);
         let left_midpoint_2 = iter_2_2.find_position(|(&gene_a, &gene_b)| gene_a != gene_b);
@@ -273,4 +300,3 @@ mod test {
         assert_eq!(left_midpoint_idx_1, left_midpoint_idx_2);
     }
 }
-

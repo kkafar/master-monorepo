@@ -21,6 +21,7 @@ class RunCmdArgs(Args):
     procs: Optional[int]
     attach_timestamp: bool
     hq: bool
+    experimental_postprocess: bool
 
 
 @dataclass

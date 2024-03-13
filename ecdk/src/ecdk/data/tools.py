@@ -45,6 +45,7 @@ def experiment_from_dir(directory: Path, materialize: bool = False) -> Experimen
 
     exp_result = experiment_result_from_dir(directory, materialize)
     exp.result = exp_result
+    exp.batch_dir = directory.parent
     return exp
 
 

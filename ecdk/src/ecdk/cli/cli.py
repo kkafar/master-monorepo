@@ -7,14 +7,7 @@ from .command import (
     handle_cmd_perfcmp,
     handle_cmd_compare
 )
-from .validation import (
-    validate_cli_args,
-    validate_base_args,
-    validate_run_cmd_args,
-    validate_analyze_cmd_args,
-    validate_perfcmp_cmd_args,
-    validate_compare_cmd_args,
-)
+from .validation import validate_cli_args
 
 
 def build_cli() -> argparse.ArgumentParser:
@@ -44,6 +37,7 @@ def build_cli() -> argparse.ArgumentParser:
     run_parser.add_argument('--attach-timestamp', action=argparse.BooleanOptionalAction, type=bool,
                             help='Whether a timestamp should be attached to output file name', default=True, dest='attach_timestamp')
     run_parser.add_argument('--hq', action=argparse.BooleanOptionalAction, type=bool, default=False, dest='hq', help='Whether HyperQueue should be used')
+    run_parser.add_argument('--ex-postprocess', action=argparse.BooleanOptionalAction, type=bool, default=False, help='Experimental. Whether to run postprocessing tasks after finalizing computations', dest='experimental_postprocess')
     run_parser.set_defaults(handler=handle_cmd_run)
 
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")

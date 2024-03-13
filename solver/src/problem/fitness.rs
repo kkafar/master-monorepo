@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 use ecrs::prelude::fitness::Fitness;
-use std::collections::HashSet;
 
 use crate::problem::{Edge, EdgeKind};
 

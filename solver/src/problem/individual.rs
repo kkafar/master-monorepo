@@ -1,10 +1,6 @@
-use std::collections::HashSet;
-
 use ecrs::ga::individual::IndividualTrait;
-use itertools::Itertools;
-use log::{debug, info, trace, warn};
 
-use super::{Edge, EdgeKind, Machine, Operation};
+use super::{Machine, Operation};
 
 /// Models single solution to the JSSP problem instance
 #[derive(Debug, Clone)]
