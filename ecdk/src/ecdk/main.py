@@ -18,7 +18,7 @@ sys.path.append(str(Path.cwd().joinpath('src')))
 import polars as pl
 import matplotlib.pyplot as plt
 import cli
-from core.env import EnvContext
+from context import Context
 
 
 def configure_env():
@@ -31,8 +31,9 @@ def configure_env():
 
 def main():
     configure_env()
-    ctx = EnvContext(strict=True)
-    args = cli.parse_cli_args(ctx)  # TODO: This should be other way around. Context should be create basing on args and then validated
+    ctx = Context(strict=True)
+    args = cli.parse_cli_args()  # TODO: This should be other way around.
+                                    # Context should be create basing on args and then validated
     args.handler(ctx, args)
 
 

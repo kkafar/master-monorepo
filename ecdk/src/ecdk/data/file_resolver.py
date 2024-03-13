@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Iterable, Generator
+from pprint import pprint
 import itertools as it
 
 
@@ -49,7 +50,7 @@ def resolve_all_input_files(input_files: list[Path] = [], recursive: bool = True
     for input_dir in directories:
         all_files.extend(file_resolver(input_dir))
 
-    print(all_files)
+    pprint(all_files)
 
     return all_files
 
