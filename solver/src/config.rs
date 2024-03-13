@@ -9,10 +9,10 @@ use serde::Deserialize;
 
 use crate::cli::Args;
 
-pub const ST_PAPER: &'static str = "paper";
-pub const ST_RANDOMSEARCH: &'static str = "randomsearch";
-pub const ST_MIDPOINT: &'static str = "midpoint";
-pub const ST_DOUBLE_SINGLEPOINT: &'static str = "double_singlepoint";
+pub const SOLVER_TYPE_DEFAULT: &'static str = "default";
+pub const SOLVER_TYPE_RANDOMSEARCH: &'static str = "randomsearch";
+pub const SOLVER_TYPE_MIDPOINT: &'static str = "midpoint";
+pub const SOLVER_TYPE_DOUBLED_CROSSOVER: &'static str = "double_singlepoint";
 
 #[derive(Debug, Clone)]
 pub struct Config {

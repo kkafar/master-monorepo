@@ -8,7 +8,7 @@ use log::info;
 
 use crate::{
     config::{
-        Config, SOLVER_TYPE_CUSTOM_CROSSOVER, SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER,
+        Config, SOLVER_TYPE_MIDPOINT, SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER,
         SOLVER_TYPE_RANDOMSEARCH,
     },
     problem::{
@@ -152,7 +152,7 @@ impl Solver for Goncalves2005MidPoint {
     }
 
     fn codename(&self) -> String {
-        SOLVER_TYPE_CUSTOM_CROSSOVER.into()
+        SOLVER_TYPE_MIDPOINT.into()
     }
 }
 
