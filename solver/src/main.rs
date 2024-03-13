@@ -42,9 +42,10 @@ fn run() {
     register_solvers(&mut solver_registry);
 
     let run_config = get_run_config(&instance, &config);
-    let solver = solver_registry
-        .get(&config.solver_type)
-        .expect(&format!("Failed to find solver of type {} in registry", &config.solver_type));
+    let solver = solver_registry.get(&config.solver_type).expect(&format!(
+        "Failed to find solver of type {} in registry",
+        &config.solver_type
+    ));
     solver.run(instance, run_config);
 }
 

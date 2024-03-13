@@ -1,9 +1,4 @@
-use std::{
-    error::Error,
-    fs::File,
-    io::BufReader,
-    path::PathBuf,
-};
+use std::{error::Error, fs::File, io::BufReader, path::PathBuf};
 
 use serde::Deserialize;
 

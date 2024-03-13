@@ -8,7 +8,7 @@ use log::info;
 
 use crate::{
     config::{
-        Config, SOLVER_TYPE_MIDPOINT, SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER,
+        Config, SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER, SOLVER_TYPE_MIDPOINT,
         SOLVER_TYPE_RANDOMSEARCH,
     },
     problem::{
