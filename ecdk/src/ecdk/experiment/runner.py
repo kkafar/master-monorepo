@@ -18,6 +18,14 @@ def solver_params_from_exp_config_collection(config_coll: Iterable[ExperimentCon
     return it.chain.from_iterable(solver_params_from_exp_config(config) for config in config_coll)
 
 
+# TODO
+# Reorganise this. Runner (runtime) should be responsible for taking input (experiment configurations), converting them into
+# appropriate tasks (for given scheduler) and passing these tasks down to owned scheduler.
+# Right now LocalExperimentRunner uses SolverProxy as a scheduler and gathers the results, so this is close, but not quite right.
+# The same can be said for HyperQueueRunner -> it uses hyperqueue directly as its scheduler (it's a bit different, because LocalExperimentRunner keeps the runtime process alive,
+# and HyperQueueRunner dispatches tasks to external processes & runtime is shut down), thus postprocessing must be done by separate process (task). In case of
+# LocalExperimentRunner postprocessing might be run in the same process -- this is not ideal, actually I would like it to be run in separate process...
+
 class LocalExperimentBatchRunner:
     def __init__(self, solver: SolverProxy, configs: list[ExperimentConfig]):
         self.solver: SolverProxy = solver
@@ -48,6 +56,7 @@ class LocalExperimentRunner:
     def run_multiprocess(self, configs: Iterable[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
         params_iter = solver_params_from_exp_config_collection(configs)
 
+        # TODO: Running should be done by actual scheduler, not by SolverProxy, this is not right.
         solver_results = self.solver.run_multiprocess(params_iter, process_limit)
 
         # lets assert that chunks are equal
