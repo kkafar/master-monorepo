@@ -1,20 +1,15 @@
-from .args import RunCmdArgs, AnalyzeCmdArgs, PerfcmpCmdArgs, CompareCmdArgs
-from experiment.runner import LocalExperimentBatchRunner, AresExpScheduler, HyperQueueRunner
+from core.env import EnvContext
+from cli.args import RunCmdArgs
+
+from experiment.runner import LocalExperimentBatchRunner, HyperQueueRunner
 from experiment.solver import SolverProxy
 from experiment.model import (
-    ExperimentResult,
     ExperimentConfig,
     Experiment
 )
 from data.file_resolver import resolve_all_input_files
-from data.processing import (
-    process_experiment_batch_output,
-    compare_exp_batch_outputs,
-    compare_processed_exps
-)
 from data.tools import (
     maybe_load_instance_metadata,
-    extract_experiments_from_dir,
 )
 from core.tools import (
     exp_name_from_input_file,
@@ -64,12 +59,13 @@ def handle_cmd_run(ctx: Context, args: RunCmdArgs):
     initialize_file_hierarchy(batch)
 
     experiment_configs = [exp.config for exp in batch]
+    solver = SolverProxy(args.bin)
 
     if args.hq and ctx.is_ares:
-        HyperQueueRunner(SolverProxy(args.bin)).run(experiment_configs)
+        HyperQueueRunner(solver).run(experiment_configs)
     else:
         LocalExperimentBatchRunner(
-            SolverProxy(args.bin),
+            solver,
             experiment_configs
         ).run(process_limit=args.procs)
 

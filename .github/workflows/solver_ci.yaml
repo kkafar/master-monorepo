@@ -7,7 +7,7 @@ on:
     branches: [ "main", "development", "@*/*" ]
     paths:
       - 'solver/**'
-      - '.github/workflows/run-jssp-solver.yaml'
+      - '.github/workflows/solver_ci.yaml'
   workflow_dispatch:
 env:
   CARGO_TERM_COLOR: always
@@ -30,7 +30,7 @@ jobs:
         run: cargo build --release
       - name: Run JSSP example on mock data
         working-directory: ${{ env.WORKING_DIRECTORY }}
-        run: cargo run --release -- --input-file instances/test-case.txt --output-dir output
+        run: cargo run --release -- --input-file data/instances/mock_instances/test01.txt --output-dir output
 
   test:
     runs-on: ubuntu-latest

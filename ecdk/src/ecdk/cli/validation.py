@@ -5,6 +5,7 @@ from .args import (
     RunCmdArgs,
     AnalyzeCmdArgs,
     PerfcmpCmdArgs,
+    CompareCmdArgs
 )
 
 
@@ -47,6 +48,7 @@ def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
 def validate_perfcmp_cmd_args(args: PerfcmpCmdArgs):
     assert args.basepath.is_dir()
     assert args.benchpath.is_dir()
+
 
 def validate_compare_cmd_args(args: CompareCmdArgs):
     assert len(args.exp_dirs) > 1

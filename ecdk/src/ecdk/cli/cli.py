@@ -1,6 +1,6 @@
 import argparse
-import os
-from .args import Args, RunCmdArgs, AnalyzeCmdArgs, PerfcmpCmdArgs, CompareCmdArgs
+from pathlib import Path
+from .args import Args
 from .command import (
     handle_cmd_run,
     handle_cmd_analyze,
