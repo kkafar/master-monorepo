@@ -8,7 +8,7 @@ run.sh
 *.local
 instances/
 data/
-!src/data/
+!src/ecdk/data/
 .DS_Store
 bin/
 *.out

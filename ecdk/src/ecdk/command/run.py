@@ -1,4 +1,4 @@
-from .args import RunCmdArgs, AnalyzeCmdArgs, PerfcmpCmdArgs
+from .args import RunCmdArgs, AnalyzeCmdArgs, PerfcmpCmdArgs, CompareCmdArgs
 from context import Context
 
 
@@ -19,3 +19,7 @@ def handle_cmd_perfcmp(ctx: Context, args: PerfcmpCmdArgs):
     from command import perfcmp
     perfcmp(ctx, args)
 
+
+def handle_cmd_compare(args: CompareCmdArgs):
+    print(f"CompareCmmand run with args: {args}")
+    compare_processed_exps(args.exp_dirs, args.output_dir)

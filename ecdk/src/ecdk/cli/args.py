@@ -37,3 +37,9 @@ class AnalyzeCmdArgs(Args):
 class PerfcmpCmdArgs(Args):
     basepath: Path
     benchpath: Path
+
+
+@dataclass
+class CompareCmdArgs(Args):
+    exp_dirs: list[Path]
+    output_dir: Optional[Path]

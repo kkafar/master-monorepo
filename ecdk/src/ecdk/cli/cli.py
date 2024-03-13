@@ -4,7 +4,8 @@ from .args import Args
 from .command import (
     handle_cmd_run,
     handle_cmd_analyze,
-    handle_cmd_perfcmp
+    handle_cmd_perfcmp,
+    handle_cmd_compare
 )
 from .validation import validate_cli_args
 
@@ -51,6 +52,11 @@ def build_cli() -> argparse.ArgumentParser:
     perfcmp_parser.add_argument('basepath', type=Path, help='Path to directory with processed data of baseline experiment batch. The CMPPATH will be compared relatively to it.')
     perfcmp_parser.add_argument('benchpath', type=Path, help='Path to directory with processed data of experiment batch to be compared against BASEPATH')
     perfcmp_parser.set_defaults(handler=handle_cmd_perfcmp)
+
+    compare_parser = subparsers.add_parser(name='compare', help='Compare statistics for given list of experiments; table for each pair will be generated')
+    compare_parser.add_argument('-d', '--exp-dirs', type=Path, nargs='+', required=True, help='Directories with PROCESSED experiments data; directory for each exp to compare')
+    compare_parser.add_argument('-o', '--output-dir', type=Path, required=False, help='Output directory to save the results to')
+    compare_parser.set_defaults(handler=handle_cmd_compare)
 
     return main_parser
 
