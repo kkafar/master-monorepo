@@ -3,10 +3,10 @@ from experiment.model import Experiment
 from data.processing import process_experiment_batch_output
 from data.tools import extract_experiments_from_dir
 from core.fs import init_processed_data_file_hierarchy
-from core.env import EnvContext
+from context import Context
 
 
-def analyze(ctx: EnvContext, args: AnalyzeCmdArgs):
+def analyze(ctx: Context, args: AnalyzeCmdArgs):
     experiment_batch: list[Experiment] = extract_experiments_from_dir(args.dir)
 
     if args.output_dir is not None:
