@@ -8,9 +8,19 @@ import datetime as dt
 
 @dataclass(frozen=True)
 class SeriesOutputFiles:
+    """ Describes structure of output directory for given **series** of given experiment """
+
+    # Path to the series output directory
     directory: Path
+
+    # Mapping of csv event files (see docs on model for format explanation). EventName -> Path
     event_files: Dict[str, Path]
+
+    # Path to the summary of solver output. This file is in JSON format & contains
+    # information defined by the `SeriesOutputMetadata` type
     run_metadata_file: Path
+
+    # Stdout file of solver process for given series. Logs, errors, warnings of the solver
     logfile: Optional[Path]
 
 
@@ -69,9 +79,14 @@ class SolverResult:
 @dataclass(frozen=True)
 class ExperimentConfig:
     """ Experiment is a series of solver runs over single test case """
+
+    # Path to file with JSSP instance specification
     input_file: Path
+    # Path to directory, where subdirectories for given series outputs will be created
     output_dir: Path
+    # Optional path to solver config file, this should be passed throught directly to solver
     config_file: Optional[Path]
+    # Number of repetitions to run for this experiment
     n_series: int
 
     def as_dict(self) -> dict:
