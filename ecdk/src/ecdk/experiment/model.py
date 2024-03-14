@@ -26,6 +26,9 @@ class SeriesOutputFiles:
 
 @dataclass(frozen=True)
 class SeriesOutputMetadata:
+    """ Solver produces file (right now named `run_metadata.json`) with summary information about
+    results of single run (single series). This structure models content of this file """
+
     solution_string: str
     hash: str
     fitness: int
@@ -36,6 +39,11 @@ class SeriesOutputMetadata:
 
 @dataclass(frozen=True)
 class SeriesOutputData:
+    """ In-memory representation of solver output for single run (series output). Holds event information
+    in polars DataFrames & additional "metadata" (no idea why I've named it this way) with direct solver result.
+    """
+
+    # Mapping EventName -> DataFrame. Each event has a bit different schema. See docs for reference.
     event_data: Dict[str, DataFrame]
     metadata: SeriesOutputMetadata
 
@@ -45,6 +53,9 @@ class SeriesOutputData:
 
 @dataclass
 class SeriesOutput:
+    """ A bit weird type, that holds both the reference (paths of files with single series output data) and if materialized
+    (see `is_materialized` method), also holds the data loaded to memory. """
+
     data: Optional[SeriesOutputData]
     files: SeriesOutputFiles
 
@@ -54,6 +65,8 @@ class SeriesOutput:
 
 @dataclass
 class SolverParams:
+    """ Models CLI parameters of solver binary. These together with `SolverProxy` instance can be turned into solver invocation.
+    TODO: This could be placed somewhere near the solver. I should move away from placing types definition in typescript .d files fashion."""
     input_file: Optional[Path]
     output_dir: Optional[Path]
     config_file: Optional[Path]
@@ -62,6 +75,11 @@ class SolverParams:
 
 @dataclass
 class SolverRunMetadata:
+    """ Data collected by the runtime process (scheduler) on single solver proces (used for solving single series).
+    This is used only in by the "Local" solver, that keeps the runtime process alive for the time of scheduling - this is not used
+    in case of HyperQueue.
+    """
+
     duration: dt.timedelta
     status: int  # Executing process return code
 
@@ -72,20 +90,26 @@ class SolverRunMetadata:
 
 @dataclass
 class SolverResult:
+    """ Aggregate type holding both: actual solver single series output and some metadata collected by the scheduler.
+    Similarly to `SolverRunMetadata` this is used only in case of "local" solver (for the same reasons).
+    """
     series_output: SeriesOutput
     run_metadata: SolverRunMetadata
 
 
 @dataclass(frozen=True)
 class ExperimentConfig:
-    """ Experiment is a series of solver runs over single test case """
+    """ Experiment is a series of solver runs over single test case. """
 
     # Path to file with JSSP instance specification
     input_file: Path
+
     # Path to directory, where subdirectories for given series outputs will be created
     output_dir: Path
+
     # Optional path to solver config file, this should be passed throught directly to solver
     config_file: Optional[Path]
+
     # Number of repetitions to run for this experiment
     n_series: int
 
@@ -109,6 +133,8 @@ class ExperimentConfig:
 
 @dataclass
 class ExperimentResult:
+    """ Results of all the series of given experiment & optional associated metadata collected by the scheduler.
+    Metadata is present only in case of "local" solver (for the same reasons as for many of the types above). """
 
     """ Each experiment series output is stored in separate directory """
     series_outputs: list[SeriesOutput]
