@@ -5,6 +5,9 @@ from .model import ExperimentResult, ExperimentConfig, SeriesOutput
 from core.util import iter_batched
 from core.fs import output_dir_for_series, solver_logfile_for_series
 from core.env import ArrayJobSpec, input_range_from_jobspec
+from core.scheduler import Task, MultiProcessTaskRunner
+from core.series import load_series_output
+from context import Context
 
 
 def solver_params_from_exp_config(config: ExperimentConfig) -> Generator[SolverParams, None, None]:
@@ -44,6 +47,13 @@ class LocalExperimentRunner:
     def __init__(self, solver: SolverProxy):
         self.solver: SolverProxy = solver
 
+    def _task_from_params(self, task_id: int, params: SolverParams) -> Task:
+        return Task(
+            id=task_id,
+            process_args=self.solver.exec_cmd_from_params(params),
+            stdout_file=params.stdout_file
+        )
+
     def run(self, config: ExperimentConfig) -> ExperimentResult:
         run_metadata: list[SolverRunMetadata] = []
         series_outputs: list[SeriesOutput] = []
@@ -56,8 +66,24 @@ class LocalExperimentRunner:
     def run_multiprocess(self, configs: Iterable[ExperimentConfig], process_limit: int = 1) -> list[ExperimentResult]:
         params_iter = solver_params_from_exp_config_collection(configs)
 
-        # TODO: Running should be done by actual scheduler, not by SolverProxy, this is not right.
-        solver_results = self.solver.run_multiprocess(params_iter, process_limit)
+        # # TODO: Running should be done by actual scheduler, not by SolverProxy, this is not right.
+        # solver_results = self.solver.run_multiprocess(params_iter, process_limit)
+
+        # Actual scheduling
+        poll_interval: float = 0.1
+        tasks = list(map(lambda x: self._task_from_params(x[0], x[1]), enumerate(params_iter)))
+        completed_tasks, runinfo = MultiProcessTaskRunner().run(tasks, process_limit, poll_interval)
+
+        # Result collection
+        # Creating new iterator, to avoid using already consumed generator
+        params_iter = solver_params_from_exp_config_collection(configs)
+        solver_results = [SolverResult(
+            series_output=load_series_output(param.output_dir, lazy=True),
+            run_metadata=SolverRunMetadata(  # Propagate more information from completed taks here
+                duration=compl_task.duration,
+                status=compl_task.return_code
+            )
+        ) for param, compl_task in zip(params_iter, completed_tasks)]
 
         # lets assert that chunks are equal
         n_series = configs[0].n_series
