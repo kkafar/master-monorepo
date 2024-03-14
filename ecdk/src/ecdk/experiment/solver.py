@@ -1,6 +1,5 @@
 import subprocess as sp
 import datetime as dt
-from typing import Iterable
 from pathlib import Path
 from .model import (
     SolverParams,
@@ -8,7 +7,6 @@ from .model import (
     SolverRunMetadata,
 )
 from core.series import load_series_output
-from core.scheduler import Task, MultiProcessTaskRunner
 
 
 class SolverProxy:

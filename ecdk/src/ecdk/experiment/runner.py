@@ -72,6 +72,8 @@ class LocalExperimentRunner:
         # Actual scheduling
         poll_interval: float = 0.1
         tasks = list(map(lambda x: self._task_from_params(x[0], x[1]), enumerate(params_iter)))
+
+        # Delegate running to scheduler
         completed_tasks, runinfo = MultiProcessTaskRunner().run(tasks, process_limit, poll_interval)
 
         # Result collection
@@ -120,7 +122,7 @@ class HyperQueueRunner:
         self._solver: SolverProxy = solver
         self._client = hq.Client()  # We try to create client from default options, not passing path to server files rn
 
-    def run(self, configs: list[ExperimentConfig], postprocess: bool = False) -> None:
+    def run(self, configs: list[ExperimentConfig], ctx: Context, postprocess: bool = False) -> None:
         import hyperqueue as hq
         # Important thing here is that we only dispatch the jobs, without waiting for their completion, at for least now
         params_iter = solver_params_from_exp_config_collection(configs)
@@ -155,4 +157,6 @@ class HyperQueueRunner:
         #
         # Maybe it would actually make more sense to create separate postprocess command from it
         # and just run it after completing computations? This looks like more than few lines of code.
+
+        # job.program(['zip', '-q', '-r', ])
 
