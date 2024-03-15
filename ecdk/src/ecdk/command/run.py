@@ -54,7 +54,7 @@ def run(ctx: Context, args: RunCmdArgs):
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
 
-    experiment_configs = [exp.config for exp in batch]
+    experiment_configs = [exp.config for exp in batch.experiments]
 
     if args.hq and ctx.is_ares:
         HyperQueueRunner(SolverProxy(args.bin)).run(batch, context=ctx, postprocess=args.experimental_postprocess)
