@@ -1,7 +1,7 @@
 import itertools as it
 from typing import Generator, Iterable
 from .solver import SolverProxy, SolverParams, SolverRunMetadata, SolverResult
-from .model import ExperimentResult, ExperimentConfig, SeriesOutput
+from .model import ExperimentResult, ExperimentConfig, SeriesOutput, ExperimentBatch
 from core.util import iter_batched
 from core.fs import output_dir_for_series, solver_logfile_for_series
 from core.env import ArrayJobSpec, input_range_from_jobspec
@@ -122,27 +122,32 @@ class HyperQueueRunner:
         self._solver: SolverProxy = solver
         self._client = hq.Client()  # We try to create client from default options, not passing path to server files rn
 
-    def run(self, configs: list[ExperimentConfig], ctx: Context, postprocess: bool = False) -> None:
+    def run(self, batch: ExperimentBatch, ctx: Context, postprocess: bool = False) -> None:
         import hyperqueue as hq
+
+        configs = [exp.config for exp in batch.experiments]
+
         # Important thing here is that we only dispatch the jobs, without waiting for their completion, at for least now
         params_iter = solver_params_from_exp_config_collection(configs)
 
         # We run on single job as the scheduling can be done on task level
         job = hq.Job(max_fails=1)
 
+        computing_tasks = []
+
         for id, params in enumerate(params_iter):
             # With current implemntation this will be True, however it is not guaranteed in general
             if params.stdout_file is not None:
-                job.program(self._solver.exec_cmd_from_params(params, stringify_args=True),
+                task = job.program(self._solver.exec_cmd_from_params(params, stringify_args=True),
                             name=f'Task_{id}',
                             stdout=params.stdout_file,
                             stderr=params.stdout_file)
             else:
-                job.program(self._solver.exec_cmd_from_params(params, stringify_args=True), name=f'Task_{id}')
-
-        self._client.submit(job)
+                task = job.program(self._solver.exec_cmd_from_params(params, stringify_args=True), name=f'Task_{id}')
+            computing_tasks.append(task)
 
         if not postprocess:
+            self._client.submit(job)
             return
 
         # We need to submit either another job here, or create another task in previous one.
@@ -158,5 +163,14 @@ class HyperQueueRunner:
         # Maybe it would actually make more sense to create separate postprocess command from it
         # and just run it after completing computations? This looks like more than few lines of code.
 
-        # job.program(['zip', '-q', '-r', ])
+        experiment_dir = batch.output_dir
+
+        assert experiment_dir.parent == ctx.short_term_cache_dir, "Expected to use short term cache dir..."
+
+        archive_name = experiment_dir.stem
+        output_archive = f'{ctx.long_term_cache_dir}/{archive_name}.zip'
+
+        job.program(['zip', '-q', '-r', output_archive, f'{experiment_dir}'], deps=computing_tasks, name='zipping')
+
+        self._client.submit(job)
 

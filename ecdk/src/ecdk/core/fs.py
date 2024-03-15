@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from experiment.model import Experiment
+from experiment.model import Experiment, ExperimentBatch
 
 
 def experiment_file_from_directory(directory: Path) -> Path:
@@ -34,13 +34,15 @@ def dump_exp_batch_config(config_file: Path, experiments: list[Experiment]):
 
 
 # TODO: This function should not be here
-def initialize_file_hierarchy(experiments: list[Experiment]):
+def initialize_file_hierarchy(batch: ExperimentBatch):
     """ Creates directory structure for the output & dumps experiments / series configuration
     to appriopriate directories """
 
+    experiments = batch.experiments
+
     assert len(experiments) > 0, "No experiments were specified"
 
-    base_dir = experiments[0].config.output_dir.parent
+    base_dir = batch.output_dir
     base_dir.mkdir(parents=True, exist_ok=True)
     config_file = base_dir.joinpath("config.json")
 

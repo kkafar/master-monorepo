@@ -180,3 +180,14 @@ class Experiment:
                    instance=exp_dict["instance"],
                    config=exp_dict["config"])
 
+
+@dataclass
+class ExperimentBatch:
+    """  """
+
+    # Output directory of whole experiment batch (list of experiments)
+    output_dir: Path
+
+    # List of experiments to conduct
+    experiments: list[Experiment]
+
