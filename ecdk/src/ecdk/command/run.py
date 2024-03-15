@@ -57,7 +57,7 @@ def run(ctx: Context, args: RunCmdArgs):
     experiment_configs = [exp.config for exp in batch.experiments]
 
     if args.hq and ctx.is_ares:
-        HyperQueueRunner(SolverProxy(args.bin)).run(batch, context=ctx, postprocess=args.experimental_postprocess)
+        HyperQueueRunner(SolverProxy(args.bin)).run(batch, ctx=ctx, postprocess=args.experimental_postprocess)
     else:
         LocalExperimentBatchRunner(
             SolverProxy(args.bin),
