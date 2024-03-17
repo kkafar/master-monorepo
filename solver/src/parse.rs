@@ -1,29 +1,20 @@
-use core::fmt;
 use std::{
     io::{BufReader, Read},
     path::PathBuf,
 };
 
 use itertools::Itertools;
+use thiserror::Error;
 
 use crate::problem::{JsspConfig, JsspInstance, JsspInstanceMetadata, Operation};
 
 pub type Result<T> = std::result::Result<T, JsspInstanceLoadingError>;
 pub type Error = JsspInstanceLoadingError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
 pub enum JsspInstanceLoadingError {
+    #[error("File does not exist: {0}")]
     FileDoesNotExist(String),
-    // ParseError(String),
-}
-
-impl fmt::Display for JsspInstanceLoadingError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::FileDoesNotExist(file) => write!(f, "File does not exist: {file}"),
-            // Self::ParseError(err) => write!(f, "Parsing error: {err}"),
-        }
-    }
 }
 
 impl TryFrom<&PathBuf> for JsspInstance {
@@ -32,6 +23,7 @@ impl TryFrom<&PathBuf> for JsspInstance {
     fn try_from(path: &PathBuf) -> Result<Self> {
         let name = path.file_stem().unwrap().to_str().unwrap();
 
+        // TODO: Handle other types of errors here and do not lie to the user in general...
         let Ok(file) = std::fs::OpenOptions::new().read(true).open(path) else {
             return Err(Error::FileDoesNotExist(path.to_str().unwrap().to_owned()));
         };
