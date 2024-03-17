@@ -40,7 +40,7 @@ impl TryFrom<&PathBuf> for JsspInstance {
             .split_whitespace()
             .map(|n_str| n_str.parse::<usize>().unwrap())
             .collect_vec();
-        assert!(first_line.len() == 2);
+        assert!(first_line.len() == 2, "The first line should be composed of two, space separated numbers");
 
         let mut jobs: Vec<Vec<Operation>> = Vec::new();
         let mut op_id: usize = 0;
