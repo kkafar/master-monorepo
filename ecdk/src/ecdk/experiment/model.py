@@ -127,7 +127,7 @@ class ExperimentConfig:
             input_file=Path(d['input_file']),
             output_dir=Path(d['output_dir']),
             config_file=Path(d.get('config_file')),
-            n_series=d['n_series'],
+            n_series=int(d['n_series']),
         )
 
 
