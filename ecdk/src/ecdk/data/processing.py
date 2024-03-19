@@ -52,14 +52,14 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
 
     data: list[JoinedExperimentData] = [experiment_data_from_all_series(exp) for exp in batch]
 
-    # if process_count == 1:
-    #     for exp, expdata in zip(batch, data):
-    #         process_experiment_data(exp, expdata, outdir, should_plot)
-    # else:
-    #     from multiprocessing import get_context
-    #     with get_context("spawn").Pool(process_count) as pool:
-    #         pool.starmap(process_experiment_data, zip(batch, data, it.repeat(outdir), it.repeat(should_plot)))
-    #
+    if process_count == 1:
+        for exp, expdata in zip(batch, data):
+            process_experiment_data(exp, expdata, outdir, should_plot)
+    else:
+        from multiprocessing import get_context
+        with get_context("spawn").Pool(process_count) as pool:
+            pool.starmap(process_experiment_data, zip(batch, data, it.repeat(outdir), it.repeat(should_plot)))
+
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
     global_df = compute_global_exp_stats(batch, data, tabledir)
     conv_df = compute_convergence_iteration_per_exp(batch, data, tabledir)
