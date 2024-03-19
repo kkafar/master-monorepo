@@ -25,9 +25,7 @@ def solver_logfile_for_series(base_output_dir: Path, series_id: int) -> Path:
 
 # TODO: This function should not be here
 def dump_exp_batch_config(config_file: Path, batch: ExperimentBatch):
-    joined_config = {
-        "configs": list(map(lambda e: e.as_dict(), batch.experiments))
-    }
+    joined_config = batch.as_dict()
 
     with open(config_file, 'w') as file:
         json.dump(joined_config, file, indent=4)

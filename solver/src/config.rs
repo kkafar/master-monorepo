@@ -29,7 +29,7 @@ pub struct Config {
     /// Delay = Gene_{n+g} * delay_const_factor * maxdur. If not specified, defaults to 1.5.
     pub delay_const_factor: Option<f64>,
 
-    /// Solver type to run. Available options: `default`, `randomsearch`, `custom_crossover`
+    /// Solver type to run. Available options: `default`, `randomsearch`, `midpoint`, `double_singlepoint`.
     pub solver_type: String,
 }
 

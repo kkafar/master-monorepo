@@ -2,8 +2,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Dict
 from data.model import InstanceMetadata
+import core.util
 from polars import DataFrame
 import datetime as dt
+import json
 
 
 @dataclass(frozen=True)
@@ -95,6 +97,73 @@ class SolverResult:
     """
     series_output: SeriesOutput
     run_metadata: SolverRunMetadata
+
+
+@dataclass
+class SolverConfigFileContents:
+    """ Models config file that can be passed to the solver. We load this file to acquire some additional metadata for experiment batch description
+    such as solver type. Most of the values might be not present as solver provides defaults. """
+
+    # Path to file with instance specification. Usually not present as it is series dependend. See comment on `output_dir`.
+    input_file: Optional[Path]
+
+    # Path to directory where solver output will be put. This currently corresponds to single series output directory.
+    # In usual setup I do not specify this in config file passed to a solver, as it would be problematic to have
+    # separate config file for each series.
+    output_dir: Optional[Path]
+
+    # Number of generations to run the solver for.
+    n_gen: Optional[int]
+
+    # Size of population.
+    pop_size: Optional[int]
+
+    # Constant factor used during fitness evaluation. See solver source code for description.
+    delay_const_factor: Optional[float]
+
+    # Solver type to run. If not present `default` is being used.
+    solver_type: Optional[str]
+
+    @classmethod
+    def from_dict(cls, d: Dict):
+        input_file = d.get("input_file")
+        output_dir = d.get("output_dir")
+        n_gen = d.get("n_gen")
+        pop_size = d.get("pop_size")
+        delay_const_factor = d.get("delay_const_factor")
+        solver_type = d.get("solver_type")
+
+        return SolverConfigFileContents(
+            input_file=core.util.nonesafe_map(input_file, Path),
+            output_dir=core.util.nonesafe_map(output_dir, Path),
+            n_gen=core.util.nonesafe_map(n_gen, int),
+            pop_size=core.util.nonesafe_map(pop_size, int),
+            delay_const_factor=core.util.nonesafe_map(delay_const_factor, float),
+            solver_type=solver_type or "default"
+        )
+
+    def as_dict(self):
+        return {
+            "input_file": self.input_file,
+            "output_dir": self.output_dir,
+            "n_gen": self.n_gen,
+            "pop_size": self.pop_size,
+            "delay_const_factor": self.delay_const_factor,
+            "solver_type": self.solver_type
+        }
+
+
+class SolverConfigFile:
+    def __init__(self, path: Path):
+        self.path = path
+        self._contents: SolverConfigFileContents = None
+
+    @property
+    def contents(self) -> SolverConfigFileContents:
+        if self._contents is None:
+            with open(self.path, 'r') as file:
+                self._contents = json.load(file, object_hook=SolverConfigFileContents.from_dict)
+        return self._contents
 
 
 @dataclass(frozen=True)
@@ -190,4 +259,17 @@ class ExperimentBatch:
 
     # List of experiments to conduct
     experiments: list[Experiment]
+
+    solver_config: Optional[SolverConfigFile]
+
+    def as_dict(self) -> dict:
+        result = {
+            "output_dir": str(self.output_dir),
+            "configs": list(map(lambda e: e.as_dict(), self.experiments))  # This field is named configs for compatibility reasons
+        }
+
+        if self.solver_config is not None:
+            result["solver_config"] = self.solver_config.contents.as_dict()
+
+        return result
 

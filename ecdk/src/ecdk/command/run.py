@@ -5,7 +5,8 @@ from experiment.model import (
     ExperimentResult,
     ExperimentConfig,
     Experiment,
-    ExperimentBatch
+    ExperimentBatch,
+    SolverConfigFile
 )
 from data.file_resolver import resolve_all_input_files
 from data.tools import maybe_load_instance_metadata
@@ -49,7 +50,8 @@ def run(ctx: Context, args: RunCmdArgs):
             )
         )
 
-    batch = ExperimentBatch(output_dir=base_dir, experiments=batch)
+    solver_config = SolverConfigFile(args.config_file) if args.config_file else None
+    batch = ExperimentBatch(output_dir=base_dir, experiments=batch, solver_config=solver_config)
 
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
