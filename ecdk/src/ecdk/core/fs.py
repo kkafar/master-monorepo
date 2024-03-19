@@ -24,9 +24,9 @@ def solver_logfile_for_series(base_output_dir: Path, series_id: int) -> Path:
 
 
 # TODO: This function should not be here
-def dump_exp_batch_config(config_file: Path, experiments: list[Experiment]):
+def dump_exp_batch_config(config_file: Path, batch: ExperimentBatch):
     joined_config = {
-        "configs": list(map(lambda e: e.as_dict(), experiments))
+        "configs": list(map(lambda e: e.as_dict(), batch.experiments))
     }
 
     with open(config_file, 'w') as file:
@@ -46,7 +46,7 @@ def initialize_file_hierarchy(batch: ExperimentBatch):
     base_dir.mkdir(parents=True, exist_ok=True)
     config_file = base_dir.joinpath("config.json")
 
-    dump_exp_batch_config(config_file, experiments)
+    dump_exp_batch_config(config_file, batch)
 
     for experiment in experiments:
         experiment.config.output_dir.mkdir(parents=True, exist_ok=True)
@@ -85,12 +85,4 @@ def init_processed_data_file_hierarchy(exps: list[Experiment], basedir: Path):
         # We do not need tabledir per experiment right now
         # Uncomment it once there is some per-experiment anaylisis done
         # get_tabledir_for_exp(exp, basedir).mkdir(parents=True, exist_ok=True)
-
-
-
-
-
-
-
-
 
