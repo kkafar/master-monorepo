@@ -126,20 +126,13 @@ class SolverConfigFileContents:
 
     @classmethod
     def from_dict(cls, d: Dict):
-        input_file = d.get("input_file")
-        output_dir = d.get("output_dir")
-        n_gen = d.get("n_gen")
-        pop_size = d.get("pop_size")
-        delay_const_factor = d.get("delay_const_factor")
-        solver_type = d.get("solver_type")
-
         return SolverConfigFileContents(
-            input_file=core.util.nonesafe_map(input_file, Path),
-            output_dir=core.util.nonesafe_map(output_dir, Path),
-            n_gen=core.util.nonesafe_map(n_gen, int),
-            pop_size=core.util.nonesafe_map(pop_size, int),
-            delay_const_factor=core.util.nonesafe_map(delay_const_factor, float),
-            solver_type=solver_type or "default"
+            input_file=core.util.nonesafe_map(d.get("input_file"), Path),
+            output_dir=core.util.nonesafe_map(d.get("output_dir"), Path),
+            n_gen=core.util.nonesafe_map(d.get("n_gen"), int),
+            pop_size=core.util.nonesafe_map(d.get("pop_size"), int),
+            delay_const_factor=core.util.nonesafe_map(d.get("delay_const_factor"), float),
+            solver_type=d.get("solver_type") or "default"
         )
 
     def as_dict(self):
