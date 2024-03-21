@@ -2,6 +2,7 @@ from typing import Iterable, Optional, TypeVar, Callable
 import itertools as it
 
 T = TypeVar('T')
+U = TypeVar('U')
 
 
 def find_first_or_none(iterable: Iterable[T], pred: Callable[[T], bool]) -> Optional[T]:
@@ -17,4 +18,10 @@ def iter_batched(iterable: Iterable, n: int):
     iterator = iter(iterable)
     while batch := tuple(it.islice(iterator, n)):
         yield batch
+
+
+def nonesafe_map(obj: Optional[T], mapping: Callable[[T], U]) -> Optional[U]:
+    if obj is None:
+        return None
+    return mapping(obj)
 

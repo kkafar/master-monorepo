@@ -4,7 +4,9 @@ from experiment.solver import SolverProxy
 from experiment.model import (
     ExperimentResult,
     ExperimentConfig,
-    Experiment
+    Experiment,
+    ExperimentBatch,
+    SolverConfigFile
 )
 from data.file_resolver import resolve_all_input_files
 from data.tools import maybe_load_instance_metadata
@@ -48,13 +50,16 @@ def run(ctx: Context, args: RunCmdArgs):
             )
         )
 
+    solver_config = SolverConfigFile(args.config_file) if args.config_file else None
+    batch = ExperimentBatch(output_dir=base_dir, experiments=batch, solver_config=solver_config)
+
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
 
-    experiment_configs = [exp.config for exp in batch]
+    experiment_configs = [exp.config for exp in batch.experiments]
 
     if args.hq and ctx.is_ares:
-        HyperQueueRunner(SolverProxy(args.bin)).run(experiment_configs, postprocess=args.experimental_postprocess)
+        HyperQueueRunner(SolverProxy(args.bin)).run(batch, ctx=ctx, postprocess=args.experimental_postprocess)
     else:
         LocalExperimentBatchRunner(
             SolverProxy(args.bin),

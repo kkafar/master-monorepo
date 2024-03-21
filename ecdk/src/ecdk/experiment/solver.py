@@ -1,6 +1,5 @@
 import subprocess as sp
 import datetime as dt
-from typing import Iterable
 from pathlib import Path
 from .model import (
     SolverParams,
@@ -8,7 +7,6 @@ from .model import (
     SolverRunMetadata,
 )
 from core.series import load_series_output
-from core.scheduler import Task, MultiProcessTaskRunner
 
 
 class SolverProxy:
@@ -19,12 +17,12 @@ class SolverProxy:
     def __init__(self, binary: Path):
         self.binary: Path = binary
 
-    def __task_from_params(self, id: int, params: SolverParams) -> Task:
-        return Task(
-            id=id,
-            process_args=self.exec_cmd_from_params(params),
-            stdout_file=params.stdout_file
-        )
+    # def __task_from_params(self, id: int, params: SolverParams) -> Task:
+    #     return Task(
+    #         id=id,
+    #         process_args=self.exec_cmd_from_params(params),
+    #         stdout_file=params.stdout_file
+    #     )
 
     def exec_cmd_from_params(self, params: SolverParams, stringify_args: bool = False) -> list[str]:
         base = [
@@ -62,15 +60,15 @@ class SolverProxy:
             series_output=load_series_output(params.output_dir, lazy=True),
             run_metadata=SolverRunMetadata(duration=timedelta, status=completed_process.returncode))
 
-    def run_multiprocess(self, params: Iterable[SolverParams], process_limit: int = 1, poll_interval: float = 0.1) -> list[SolverResult]:
-        tasks = list(map(lambda x: self.__task_from_params(x[0], x[1]), enumerate(params)))
-        completed_tasks, runinfo = MultiProcessTaskRunner().run(tasks, process_limit, poll_interval)
-
-        return [SolverResult(
-            series_output=load_series_output(param.output_dir, lazy=True),
-            run_metadata=SolverRunMetadata(  # Propagate more information from completed taks here
-                duration=compl_task.duration,
-                status=compl_task.return_code
-            )
-        ) for param, compl_task in zip(params, completed_tasks)]
+    # def run_multiprocess(self, params: Iterable[SolverParams], process_limit: int = 1, poll_interval: float = 0.1) -> list[SolverResult]:
+    #     tasks = list(map(lambda x: self.__task_from_params(x[0], x[1]), enumerate(params)))
+    #     completed_tasks, runinfo = MultiProcessTaskRunner().run(tasks, process_limit, poll_interval)
+    #
+    #     return [SolverResult(
+    #         series_output=load_series_output(param.output_dir, lazy=True),
+    #         run_metadata=SolverRunMetadata(  # Propagate more information from completed taks here
+    #             duration=compl_task.duration,
+    #             status=compl_task.return_code
+    #         )
+    #     ) for param, compl_task in zip(params, completed_tasks)]
 

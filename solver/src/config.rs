@@ -4,10 +4,10 @@ use serde::Deserialize;
 
 use crate::cli::Args;
 
-pub const SOLVER_TYPE_DEFAULT: &'static str = "default";
-pub const SOLVER_TYPE_RANDOMSEARCH: &'static str = "randomsearch";
-pub const SOLVER_TYPE_MIDPOINT: &'static str = "midpoint";
-pub const SOLVER_TYPE_DOUBLED_CROSSOVER: &'static str = "double_singlepoint";
+pub const SOLVER_TYPE_DEFAULT: &str = "default";
+pub const SOLVER_TYPE_RANDOMSEARCH: &str = "randomsearch";
+pub const SOLVER_TYPE_MIDPOINT: &str = "midpoint";
+pub const SOLVER_TYPE_DOUBLED_CROSSOVER: &str = "double_singlepoint";
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -29,7 +29,7 @@ pub struct Config {
     /// Delay = Gene_{n+g} * delay_const_factor * maxdur. If not specified, defaults to 1.5.
     pub delay_const_factor: Option<f64>,
 
-    /// Solver type to run. Available options: `default`, `randomsearch`, `custom_crossover`
+    /// Solver type to run. Available options: `default`, `randomsearch`, `midpoint`, `double_singlepoint`.
     pub solver_type: String,
 }
 
