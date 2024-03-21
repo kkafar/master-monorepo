@@ -94,8 +94,6 @@ def compare_processed_exps(exp_dirs: list[Path], outdir: Optional[Path]):
 
         numeric_cols = exp_conv_df_1.select(cs.numeric()).columns
 
-        # joined_df = exp_conv_df_1.vstack(exp_conv_df_2)
-
         joined_df = exp_conv_df_1.join(exp_conv_df_2, on='expname')
         stat_df = (joined_df.lazy()
             .select([

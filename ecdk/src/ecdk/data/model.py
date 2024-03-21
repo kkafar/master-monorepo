@@ -159,6 +159,8 @@ def config_for_event(event: EventName) -> EventConfig:
 
 @dataclass
 class JoinedExperimentData:
+    """ Joined data from all series of given experiment. """
+
     newbest: DataFrame
     popmetrics: DataFrame
     bestingen: DataFrame
