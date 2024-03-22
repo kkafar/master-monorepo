@@ -51,10 +51,9 @@ impl JsspFitness {
         // Iteration number. Notation borrowed from the paper.
         let mut g = 1;
 
-        // Scheduling time associated with current iteration g. This is usually equal to largest
-        // schedule time form g-1 iteration + 1, so that if we do not have any operations feasible
-        // to schedule with current time restriction (see the definition of delay_feasibles) we
-        // relax the condition.
+        // Scheduling time associated with current iteration g.
+        // This is equal precisely to smallest finish time of already scheduled operation,
+        // s.t. it is greater than current value of t_g.
         let mut t_g = 0;
 
         // Longest duration of a single opration
