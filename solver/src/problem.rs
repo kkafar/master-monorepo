@@ -1,5 +1,6 @@
 use std::ops::Range;
 
+use log::warn;
 use itertools::Itertools;
 
 pub mod crossover;
@@ -137,6 +138,7 @@ pub struct Machine {
     // For "possibly better implementation"
     rmc: Vec<Range<usize>>,
     pub last_scheduled_op: Option<usize>,
+    pub last_scheduled_range: Option<std::ops::Range<usize>>,
 }
 
 impl Machine {
@@ -146,6 +148,7 @@ impl Machine {
             // rmc: vec![1; rmc_capacity],
             rmc: Vec::new(),
             last_scheduled_op: None,
+            last_scheduled_range: None,
         }
     }
 }
@@ -171,14 +174,22 @@ impl Machine {
     /// Make sure via `is_idle` method that the machine is not occupied in the span
     /// you want to reserve.
     pub fn reserve(&mut self, range: std::ops::Range<usize>, op: usize) {
-        self.rmc.push(range);
+        if let Some(ref last_scheduled_range) = self.last_scheduled_range {
+            if range.end <= last_scheduled_range.start {
+                warn!("Scheduling operation {} on machine {} at {:?} BEFORE already scheduled operation at {:?}", op, self.id, &range, last_scheduled_range);
+            }
+        }
+
+        self.rmc.push(range.clone());
         self.last_scheduled_op = Some(op);
+        self.last_scheduled_range = Some(range);
     }
 
     /// Removes all ranges from the machine state allowing instance of this type to be reused
     pub fn reset(&mut self) {
         self.rmc.clear();
         self.last_scheduled_op = None;
+        self.last_scheduled_range = None;
     }
 }
 
