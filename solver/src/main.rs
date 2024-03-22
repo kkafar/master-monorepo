@@ -21,7 +21,7 @@ fn register_solvers(registry: &mut SolverRegistry) {
     registry.insert(Box::new(RandomSearch));
 }
 
-fn run() {
+fn run() -> anyhow::Result<()> {
     let args = cli::parse_args();
     let config = match Config::try_from(args) {
         Ok(config) => config,
@@ -44,10 +44,9 @@ fn run() {
     let run_config = get_run_config(&instance, &config);
     let solver = solver_registry.get(&config.solver_type).unwrap_or_else(|| panic!("Failed to find solver of type {} in registry",
         &config.solver_type));
-    solver.run(instance, run_config);
+    solver.run(instance, run_config)
 }
 
-fn main() -> Result<(), ()> {
-    run();
-    Ok(())
+fn main() -> anyhow::Result<()> {
+    run()
 }
