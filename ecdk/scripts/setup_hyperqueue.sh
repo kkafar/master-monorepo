@@ -13,8 +13,6 @@ assert_envvar_set MY_PARTITION
 assert_envvar_set MY_GRANT
 assert_envvar_set MY_GRANT_RES_CPU
 
-exit 0
-
 module load python/3.10.8-gcccore-12.2.0
 pip install -r requirements.txt
 
@@ -29,7 +27,7 @@ sleep 5
 
 # Enable automatic allocation (create queue)
 hq alloc add slurm \
-  --time-limit 5h \
+  --time-limit 14h \
   --workers-per-alloc 1 \
   --max-worker-count 48 \
   --backlog 36 \
