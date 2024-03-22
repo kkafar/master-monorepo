@@ -1,3 +1,5 @@
+echo "Sourcing ARES env file"
+
 export MY_MASTER_REPO="$MY_MASTER_REPO"
 export MY_SCRATCH="$SCRATCH"
 export MY_GROUPS_STORAGE="$MY_GROUPS_STORAGE"
@@ -12,4 +14,5 @@ export MY_INSTANCES_DIR="$MY_ECDK/data/instances"
 
 # 0 means true!
 export MY_IS_ARES=0
+
 

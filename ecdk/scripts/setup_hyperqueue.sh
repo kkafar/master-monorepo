@@ -1,4 +1,19 @@
+# !/bin/bash
 #!/usr/bin/bash
+
+function assert_envvar_set() {
+  cmdname=$1
+  if [ -z "${!cmdname}" ]; then
+      echo "$cmdname is unset or set to the empty string"
+      exit 1
+  fi
+}
+
+assert_envvar_set MY_PARTITION
+assert_envvar_set MY_GRANT
+assert_envvar_set MY_GRANT_RES_CPU
+
+exit 0
 
 module load python/3.10.8-gcccore-12.2.0
 pip install -r requirements.txt
@@ -10,7 +25,7 @@ module load hyperqueue/0.17.0
 nohup hq server start &
 
 # Let the server start
-sleep 3
+sleep 5
 
 # Enable automatic allocation (create queue)
 hq alloc add slurm \
@@ -20,10 +35,7 @@ hq alloc add slurm \
   --backlog 36 \
   --idle-timeout 1m \
   -- \
-  --partition=plgrid \
-  --account=plglscclass23-cpu \
-  --mem-per-cpu=256M \
-  --mail-type=begin \
-  --mail-type=end \
-  --mail-user=kkafara@student.agh.edu.pl
+  --partition=${MY_PARTITION} \
+  --account=${MY_GRANT_RES_CPU} \
+  --mem-per-cpu=256M
 
