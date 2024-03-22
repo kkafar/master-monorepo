@@ -131,6 +131,11 @@ impl JsspFitness {
         }
         let makespan = usize::min(last_finish_time, self.local_search(indv));
 
+        // After local search finish times of particual operations might not be accurate, due to
+        // changes in graph structure (machine precedences) and lack of updates of finish times
+        // alongside. But the graph structure is correct -> it should be possible to reconstruct
+        // the exact schedule, not only the makespan.
+
         indv.fitness = makespan;
         indv.is_fitness_valid = true;
         indv.is_dirty = true;
@@ -326,7 +331,7 @@ impl JsspFitness {
             crt_op = &indv.operations[edge.neigh_id];
         }
         // there should be empty block at the end
-        debug_assert!(blocks.last().unwrap().is_empty());
+        assert!(blocks.last().unwrap().is_empty());
         blocks.pop();
     }
 
@@ -335,6 +340,7 @@ impl JsspFitness {
         indv.operations[0].critical_distance
     }
 
+    /// Please note that `first_op_id` op MUST actually be before `sec_op_id` op in the block!
     fn swap_ops(&mut self, indv: &mut JsspIndividual, first_op_id: usize, sec_op_id: usize) {
         // We assume few things here:
         debug_assert!(first_op_id != 0 && sec_op_id != 0);
