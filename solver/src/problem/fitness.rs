@@ -124,7 +124,9 @@ impl JsspFitness {
                     let succ_id = unsafe { neighs.succ.unwrap_unchecked() };
 
                     let machine_pred = &mut indv.operations[pred_id];
+
                     assert!(machine_pred.edges_out.len() == 2);
+
                     machine_pred.edges_out.pop();
                     machine_pred.edges_out.push(Edge::new(j, EdgeKind::MachineSucc));
 
@@ -134,12 +136,16 @@ impl JsspFitness {
                     indv.operations[succ_id].machine_pred = Some(j);
                 } else if neighs.pred.is_some() {
                     let pred_id = unsafe { neighs.pred.unwrap_unchecked() };
+
                     let machine_pred = &mut indv.operations[pred_id];
+
                     assert!(machine_pred.edges_out.len() == 1);
+                    
                     machine_pred.edges_out.push(Edge::new(j, EdgeKind::MachineSucc));
                     indv.operations[j].machine_pred = Some(pred_id);
                 } else if neighs.succ.is_some() {
                     let succ_id = unsafe { neighs.succ.unwrap_unchecked() };
+
                     indv.operations[j].edges_out.push(Edge::new(succ_id, EdgeKind::MachineSucc));
                     indv.operations[succ_id].machine_pred = Some(j);
                 }
