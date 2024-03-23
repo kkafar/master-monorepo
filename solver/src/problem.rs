@@ -164,8 +164,8 @@ pub struct Machine {
     /// Remaining machine capacity. If a range is added -> this means that the machine is occupied in that range
     // For "possibly better implementation"
     rmc: Vec<MachineAllocation>,
-    pub last_scheduled_op: Option<usize>,
-    pub last_scheduled_range: Option<Range<usize>>,
+    // pub last_scheduled_op: Option<usize>,
+    // pub last_scheduled_range: Option<Range<usize>>,
 }
 
 impl Machine {
@@ -174,8 +174,8 @@ impl Machine {
             id,
             // rmc: vec![1; rmc_capacity],
             rmc: Vec::new(),
-            last_scheduled_op: None,
-            last_scheduled_range: None,
+            // last_scheduled_op: None,
+            // last_scheduled_range: None,
         }
     }
 }
@@ -205,11 +205,11 @@ impl Machine {
     /// you want to reserve.
     ///
     pub fn reserve(&mut self, range: Range<usize>, op: usize) -> MachineNeighs {
-        if let Some(ref last_scheduled_range) = self.last_scheduled_range {
-            if range.end <= last_scheduled_range.start {
-                warn!("Scheduling operation {} on machine {} at {:?} BEFORE already scheduled operation {} at {:?}", op, self.id, &range, self.last_scheduled_op.unwrap(), last_scheduled_range);
-            }
-        }
+        // if let Some(ref last_scheduled_range) = self.last_scheduled_range {
+        //     if range.end <= last_scheduled_range.start {
+        //         warn!("Scheduling operation {} on machine {} at {:?} BEFORE already scheduled operation {} at {:?}", op, self.id, &range, self.last_scheduled_op.unwrap(), last_scheduled_range);
+        //     }
+        // }
 
         self.rmc.push(MachineAllocation::new(op, range.clone()));
 
@@ -225,8 +225,8 @@ impl Machine {
             .filter(|alloc| alloc.range.start >= range.end)
             .min_by_key(|alloc| alloc.range.start);
 
-        self.last_scheduled_op = Some(op);
-        self.last_scheduled_range = Some(range);
+        // self.last_scheduled_op = Some(op);
+        // self.last_scheduled_range = Some(range);
 
         MachineNeighs::new(
             lower_bound.map(|alloc| alloc.op_id),
@@ -237,8 +237,8 @@ impl Machine {
     /// Removes all ranges from the machine state allowing instance of this type to be reused
     pub fn reset(&mut self) {
         self.rmc.clear();
-        self.last_scheduled_op = None;
-        self.last_scheduled_range = None;
+        // self.last_scheduled_op = None;
+        // self.last_scheduled_range = None;
     }
 }
 
