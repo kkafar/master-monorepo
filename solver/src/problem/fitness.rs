@@ -225,13 +225,13 @@ impl JsspFitness {
                 // space to store only the direct predecessor (list of direct predecessors?).
                 if op.id != indv.operations.len() - 1 {
                     if let Some(direct_pred_id) = op.preds.last() {
-                        if indv.operations[*direct_pred_id].finish_time.unwrap() as f64 > time as f64 + delay {
+                        if indv.operations[*direct_pred_id].finish_time.unwrap_or(usize::MAX) as f64 > time as f64 + delay {
                             return false;
                         }
                     }
                 } else {
                     for &pred in op.preds.iter() {
-                        if indv.operations[pred].finish_time.unwrap() as f64 > time as f64 + delay {
+                        if indv.operations[pred].finish_time.unwrap_or(usize::MAX) as f64 > time as f64 + delay {
                             return false;
                         }
                     }
