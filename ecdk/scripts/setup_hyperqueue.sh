@@ -27,7 +27,7 @@ sleep 5
 
 # Enable automatic allocation (create queue)
 hq alloc add slurm \
-  --time-limit 14h \
+  --time-limit 6h \
   --workers-per-alloc 1 \
   --max-worker-count 48 \
   --backlog 36 \
