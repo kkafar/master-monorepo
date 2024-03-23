@@ -1,9 +1,9 @@
 use std::cmp::Ordering;
 
-use crate::util::euclidean_distance;
+use crate::{util::euclidean_distance, problem::Operation};
 use ecrs::ga::{individual::IndividualTrait, Probe};
-use itertools::Itertools;
-use log::info;
+use itertools::{Itertools, repeat_n};
+use log::{info, warn, trace};
 use md5;
 
 use crate::logging::OutputData;
@@ -12,6 +12,13 @@ use super::individual::JsspIndividual;
 
 pub(crate) struct JsspProbe {
     repeated: Vec<bool>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum State {
+    Unvisited,
+    Discovered,
+    Visited,
 }
 
 impl JsspProbe {
@@ -175,6 +182,75 @@ impl Probe<JsspIndividual> for JsspProbe {
 
         // This includes zero & sink operations
         let n = ops.len() - 2;
+
+        let start_time = std::time::Instant::now();
+
+        // Finding topological ordering of operations here. We run simple DFS.
+        let mut visited = Vec::<State>::from_iter(repeat_n(State::Unvisited, n + 2));
+        let mut stack = Vec::<&Operation>::new();
+        let mut topo_order = Vec::<&Operation>::with_capacity(n + 2);
+
+        stack.push(&ops[0]);
+        visited[0] = State::Discovered;
+
+        while !stack.is_empty() {
+            let crt_op = *stack.last().unwrap();
+
+            let mut has_unvisited_neighs = false;
+
+            for edge in crt_op.edges_out.iter() {
+                if visited[edge.neigh_id] == State::Unvisited {
+                    has_unvisited_neighs = true;
+                    stack.push(&ops[edge.neigh_id]);
+                    visited[edge.neigh_id] = State::Discovered;
+                    break;
+                }
+            }
+
+            if !has_unvisited_neighs {
+                stack.pop();
+                visited[crt_op.id] = State::Visited;
+                topo_order.push(crt_op);
+            }
+        }
+
+        assert_eq!(topo_order.len(), n + 2);
+        assert_eq!(topo_order[n + 1].id, 0);
+        assert_eq!(topo_order[0].id, n + 1);
+
+        // We now visit operations in reversed topo order & update their finish times
+        topo_order.reverse();
+        assert_eq!(topo_order[0].finish_time, Some(0));
+
+        let topo_order = topo_order.into_iter().map(|op| op.id).collect_vec();
+
+        // topo_order[0].finish_time = Some(0);
+
+        for op_id in topo_order.into_iter().skip(1) {
+            let op = &ops[op_id];
+            let job_pred_finish_time = ops[*op.preds.last().unwrap()].finish_time.expect("We skipped zero-op thus there should always be a job pred");
+            let machine_pred_finish_time = if let Some(machine_pred) = op.machine_pred {
+                ops[machine_pred].finish_time.expect("We're visiting nodes in reverse topo order, thus this must not be None")
+            } else {
+                usize::MIN
+            };
+
+            let op = &mut ops[op_id];
+
+            // This won't work for sink operation, however we do filter it away anyway, so this
+            // won't be a problem.
+            let new_finish_time = Some(usize::max(job_pred_finish_time, machine_pred_finish_time) + op.duration);
+
+            if new_finish_time != op.finish_time {
+                trace!("Updating finish time of op {} from {:?} to {:?}", op.id, op.finish_time, new_finish_time);
+                op.finish_time = new_finish_time;
+            }
+        }
+
+        let reconstruction_time = start_time.elapsed();
+
+        info!("Reconstructed finish times in graph in {}ms", reconstruction_time.as_millis());
+        info!("Best fitness found: {}", best_individual.fitness);
 
         #[allow(clippy::if_same_then_else)]
         ops.sort_unstable_by(|a, b| {
