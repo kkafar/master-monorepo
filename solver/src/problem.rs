@@ -120,6 +120,8 @@ impl Operation {
             0
         );
 
+        self.critical_path_edge = None;
+
         // TODO: Should we zero `critical_path_edge` and `critical_distance` here?
         // Why is it not done?
     }

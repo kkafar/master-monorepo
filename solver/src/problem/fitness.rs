@@ -45,13 +45,8 @@ impl JsspFitness {
         // Resolving problem size. -2 because zero & sink dummy operations
         let n: usize = indv.operations.len() - 2;
 
-        // TODO: This state is not hoisted, as we do not know the number of operations
-        // before first call to this function. Think of some better solution though.
-        let mut finish_times = vec![usize::MAX; n + 2];
-
         // Schedule the dummy zero operation
         let mut scheduled_count = 1;
-        finish_times[0] = 0;
         indv.operations[0].finish_time = Some(0);
 
         // TODO: consider starting from 0 here to make arithemtics more gracefully
@@ -80,12 +75,12 @@ impl JsspFitness {
 
             // Updating delay feasibles & finding highest priority operation from this set are
             // merged to avoid multiple iterations over whole set of operations.
-            j = self.update_delay_feasibles_and_highest_prior_op(indv, &finish_times, delay, t_g);
+            j = self.update_delay_feasibles_and_highest_prior_op(indv, delay, t_g);
 
             while !self.delay_feasibles.is_empty() {
                 let op_j_duration = indv.operations[j].duration;
                 let op_j_machine = indv.operations[j].machine;
-                let op_j = &mut indv.operations[j];
+                let op_j = &indv.operations[j];
 
                 // Calculate the earliest finish time (in terms of precedence only)
                 // We do not need to look on all predecessors. The direct one is enough, as
@@ -93,21 +88,20 @@ impl JsspFitness {
                 // is the order of predecessors guaranteed? Look for places that manipulate this
                 // field! Answer: yes it is after #444 was merged.
                 // https://github.com/ecrs-org/ecrs/pull/444
-                let pred_j_finish = finish_times[*op_j.preds.last().unwrap()];
+                let pred_j_finish = indv.operations[*op_j.preds.last().unwrap()].finish_time.unwrap();
 
                 // Calculate the earliest finish time (in terms of precedence and capacity)
-                let finish_time_j = finish_times
+                let finish_time_j = indv.operations
                     .iter()
-                    .filter(|&&t| t != usize::MAX && t >= pred_j_finish)
-                    .filter(|&&t| indv.machines[op_j_machine].is_idle(t..t + op_j_duration))
+                    .filter_map(|op| op.finish_time)
+                    .filter(|&t| t >= pred_j_finish && indv.machines[op_j_machine].is_idle(t..t + op_j_duration))
                     .min()
                     .unwrap()
                     + op_j_duration;
 
                 // Update state
                 scheduled_count += 1;
-                finish_times[op_j.id] = finish_time_j;
-                op_j.finish_time = Some(finish_time_j);
+                indv.operations[j].finish_time = Some(finish_time_j);
                 g += 1;
 
                 last_finish_time = usize::max(last_finish_time, finish_time_j);
@@ -162,10 +156,10 @@ impl JsspFitness {
                 }
 
                 delay = self.delay_for_g(indv, n, g, maxdur);
-                j = self.update_delay_feasibles_and_highest_prior_op(indv, &finish_times, delay, t_g);
+                j = self.update_delay_feasibles_and_highest_prior_op(indv, delay, t_g);
             }
             // Update the scheduling time t_g associated with g
-            t_g = *finish_times.iter().filter(|&&t| t > t_g).min().unwrap();
+            t_g = indv.operations.iter().filter_map(|op| op.finish_time).filter(|&t| t > t_g).min().unwrap();
         }
         let makespan = usize::min(last_finish_time, self.local_search(indv));
 
@@ -195,7 +189,6 @@ impl JsspFitness {
     fn update_delay_feasibles_and_highest_prior_op(
         &mut self,
         indv: &JsspIndividual,
-        finish_times: &[usize],
         delay: f64,
         time: usize,
     ) -> usize {
@@ -207,7 +200,7 @@ impl JsspFitness {
 
         indv.operations
             .iter()
-            .filter(|op| finish_times[op.id] == usize::MAX)
+            .filter(|op| op.finish_time.is_some())
             .filter(|op| {
                 // It is assumed here, that dependencies are in order
 
@@ -232,13 +225,13 @@ impl JsspFitness {
                 // space to store only the direct predecessor (list of direct predecessors?).
                 if op.id != indv.operations.len() - 1 {
                     if let Some(direct_pred_id) = op.preds.last() {
-                        if finish_times[*direct_pred_id] as f64 > time as f64 + delay {
+                        if indv.operations[*direct_pred_id].finish_time.unwrap() as f64 > time as f64 + delay {
                             return false;
                         }
                     }
                 } else {
                     for &pred in op.preds.iter() {
-                        if finish_times[pred] as f64 > time as f64 + delay {
+                        if indv.operations[pred].finish_time.unwrap() as f64 > time as f64 + delay {
                             return false;
                         }
                     }
