@@ -5,6 +5,13 @@ use crate::problem::{Edge, EdgeKind};
 
 use super::individual::JsspIndividual;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DfsNodeState {
+    Unvisited,
+    Discovered,
+    Visited,
+}
+
 pub struct JsspFitness {
     // Delay feasible operations are those operations that:
     // 1. have not yet been scheduled up to iteration g (counter defined below),
@@ -140,7 +147,7 @@ impl JsspFitness {
                     let machine_pred = &mut indv.operations[pred_id];
 
                     assert!(machine_pred.edges_out.len() == 1);
-                    
+
                     machine_pred.edges_out.push(Edge::new(j, EdgeKind::MachineSucc));
                     indv.operations[j].machine_pred = Some(pred_id);
                 } else if neighs.succ.is_some() {
@@ -298,7 +305,7 @@ impl JsspFitness {
     }
 
     fn determine_critical_path(&mut self, indv: &mut JsspIndividual) {
-        let mut visited = vec![false; indv.operations.len()];
+        let mut visited = vec![DfsNodeState::Unvisited; indv.operations.len()];
         self.calculate_critical_distance(indv, 0, &mut visited)
     }
 
@@ -306,46 +313,75 @@ impl JsspFitness {
         &mut self,
         indv: &mut JsspIndividual,
         op_id: usize,
-        visited: &mut Vec<bool>,
+        visited: &mut Vec<DfsNodeState>,
     ) {
         let mut stack: Vec<usize> = Vec::with_capacity(visited.len() * 2);
 
         stack.push(op_id);
+        visited[op_id] = DfsNodeState::Discovered;
+
         while !stack.is_empty() {
             let crt_op_id = *stack.last().unwrap();
-            // In current implementation it is possible (highly likely) that a vertex might be pushed
-            // multiple times on the stack, before being processed, so we process the vertex iff it
-            // has not been visited already.
-            if !visited[crt_op_id] {
-                let mut has_not_visited_neigh = false;
-                for edge in indv.operations[crt_op_id].edges_out.iter() {
-                    if !visited[edge.neigh_id] {
-                        stack.push(edge.neigh_id);
-                        has_not_visited_neigh = true;
-                    }
+
+            let mut has_unvisited_neighs = false;
+
+            for edge in indv.operations[crt_op_id].edges_out.iter() {
+                if visited[edge.neigh_id] == DfsNodeState::Unvisited {
+                    has_unvisited_neighs = true;
+                    stack.push(edge.neigh_id);
+                    visited[edge.neigh_id] = DfsNodeState::Discovered;
+                    break;
                 }
-
-                if !has_not_visited_neigh {
-                    visited[crt_op_id] = true;
-                    stack.pop();
-
-                    if !indv.operations[crt_op_id].edges_out.is_empty() {
-                        let cp_edge = *indv.operations[crt_op_id]
-                            .edges_out
-                            .iter()
-                            .max_by_key(|edge| indv.operations[edge.neigh_id].critical_distance)
-                            .unwrap();
-
-                        indv.operations[crt_op_id].critical_distance = indv.operations[crt_op_id].duration
-                            + indv.operations[cp_edge.neigh_id].critical_distance;
-                        indv.operations[crt_op_id].critical_path_edge = Some(cp_edge);
-                    } else {
-                        indv.operations[crt_op_id].critical_distance = indv.operations[crt_op_id].duration;
-                    }
-                }
-            } else {
-                stack.pop();
             }
+
+            if !has_unvisited_neighs {
+                stack.pop();
+                visited[crt_op_id] = DfsNodeState::Visited;
+                if !indv.operations[crt_op_id].edges_out.is_empty() {
+                    let cp_edge = *indv.operations[crt_op_id]
+                        .edges_out
+                        .iter()
+                        .max_by_key(|edge| indv.operations[edge.neigh_id].critical_distance)
+                        .unwrap();
+
+                    indv.operations[crt_op_id].critical_distance = indv.operations[crt_op_id].duration
+                        + indv.operations[cp_edge.neigh_id].critical_distance;
+                    indv.operations[crt_op_id].critical_path_edge = Some(cp_edge);
+                } else {
+                    indv.operations[crt_op_id].critical_distance = indv.operations[crt_op_id].duration;
+                }
+            }
+
+            // if !visited[crt_op_id] {
+            //     let mut has_not_visited_neigh = false;
+            //     for edge in indv.operations[crt_op_id].edges_out.iter() {
+            //         if !visited[edge.neigh_id] {
+            //             stack.push(edge.neigh_id);
+            //             has_not_visited_neigh = true;
+            //         }
+            //     }
+            //
+            //     if !has_not_visited_neigh {
+            //         visited[crt_op_id] = true;
+            //         stack.pop();
+            //
+            //         if !indv.operations[crt_op_id].edges_out.is_empty() {
+            //             let cp_edge = *indv.operations[crt_op_id]
+            //                 .edges_out
+            //                 .iter()
+            //                 .max_by_key(|edge| indv.operations[edge.neigh_id].critical_distance)
+            //                 .unwrap();
+            //
+            //             indv.operations[crt_op_id].critical_distance = indv.operations[crt_op_id].duration
+            //                 + indv.operations[cp_edge.neigh_id].critical_distance;
+            //             indv.operations[crt_op_id].critical_path_edge = Some(cp_edge);
+            //         } else {
+            //             indv.operations[crt_op_id].critical_distance = indv.operations[crt_op_id].duration;
+            //         }
+            //     }
+            // } else {
+            //     stack.pop();
+            // }
         }
     }
 
