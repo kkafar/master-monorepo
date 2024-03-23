@@ -1,7 +1,7 @@
 use std::ops::Range;
 
-use log::warn;
 use itertools::Itertools;
+use log::warn;
 
 pub mod crossover;
 pub mod fitness;
@@ -125,6 +125,33 @@ impl Operation {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct MachineAllocation {
+    /// Id of the operation
+    op_id: usize,
+
+    /// Period of allocation
+    range: Range<usize>,
+}
+
+impl MachineAllocation {
+    pub fn new(op_id: usize, range: Range<usize>) -> Self {
+        Self { op_id, range }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct MachineNeighs {
+    pred: Option<usize>,
+    succ: Option<usize>,
+}
+
+impl MachineNeighs {
+    pub fn new(pred: Option<usize>, succ: Option<usize>) -> Self {
+        Self { pred, succ }
+    }
+}
+
 /// Models the machine -- when it is occupied
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -136,9 +163,9 @@ pub struct Machine {
     // rmc: Vec<usize>,
     /// Remaining machine capacity. If a range is added -> this means that the machine is occupied in that range
     // For "possibly better implementation"
-    rmc: Vec<Range<usize>>,
+    rmc: Vec<MachineAllocation>,
     pub last_scheduled_op: Option<usize>,
-    pub last_scheduled_range: Option<std::ops::Range<usize>>,
+    pub last_scheduled_range: Option<Range<usize>>,
 }
 
 impl Machine {
@@ -163,26 +190,48 @@ impl Machine {
 // Here we use just a vector of intervals. This is most likely slower that naive solution, but it
 // does not require so much memory.
 impl Machine {
-    pub fn is_idle(&self, query: std::ops::Range<usize>) -> bool {
+    pub fn is_idle(&self, query: Range<usize>) -> bool {
         !self
             .rmc
             .iter()
-            .any(|range| range.start < query.end && range.end > query.start)
+            .any(|alloc| alloc.range.start < query.end && alloc.range.end > query.start)
     }
 
+    /// Allocates given range on the machine, marking it as occupied in range
+    /// [range.start, range.end).
+    ///
     /// DOES NOT PERFORM VALIDATION!
     /// Make sure via `is_idle` method that the machine is not occupied in the span
     /// you want to reserve.
-    pub fn reserve(&mut self, range: std::ops::Range<usize>, op: usize) {
+    ///
+    pub fn reserve(&mut self, range: Range<usize>, op: usize) -> MachineNeighs {
         if let Some(ref last_scheduled_range) = self.last_scheduled_range {
             if range.end <= last_scheduled_range.start {
-                warn!("Scheduling operation {} on machine {} at {:?} BEFORE already scheduled operation at {:?}", op, self.id, &range, last_scheduled_range);
+                warn!("Scheduling operation {} on machine {} at {:?} BEFORE already scheduled operation {} at {:?}", op, self.id, &range, self.last_scheduled_op.unwrap(), last_scheduled_range);
             }
         }
 
-        self.rmc.push(range.clone());
+        self.rmc.push(MachineAllocation::new(op, range.clone()));
+
+        // We look for successor & predecessor naively. TODO: Use a better data structure here...
+        let lower_bound = self
+            .rmc
+            .iter()
+            .filter(|alloc| alloc.range.end <= range.start)
+            .max_by_key(|alloc| alloc.range.end);
+        let upper_bound = self
+            .rmc
+            .iter()
+            .filter(|alloc| alloc.range.start >= range.end)
+            .min_by_key(|alloc| alloc.range.start);
+
         self.last_scheduled_op = Some(op);
         self.last_scheduled_range = Some(range);
+
+        MachineNeighs::new(
+            lower_bound.map(|alloc| alloc.op_id),
+            upper_bound.map(|alloc| alloc.op_id),
+        )
     }
 
     /// Removes all ranges from the machine state allowing instance of this type to be reused
