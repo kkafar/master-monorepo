@@ -51,10 +51,9 @@ impl JsspFitness {
         // Iteration number. Notation borrowed from the paper.
         let mut g = 1;
 
-        // Scheduling time associated with current iteration g. This is usually equal to largest
-        // schedule time form g-1 iteration + 1, so that if we do not have any operations feasible
-        // to schedule with current time restriction (see the definition of delay_feasibles) we
-        // relax the condition.
+        // Scheduling time associated with current iteration g.
+        // This is equal precisely to smallest finish time of already scheduled operation,
+        // s.t. it is greater than current value of t_g.
         let mut t_g = 0;
 
         // Longest duration of a single opration
@@ -111,14 +110,39 @@ impl JsspFitness {
                 // It is possible that the most recently scheduled job is **not** the actual last on the
                 // machine. I believe there migtht be a situation where the job is scheduled
                 // before the last one. See notes on "Machine model" attached to paper.
-                if let Some(last_sch_op) = indv.machines[op_j_machine].last_scheduled_op {
-                    indv.operations[last_sch_op]
-                        .edges_out
-                        .push(Edge::new(j, EdgeKind::MachineSucc));
-                    indv.operations[j].machine_pred = Some(last_sch_op);
-                }
+                // if let Some(last_sch_op) = indv.machines[op_j_machine].last_scheduled_op {
+                //     indv.operations[last_sch_op]
+                //         .edges_out
+                //         .push(Edge::new(j, EdgeKind::MachineSucc));
+                //     indv.operations[j].machine_pred = Some(last_sch_op);
+                // }
 
-                indv.machines[op_j_machine].reserve(finish_time_j - op_j_duration..finish_time_j, j);
+                let neighs = indv.machines[op_j_machine].reserve(finish_time_j - op_j_duration..finish_time_j, j);
+
+                if neighs.pred.is_some() && neighs.succ.is_some() {
+                    let pred_id = unsafe { neighs.pred.unwrap_unchecked() };
+                    let succ_id = unsafe { neighs.succ.unwrap_unchecked() };
+
+                    let machine_pred = &mut indv.operations[pred_id];
+                    assert!(machine_pred.edges_out.len() == 2);
+                    machine_pred.edges_out.pop();
+                    machine_pred.edges_out.push(Edge::new(j, EdgeKind::MachineSucc));
+
+                    indv.operations[j].machine_pred = Some(pred_id);
+                    indv.operations[j].edges_out.push(Edge::new(succ_id, EdgeKind::MachineSucc));
+
+                    indv.operations[succ_id].machine_pred = Some(j);
+                } else if neighs.pred.is_some() {
+                    let pred_id = unsafe { neighs.pred.unwrap_unchecked() };
+                    let machine_pred = &mut indv.operations[pred_id];
+                    assert!(machine_pred.edges_out.len() == 1);
+                    machine_pred.edges_out.push(Edge::new(j, EdgeKind::MachineSucc));
+                    indv.operations[j].machine_pred = Some(pred_id);
+                } else if neighs.succ.is_some() {
+                    let succ_id = unsafe { neighs.succ.unwrap_unchecked() };
+                    indv.operations[j].edges_out.push(Edge::new(succ_id, EdgeKind::MachineSucc));
+                    indv.operations[succ_id].machine_pred = Some(j);
+                }
 
                 if g > n {
                     break;
@@ -131,6 +155,11 @@ impl JsspFitness {
             t_g = *finish_times.iter().filter(|&&t| t > t_g).min().unwrap();
         }
         let makespan = usize::min(last_finish_time, self.local_search(indv));
+
+        // After local search finish times of particual operations might not be accurate, due to
+        // changes in graph structure (machine precedences) and lack of updates of finish times
+        // alongside. But the graph structure is correct -> it should be possible to reconstruct
+        // the exact schedule, not only the makespan.
 
         indv.fitness = makespan;
         indv.is_fitness_valid = true;
@@ -327,7 +356,7 @@ impl JsspFitness {
             crt_op = &indv.operations[edge.neigh_id];
         }
         // there should be empty block at the end
-        debug_assert!(blocks.last().unwrap().is_empty());
+        assert!(blocks.last().unwrap().is_empty());
         blocks.pop();
     }
 
@@ -336,6 +365,7 @@ impl JsspFitness {
         indv.operations[0].critical_distance
     }
 
+    /// Please note that `first_op_id` op MUST actually be before `sec_op_id` op in the block!
     fn swap_ops(&mut self, indv: &mut JsspIndividual, first_op_id: usize, sec_op_id: usize) {
         // We assume few things here:
         debug_assert!(first_op_id != 0 && sec_op_id != 0);

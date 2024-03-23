@@ -1,6 +1,6 @@
 from typing import Optional
 from pathlib import Path
-from experiment.model import Experiment, ExperimentConfig
+from experiment.model import Experiment, ExperimentConfig, ExperimentBatch
 from data.model import InstanceMetadata
 from core.fs import (
     get_main_plotdir,
@@ -96,7 +96,8 @@ def test_run_file_hierarchy_creation(tmp_path):
     exp_1 = create_mock_exp('test01', output_dir=exp_1_dir, n_series=n_series)
     exp_2 = create_mock_exp('test02', output_dir=exp_2_dir, n_series=n_series)
 
-    initialize_file_hierarchy([exp_1, exp_2])
+    batch = ExperimentBatch(output_dir=tmp_path, experiments=[exp_1, exp_2], solver_config=None)
+    initialize_file_hierarchy(batch)
 
     assert exp_1_dir.is_dir()
     assert exp_2_dir.is_dir()

@@ -46,7 +46,7 @@ pub fn get_run_config(instance: &JsspInstance, config: &Config) -> RunConfig {
 
 pub trait Solver {
     /// Run solver for given instance
-    fn run(&mut self, instance: JsspInstance, run_config: RunConfig);
+    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) -> anyhow::Result<()>;
 
     /// Return short description of the solver, e.g. mentioning the paper that the implementation
     /// bases on or simply solver name. Default Implementation returns None.
@@ -61,7 +61,7 @@ pub trait Solver {
 pub struct Goncalves2005;
 
 impl Solver for Goncalves2005 {
-    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) {
+    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) -> anyhow::Result<()> {
         info!(
             "Running {} solver",
             self.describe().expect("No solver description provided")
@@ -80,6 +80,8 @@ impl Solver for Goncalves2005 {
             .set_population_size(run_config.pop_size)
             .build()
             .run();
+
+        anyhow::Ok(())
     }
 
     fn describe(&self) -> Option<String> {
@@ -94,7 +96,7 @@ impl Solver for Goncalves2005 {
 pub struct RandomSearch;
 
 impl Solver for RandomSearch {
-    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) {
+    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) -> anyhow::Result<()> {
         info!(
             "Running {} solver",
             self.describe().expect("No solver description provided")
@@ -112,6 +114,8 @@ impl Solver for RandomSearch {
             .set_population_size(run_config.pop_size)
             .build()
             .run();
+
+        anyhow::Ok(())
     }
 
     fn describe(&self) -> Option<String> {
@@ -126,7 +130,7 @@ impl Solver for RandomSearch {
 pub struct Goncalves2005MidPoint;
 
 impl Solver for Goncalves2005MidPoint {
-    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) {
+    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) -> anyhow::Result<()> {
         info!(
             "Running {} solver",
             self.describe().expect("No solver description provided")
@@ -145,6 +149,8 @@ impl Solver for Goncalves2005MidPoint {
             .set_population_size(run_config.pop_size)
             .build()
             .run();
+
+        anyhow::Ok(())
     }
 
     fn describe(&self) -> Option<String> {
@@ -159,7 +165,7 @@ impl Solver for Goncalves2005MidPoint {
 pub struct Goncalves2005DoubleMidPoint;
 
 impl Solver for Goncalves2005DoubleMidPoint {
-    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) {
+    fn run(&mut self, instance: JsspInstance, run_config: RunConfig) -> anyhow::Result<()> {
         info!(
             "Running {} solver",
             self.describe().expect("No solver description provided")
@@ -178,6 +184,8 @@ impl Solver for Goncalves2005DoubleMidPoint {
             .set_population_size(run_config.pop_size)
             .build()
             .run();
+
+        anyhow::Ok(())
     }
 
     fn describe(&self) -> Option<String> {
