@@ -5,7 +5,7 @@ from typing import Optional
 from pprint import pprint
 
 
-@dataclass()
+@dataclass
 class IdSpan:
     start: int
     end: int
@@ -27,6 +27,18 @@ class Operation:
 class Job:
     ops: list[Operation]  # ops[0] = None, ops are numbered from 1
     span: IdSpan
+
+
+# TODO: Make use of this class when reconstructing & validating solution string
+# in context of instance
+@dataclass
+class ScheduleReconstructionResult:
+    schedule: list[list[Operation]]
+    err: Optional[list[str]]
+
+    @property
+    def ok(self) -> bool:
+        return self.err is None or len(self.err) == 0
 
 
 @dataclass

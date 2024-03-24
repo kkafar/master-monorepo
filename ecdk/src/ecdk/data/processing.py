@@ -55,6 +55,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     data: list[JoinedExperimentData] = [experiment_data_from_all_series(exp) for exp in tqdm(batch)]
 
     validation_results: list[ExperimentValidationResult] = []
+    has_corrupted_data = False
 
     if process_count == 1:
         print("Processing experiments data in single process...")
@@ -70,6 +71,12 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     for result in filter(lambda res: not res.ok, validation_results):
         print(f"[ERROR] Experiment: {result.expname} has {len(result.corrupted_series)} corrupted series")
         pprint(result.corrupted_series)
+        has_corrupted_data = True
+
+    # As there are not mechanisms for handling (skipping during processing) corrupted data
+    # it is best to just terminate processing.
+    if has_corrupted_data:
+        exit(1)
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
     global_df = compute_global_exp_stats(batch, data, tabledir)
