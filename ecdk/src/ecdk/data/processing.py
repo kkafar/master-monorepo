@@ -1,10 +1,12 @@
 import polars as pl
 import polars.selectors as cs
 import itertools as it
+from tqdm import tqdm
+from pprint import pprint
 from pathlib import Path
 from typing import Optional
 from experiment.model import Experiment
-from data.model import JoinedExperimentData
+from data.model import JoinedExperimentData, ExperimentValidationResult
 from .tools import experiment_data_from_all_series
 from .plot import create_plots_for_experiment, plot_perf_cmp, visualise_instance_solution
 from .stat import (
@@ -20,23 +22,20 @@ from problem import (
 )
 
 
-def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path], should_plot: bool = True):
+def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path], should_plot: bool = True) -> ExperimentValidationResult:
     """ :param outdir: directory for saving processed data """
 
-    print(f"Processing experiment {exp.name}")
-
     exp_plotdir = get_plotdir_for_exp(exp, outdir) if outdir is not None else None
+
+    invalid_series = []
 
     instance = JsspInstance.from_instance_file(exp.config.input_file)
     for sid, series_output in enumerate(exp.result.series_outputs):
         md = series_output.data.metadata
-        print(f"\tProcessing series {sid}: ")
         ok, schedule, errstr = validate_solution_string_in_context_of_instance(md.solution_string, instance, md.fitness)
 
-        if ok:
-            print('OK')
-        else:
-            print(f'ERR ({errstr})')
+        if not ok:
+            invalid_series.append((sid, errstr))
 
         if should_plot:
             visualise_instance_solution(exp, instance, sid, exp_plotdir)
@@ -46,19 +45,31 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
         create_plots_for_experiment(exp, data, exp_plotdir)
     # compute_per_exp_stats(exp, data)
 
+    return ExperimentValidationResult(exp.name, invalid_series if len(invalid_series) > 0 else None)
+
 
 def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Path], process_count: int = 1, should_plot: bool = True):
     """ :param outdir: directory for saving processed data """
 
-    data: list[JoinedExperimentData] = [experiment_data_from_all_series(exp) for exp in batch]
+    print("Joining data from different series into single data frame...")
+    data: list[JoinedExperimentData] = [experiment_data_from_all_series(exp) for exp in tqdm(batch)]
+
+    validation_results: list[ExperimentValidationResult] = []
 
     if process_count == 1:
-        for exp, expdata in zip(batch, data):
-            process_experiment_data(exp, expdata, outdir, should_plot)
+        print("Processing experiments data in single process...")
+        for exp, expdata in tqdm(zip(batch, data), total=len(batch)):
+            result = process_experiment_data(exp, expdata, outdir, should_plot)
+            validation_results.append(result)
     else:
+        print("Processing experiments data in multiprocess context...")
         from multiprocessing import get_context
         with get_context("spawn").Pool(process_count) as pool:
-            pool.starmap(process_experiment_data, zip(batch, data, it.repeat(outdir), it.repeat(should_plot)))
+            validation_results = pool.starmap(process_experiment_data, zip(batch, data, it.repeat(outdir), it.repeat(should_plot)))
+
+    for result in filter(lambda res: not res.ok, validation_results):
+        print(f"[ERROR] Experiment: {result.expname} has {len(result.corrupted_series)} corrupted series")
+        pprint(result.corrupted_series)
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
     global_df = compute_global_exp_stats(batch, data, tabledir)
