@@ -2,6 +2,7 @@ import polars as pl
 import core.fs
 import core.conversion
 import json
+from tqdm import tqdm
 from typing import Dict, Optional
 from pathlib import Path
 from experiment.model import (
@@ -22,7 +23,7 @@ def experiment_result_from_dir(directory: Path, materialize: bool = False) -> Ex
     # TODO: dump it on the disk & load it here
     result = ExperimentResult([], None)
     for series_dir in filter(lambda file: file.is_dir(), directory.iterdir()):
-        series_output = load_series_output(series_dir, lazy=materialize)
+        series_output = load_series_output(series_dir, lazy=not materialize)
         result.series_outputs.append(series_output)
 
     return result
@@ -50,8 +51,9 @@ def experiment_from_dir(directory: Path, materialize: bool = False) -> Experimen
 
 
 def extract_experiments_from_dir(directory: Path) -> list[Experiment]:
+    print("Loading experiments output data into memory...", flush=True)
     return [
-        experiment_from_dir(d) for d in filter(lambda f: f.is_dir(), directory.iterdir())
+        experiment_from_dir(d) for d in tqdm(filter(lambda f: f.is_dir(), directory.iterdir()))
     ]
 
 

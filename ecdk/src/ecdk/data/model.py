@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from polars import DataFrame
+from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -167,4 +168,17 @@ class JoinedExperimentData:
     popgentime: DataFrame
     iterinfo: DataFrame
     # run_metadata: list[SeriesOutputMetadata]
+
+
+SeriesId = int
+
+
+@dataclass
+class ExperimentValidationResult:
+    expname: str
+    corrupted_series: Optional[list[tuple[SeriesId, str]]]
+
+    @property
+    def ok(self) -> bool:
+        return self.corrupted_series is None or len(self.corrupted_series) == 0
 
