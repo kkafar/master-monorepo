@@ -31,7 +31,7 @@ impl CrossoverOperator<JsspIndividual> for JsspCrossover {
         let mask = thread_rng().sample_iter(self.distr).take(chromosome_len);
 
         for (locus, val) in mask.enumerate() {
-            if val <= 0.6 {
+            if val <= 0.7 {
                 child_1_ch.push(parent_1.chromosome()[locus]);
                 child_2_ch.push(parent_2.chromosome()[locus]);
             } else {
