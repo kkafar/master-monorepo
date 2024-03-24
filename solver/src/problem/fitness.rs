@@ -200,7 +200,7 @@ impl JsspFitness {
 
         indv.operations
             .iter()
-            .filter(|op| op.finish_time.is_some())
+            .filter(|op| op.finish_time.is_none())
             .filter(|op| {
                 // It is assumed here, that dependencies are in order
 
