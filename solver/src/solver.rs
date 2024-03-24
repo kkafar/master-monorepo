@@ -68,7 +68,7 @@ impl Solver for Goncalves2005 {
         );
 
         ga::Builder::new()
-            .set_selection_operator(selection::Rank::new())
+            .set_selection_operator(selection::Random::new())
             .set_crossover_operator(JsspCrossover::new())
             .set_mutation_operator(mutation::Identity::new())
             .set_population_generator(JsspPopProvider::new(instance.clone()))
@@ -137,7 +137,7 @@ impl Solver for Goncalves2005MidPoint {
         );
 
         ga::Builder::new()
-            .set_selection_operator(selection::Rank::new())
+            .set_selection_operator(selection::Random::new())
             .set_crossover_operator(MidPoint::new())
             .set_mutation_operator(mutation::Identity::new())
             .set_population_generator(JsspPopProvider::new(instance.clone()))
@@ -172,7 +172,7 @@ impl Solver for Goncalves2005DoubleMidPoint {
         );
 
         ga::Builder::new()
-            .set_selection_operator(selection::Rank::new())
+            .set_selection_operator(selection::Random::new())
             .set_crossover_operator(DoubledCrossover::new(instance.cfg.n_ops * 2))
             .set_mutation_operator(mutation::Identity::new())
             .set_population_generator(JsspPopProvider::new(instance.clone()))
