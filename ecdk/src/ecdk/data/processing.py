@@ -37,8 +37,8 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
         if not ok:
             invalid_series.append((sid, errstr))
 
-        if should_plot:
-            visualise_instance_solution(exp, instance, sid, exp_plotdir)
+        # if should_plot:
+        #     visualise_instance_solution(exp, instance, sid, exp_plotdir)
         instance.reset()
 
     if should_plot:
@@ -77,6 +77,8 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     # it is best to just terminate processing.
     if has_corrupted_data:
         exit(1)
+    else:
+        print("Validation: OK")
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
     global_df = compute_global_exp_stats(batch, data, tabledir)
