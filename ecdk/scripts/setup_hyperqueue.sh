@@ -26,14 +26,27 @@ nohup hq server start &
 sleep 5
 
 # Enable automatic allocation (create queue)
+# hq alloc add slurm \
+#   --workers-per-alloc 1 \
+#   --max-worker-count 48 \
+#   --backlog 36 \
+#   --idle-timeout 1m \
+#   --time-limit 9h \
+#   -- \
+#   --partition=${MY_PARTITION} \
+#   --account=${MY_GRANT_RES_CPU} \
+#   --mem-per-cpu=256M
+
+
+# Experiment with 2 CPU workers
 hq alloc add slurm \
-  --time-limit 6h \
   --workers-per-alloc 1 \
   --max-worker-count 48 \
   --backlog 36 \
   --idle-timeout 1m \
+  --time-limit 9h \
+  --cpus 2 \
   -- \
   --partition=${MY_PARTITION} \
   --account=${MY_GRANT_RES_CPU} \
   --mem-per-cpu=256M
-
