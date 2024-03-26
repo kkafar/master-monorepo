@@ -66,7 +66,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
         print("Processing experiments data in multiprocess context...")
         from multiprocessing import get_context
         with get_context("spawn").Pool(process_count) as pool:
-            validation_results = pool.starmap(process_experiment_data, zip(batch, data, it.repeat(outdir), it.repeat(should_plot)))
+            validation_results = pool.starmap(process_experiment_data, tqdm(zip(batch, data, it.repeat(outdir), it.repeat(should_plot)), total=len(batch)))
 
     for result in filter(lambda res: not res.ok, validation_results):
         print(f"[ERROR] Experiment: {result.expname} has {len(result.corrupted_series)} corrupted series")
