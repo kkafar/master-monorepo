@@ -76,6 +76,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     # As there are not mechanisms for handling (skipping during processing) corrupted data
     # it is best to just terminate processing.
     if has_corrupted_data:
+        print("Validation: ERR")
         exit(1)
     else:
         print("Validation: OK")
