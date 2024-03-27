@@ -13,6 +13,7 @@ data/instances/**/Taillard_specification/
 !data/instances-mock
 !data/metadata
 !src/ecdk/data/
+zips/
 .DS_Store
 bin/
 *.out
