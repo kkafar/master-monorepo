@@ -3,6 +3,8 @@
 use ecrs::{ga::individual::IndividualTrait, prelude::crossover::CrossoverOperator};
 use rand::{rngs::ThreadRng, thread_rng, Rng};
 
+use crate::stats::IndividualTelemetry;
+
 use super::individual::JsspIndividual;
 
 pub struct JsspCrossover {
@@ -43,9 +45,11 @@ impl CrossoverOperator<JsspIndividual> for JsspCrossover {
         let mut child_1 = parent_1.clone();
         let mut child_2 = parent_2.clone();
         child_1.is_fitness_valid = false;
-        child_2.is_fitness_valid = false;
         child_1.chromosome = child_1_ch;
+        child_1.telemetry = IndividualTelemetry::new();
+        child_2.is_fitness_valid = false;
         child_2.chromosome = child_2_ch;
+        child_2.telemetry = IndividualTelemetry::new();
 
         (child_1, child_2)
     }
@@ -97,7 +101,9 @@ impl CrossoverOperator<JsspIndividual> for MidPoint {
         }
 
         child_1.is_fitness_valid = false;
+        child_1.telemetry = IndividualTelemetry::new();
         child_2.is_fitness_valid = false;
+        child_2.telemetry = IndividualTelemetry::new();
 
         (child_1, child_2)
     }
@@ -160,7 +166,9 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
         }
 
         child_1.is_fitness_valid = false;
+        child_1.telemetry = IndividualTelemetry::new();
         child_2.is_fitness_valid = false;
+        child_2.telemetry = IndividualTelemetry::new();
 
         (child_1, child_2)
     }
