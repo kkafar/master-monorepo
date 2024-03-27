@@ -37,6 +37,16 @@ pub struct Args {
     /// `doubled_crossover`.
     #[arg(short = 's', long = "solver-type")]
     pub solver_type: Option<String>,
+
+    /// Elitims rate passed to JsspCrossover operator in solvers that utilise it.
+    /// See JsspCrossover implementation to understand its meaning exactly.
+    #[arg(long = "elitism-rate")]
+    pub elitism_rate: Option<f64>,
+
+    /// Sampling rate passed to JsspCrossover operator in solvers that utilise it
+    /// See JsspCrossover implementation to understand its meaning exactly.
+    #[arg(long = "sampling-rate")]
+    pub sampling_rate: Option<f64>,
 }
 
 fn validate_args(args: &Args) -> Result<(), String> {

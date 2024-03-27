@@ -20,28 +20,35 @@ use crate::{
         selection::EmptySelection,
         JsspInstance,
     },
+    stats::{StatsAware, StatsEngine},
 };
 
 #[derive(Clone, Copy)]
 pub struct RunConfig {
     pop_size: usize,
     n_gen: usize,
+
+    /// Elitims rate passed to JsspCrossover operator in solvers that utilise it.
+    /// See JsspCrossover implementation to understand its meaning exactly.
+    elitism_rate: f64,
+
+    /// Sampling rate passed to JsspCrossover operator in solvers that utilise it
+    /// See JsspCrossover implementation to understand its meaning exactly.
+    sampling_rate: f64,
 }
 
 pub fn get_run_config(instance: &JsspInstance, config: &Config) -> RunConfig {
-    let pop_size = if let Some(ps) = config.pop_size {
-        ps // Overrided by user
-    } else {
-        instance.cfg.n_ops * 2 // Defined in paper
-    };
+    // TODO: Create single place with solver defaults, right now its here
+    // and in config creation...
 
-    let n_gen = if let Some(ng) = config.n_gen {
-        ng // Overrided by user
-    } else {
-        400 // Defined in paper
-    };
+    // TODO: Do I really need this RunConfig structure? Maybe just pass config around
 
-    RunConfig { pop_size, n_gen }
+    RunConfig {
+        pop_size: config.pop_size.unwrap_or(instance.cfg.n_ops * 2),
+        n_gen: config.n_gen.unwrap_or(400),
+        elitism_rate: config.elitism_rate,
+        sampling_rate: config.sampling_rate,
+    }
 }
 
 pub trait Solver {

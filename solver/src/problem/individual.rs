@@ -39,6 +39,7 @@ impl JsspIndividual {
     pub(super) fn reset(&mut self) {
         self.machines.iter_mut().for_each(|machine| machine.reset());
         self.operations.iter_mut().for_each(|op| op.reset());
+        // TODO: consider cleaning `is_dirty` flag here
     }
 }
 

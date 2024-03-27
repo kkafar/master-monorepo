@@ -168,7 +168,7 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
 
 #[cfg(test)]
 mod test {
-    use ecrs::ga::{operators::crossover::CrossoverOperator};
+    use ecrs::ga::operators::crossover::CrossoverOperator;
     use itertools::Itertools;
 
     use crate::problem::{
