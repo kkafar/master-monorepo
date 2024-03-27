@@ -20,28 +20,35 @@ use crate::{
         selection::EmptySelection,
         JsspInstance,
     },
+    stats::{StatsAware, StatsEngine},
 };
 
 #[derive(Clone, Copy)]
 pub struct RunConfig {
     pop_size: usize,
     n_gen: usize,
+
+    /// Elitims rate passed to JsspCrossover operator in solvers that utilise it.
+    /// See JsspCrossover implementation to understand its meaning exactly.
+    elitism_rate: f64,
+
+    /// Sampling rate passed to JsspCrossover operator in solvers that utilise it
+    /// See JsspCrossover implementation to understand its meaning exactly.
+    sampling_rate: f64,
 }
 
 pub fn get_run_config(instance: &JsspInstance, config: &Config) -> RunConfig {
-    let pop_size = if let Some(ps) = config.pop_size {
-        ps // Overrided by user
-    } else {
-        instance.cfg.n_ops * 2 // Defined in paper
-    };
+    // TODO: Create single place with solver defaults, right now its here
+    // and in config creation...
 
-    let n_gen = if let Some(ng) = config.n_gen {
-        ng // Overrided by user
-    } else {
-        400 // Defined in paper
-    };
+    // TODO: Do I really need this RunConfig structure? Maybe just pass config around
 
-    RunConfig { pop_size, n_gen }
+    RunConfig {
+        pop_size: config.pop_size.unwrap_or(instance.cfg.n_ops * 2),
+        n_gen: config.n_gen.unwrap_or(400),
+        elitism_rate: config.elitism_rate,
+        sampling_rate: config.sampling_rate,
+    }
 }
 
 pub trait Solver {
@@ -67,12 +74,20 @@ impl Solver for Goncalves2005 {
             self.describe().expect("No solver description provided")
         );
 
+        let stats_engine = StatsEngine::new();
+        let mut replacement_op = JsspReplacement::new(
+            JsspPopProvider::new(instance.clone()),
+            run_config.elitism_rate,
+            run_config.sampling_rate,
+        );
+        replacement_op.set_stats_engine(&stats_engine);
+
         ga::Builder::new()
             .set_selection_operator(selection::Random::new())
             .set_crossover_operator(JsspCrossover::new())
             .set_mutation_operator(mutation::Identity::new())
-            .set_population_generator(JsspPopProvider::new(instance.clone()))
-            .set_replacement_operator(JsspReplacement::new(JsspPopProvider::new(instance), 0.1, 0.2))
+            .set_population_generator(JsspPopProvider::new(instance))
+            .set_replacement_operator(replacement_op)
             .set_fitness(JsspFitness::new(1.5))
             .set_probe(JsspProbe::new())
             // .set_max_duration(std::time::Duration::from_secs(30))
@@ -102,13 +117,17 @@ impl Solver for RandomSearch {
             self.describe().expect("No solver description provided")
         );
 
+        let stats_engine = StatsEngine::new();
+        let mut replacement_op = ReplaceWithRandomPopulation::new(JsspPopProvider::new(instance.clone()));
+        replacement_op.set_stats_engine(&stats_engine);
+
         ga::Builder::new()
-            .set_population_generator(JsspPopProvider::new(instance.clone()))
+            .set_population_generator(JsspPopProvider::new(instance))
             .set_fitness(JsspFitness::new(1.5))
             .set_selection_operator(EmptySelection::new())
             .set_crossover_operator(NoopCrossover::new())
             .set_mutation_operator(mutation::Identity::new())
-            .set_replacement_operator(ReplaceWithRandomPopulation::new(JsspPopProvider::new(instance)))
+            .set_replacement_operator(replacement_op)
             .set_probe(JsspProbe::new())
             .set_max_generation_count(run_config.n_gen)
             .set_population_size(run_config.pop_size)
@@ -136,12 +155,16 @@ impl Solver for Goncalves2005MidPoint {
             self.describe().expect("No solver description provided")
         );
 
+        let stats_engine = StatsEngine::new();
+        let mut replacement_op = JsspReplacement::new(JsspPopProvider::new(instance.clone()), 0.1, 0.2);
+        replacement_op.set_stats_engine(&stats_engine);
+
         ga::Builder::new()
             .set_selection_operator(selection::Random::new())
             .set_crossover_operator(MidPoint::new())
             .set_mutation_operator(mutation::Identity::new())
-            .set_population_generator(JsspPopProvider::new(instance.clone()))
-            .set_replacement_operator(JsspReplacement::new(JsspPopProvider::new(instance), 0.1, 0.2))
+            .set_population_generator(JsspPopProvider::new(instance))
+            .set_replacement_operator(replacement_op)
             .set_fitness(JsspFitness::new(1.5))
             .set_probe(JsspProbe::new())
             // .set_max_duration(std::time::Duration::from_secs(30))
@@ -171,12 +194,16 @@ impl Solver for Goncalves2005DoubleMidPoint {
             self.describe().expect("No solver description provided")
         );
 
+        let stats_engine = StatsEngine::new();
+        let mut replacement_op = JsspReplacement::new(JsspPopProvider::new(instance.clone()), 0.1, 0.2);
+        replacement_op.set_stats_engine(&stats_engine);
+
         ga::Builder::new()
             .set_selection_operator(selection::Random::new())
             .set_crossover_operator(DoubledCrossover::new(instance.cfg.n_ops * 2))
             .set_mutation_operator(mutation::Identity::new())
-            .set_population_generator(JsspPopProvider::new(instance.clone()))
-            .set_replacement_operator(JsspReplacement::new(JsspPopProvider::new(instance), 0.1, 0.2))
+            .set_population_generator(JsspPopProvider::new(instance))
+            .set_replacement_operator(replacement_op)
             .set_fitness(JsspFitness::new(1.5))
             .set_probe(JsspProbe::new())
             // .set_max_duration(std::time::Duration::from_secs(30))

@@ -31,6 +31,14 @@ pub struct Config {
 
     /// Solver type to run. Available options: `default`, `randomsearch`, `midpoint`, `double_singlepoint`.
     pub solver_type: String,
+
+    /// Elitims rate passed to JsspCrossover operator in solvers that utilise it.
+    /// See JsspCrossover implementation to understand its meaning exactly.
+    pub elitism_rate: f64,
+
+    /// Sampling rate passed to JsspCrossover operator in solvers that utilise it
+    /// See JsspCrossover implementation to understand its meaning exactly.
+    pub sampling_rate: f64,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -41,6 +49,8 @@ pub struct PartialConfig {
     pub pop_size: Option<usize>,
     pub delay_const_factor: Option<f64>,
     pub solver_type: Option<String>,
+    pub elitism_rate: Option<f64>,
+    pub sampling_rate: Option<f64>,
 }
 
 impl PartialConfig {
@@ -52,6 +62,8 @@ impl PartialConfig {
             pop_size: None,
             delay_const_factor: None,
             solver_type: None,
+            elitism_rate: None,
+            sampling_rate: None,
         }
     }
 }
@@ -85,6 +97,8 @@ impl TryFrom<PartialConfig> for Config {
             solver_type: partial_cfg
                 .solver_type
                 .unwrap_or(String::from(SOLVER_TYPE_DEFAULT)),
+            elitism_rate: partial_cfg.elitism_rate.unwrap_or(0.1),  // Defaults from paper
+            sampling_rate: partial_cfg.sampling_rate.unwrap_or(0.2),  // Defaults from paper
         })
     }
 }
@@ -119,6 +133,12 @@ impl TryFrom<Args> for Config {
         }
         if let Some(solver_type) = args.solver_type {
             partial_cfg.solver_type = Some(solver_type);
+        }
+        if let Some(elitism_rate) = args.elitism_rate {
+            partial_cfg.elitism_rate = Some(elitism_rate);
+        }
+        if let Some(sampling_rate) = args.sampling_rate {
+            partial_cfg.sampling_rate = Some(sampling_rate);
         }
 
         Config::try_from(partial_cfg)

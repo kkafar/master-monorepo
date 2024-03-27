@@ -5,6 +5,7 @@ mod parse;
 mod problem;
 mod solver;
 mod util;
+mod stats;
 
 use config::Config;
 use solver::registry::SolverRegistry;

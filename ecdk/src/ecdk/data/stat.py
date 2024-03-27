@@ -45,6 +45,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             ])
             .collect()
         )
+
         # Avg. number of improvements
         df = (
             expdata.newbest.lazy()
@@ -57,6 +58,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             .collect()
             .hstack(df, in_place=True)  # stacking two smaller dframes here
         )
+
         # Iteration time stats
         df = (
             expdata.iterinfo.lazy()

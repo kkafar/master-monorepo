@@ -37,8 +37,8 @@ def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir:
         if not ok:
             invalid_series.append((sid, errstr))
 
-        if should_plot:
-            visualise_instance_solution(exp, instance, sid, exp_plotdir)
+        # if should_plot:
+        #     visualise_instance_solution(exp, instance, sid, exp_plotdir)
         instance.reset()
 
     if should_plot:
@@ -66,7 +66,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
         print("Processing experiments data in multiprocess context...")
         from multiprocessing import get_context
         with get_context("spawn").Pool(process_count) as pool:
-            validation_results = pool.starmap(process_experiment_data, zip(batch, data, it.repeat(outdir), it.repeat(should_plot)))
+            validation_results = pool.starmap(process_experiment_data, tqdm(zip(batch, data, it.repeat(outdir), it.repeat(should_plot)), total=len(batch)))
 
     for result in filter(lambda res: not res.ok, validation_results):
         print(f"[ERROR] Experiment: {result.expname} has {len(result.corrupted_series)} corrupted series")
@@ -76,7 +76,10 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     # As there are not mechanisms for handling (skipping during processing) corrupted data
     # it is best to just terminate processing.
     if has_corrupted_data:
+        print("Validation: ERR")
         exit(1)
+    else:
+        print("Validation: OK")
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
     global_df = compute_global_exp_stats(batch, data, tabledir)

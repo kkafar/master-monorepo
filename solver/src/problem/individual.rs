@@ -1,5 +1,7 @@
 use ecrs::ga::individual::IndividualTrait;
 
+use crate::stats::IndividualTelemetry;
+
 use super::{Machine, Operation};
 
 /// Models single solution to the JSSP problem instance
@@ -21,17 +23,20 @@ pub struct JsspIndividual {
     pub is_fitness_valid: bool,
     /// TODO: Determine what I've used it for
     pub is_dirty: bool,
+
+    pub telemetry: IndividualTelemetry
 }
 
 impl JsspIndividual {
-    pub fn new(chromosome: Vec<f64>, ops: Vec<Operation>, machines: Vec<Machine>, fitness: usize) -> Self {
+    pub fn new(chromosome: Vec<f64>, operations: Vec<Operation>, machines: Vec<Machine>, fitness: usize) -> Self {
         Self {
             chromosome,
-            operations: ops,
+            operations,
             machines,
             fitness,
             is_fitness_valid: false,
             is_dirty: false,
+            telemetry: IndividualTelemetry::new(),
         }
     }
 
@@ -39,6 +44,7 @@ impl JsspIndividual {
     pub(super) fn reset(&mut self) {
         self.machines.iter_mut().for_each(|machine| machine.reset());
         self.operations.iter_mut().for_each(|op| op.reset());
+        // TODO: consider cleaning `is_dirty` flag here
     }
 }
 
@@ -102,6 +108,7 @@ impl From<Vec<f64>> for JsspIndividual {
             fitness: usize::MAX,
             is_fitness_valid: false,
             is_dirty: false,
+            telemetry: IndividualTelemetry::new(),
         }
     }
 }

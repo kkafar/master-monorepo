@@ -1,24 +1,28 @@
 use ecrs::prelude::{population::PopulationGenerator, replacement::ReplacementOperator};
 
+use crate::stats::{StatsEngine, StatsAware};
+
 use super::{individual::JsspIndividual, population::JsspPopProvider};
 
-pub struct JsspReplacement {
+pub struct JsspReplacement<'stats> {
     pop_gen: JsspPopProvider,
     elite_rate: f64,
     sample_rate: f64,
+    stats_engine: Option<&'stats StatsEngine>
 }
 
-impl JsspReplacement {
+impl <'stats> JsspReplacement<'stats> {
     pub fn new(pop_gen: JsspPopProvider, elite_rate: f64, sample_rate: f64) -> Self {
         Self {
             pop_gen,
             elite_rate,
             sample_rate,
+            stats_engine: None,
         }
     }
 }
 
-impl ReplacementOperator<JsspIndividual> for JsspReplacement {
+impl <'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
     fn apply(
         &mut self,
         mut population: Vec<JsspIndividual>,
@@ -63,17 +67,24 @@ impl ReplacementOperator<JsspIndividual> for JsspReplacement {
     }
 }
 
-pub struct ReplaceWithRandomPopulation {
-    pop_gen: JsspPopProvider,
-}
-
-impl ReplaceWithRandomPopulation {
-    pub fn new(pop_gen: JsspPopProvider) -> Self {
-        Self { pop_gen }
+impl <'stats> StatsAware<'stats> for JsspReplacement<'stats> {
+    fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
+        self.stats_engine = Some(engine)
     }
 }
 
-impl ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulation {
+pub struct ReplaceWithRandomPopulation<'stats> {
+    pop_gen: JsspPopProvider,
+    stats_engine: Option<&'stats StatsEngine>,
+}
+
+impl <'stats> ReplaceWithRandomPopulation<'stats> {
+    pub fn new(pop_gen: JsspPopProvider) -> Self {
+        Self { pop_gen, stats_engine: None }
+    }
+}
+
+impl <'stats> ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulation<'stats> {
     fn apply(
         &mut self,
         population: Vec<JsspIndividual>,
@@ -84,5 +95,11 @@ impl ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulation {
 
     fn requires_children_fitness(&self) -> bool {
         false
+    }
+}
+
+impl <'stats> StatsAware<'stats> for ReplaceWithRandomPopulation<'stats> {
+    fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
+        self.stats_engine = Some(engine);
     }
 }
