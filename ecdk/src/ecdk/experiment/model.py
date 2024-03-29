@@ -273,3 +273,47 @@ class ExperimentBatch:
 
         return result
 
+
+@dataclass
+class SolverRunConfig:
+    """This mirrors sturct internally used by solver, which is output to solver's
+    stdout and we're trying to parse it here. This shouldn't be used in any
+    any different place."""
+
+    pop_size: int
+    n_gen: int
+    elitism_rate: float
+    sampling_rate: float
+    delay_const_factor: float
+
+    @classmethod
+    def from_dict(cls, md: dict):
+        return cls(
+            pop_size=md['pop_size'],
+            n_gen=md['n_gen'],
+            elitism_rate=md['elitism_rate'],
+            sampling_rate=md['sampling_rate'],
+            delay_const_factor=md['delay_const_factor']
+        )
+
+
+@dataclass
+class SolverDescription:
+    """ Solver outputs this to stdout every time it is run. """
+
+    codename: str
+    run_cfg: SolverRunConfig
+    description: str
+
+    @classmethod
+    def from_dict(cls, md: dict):
+        if "pop_size" in md.keys():
+            return SolverRunConfig.from_dict(md)
+
+        return cls(
+            codename=md['codename'],
+            run_cfg=md['run_cfg'],
+            description=md['description']
+        )
+
+
