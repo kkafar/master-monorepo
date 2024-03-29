@@ -8,6 +8,7 @@ from core.env import ArrayJobSpec, input_range_from_jobspec
 from core.scheduler import Task, MultiProcessTaskRunner
 from core.series import load_series_output
 from context import Context
+from pprint import pprint
 
 
 def solver_params_from_exp_config(config: ExperimentConfig) -> Generator[SolverParams, None, None]:
@@ -175,9 +176,9 @@ class HyperQueueRunner:
         job.program(rm_analyze_res_cmd, deps=[zip_analyze_task], name='rm_analyze_res')
 
         print("Submitting job to HQ server with postprocessing tasks")
-        print(zip_cmd)
-        print(analyze_cmd)
-        print(zip_analyze_res_cmd)
-        print(rm_analyze_res_cmd)
+        pprint(zip_cmd)
+        pprint(analyze_cmd)
+        pprint(zip_analyze_res_cmd)
+        pprint(rm_analyze_res_cmd)
         self._client.submit(job)
 
