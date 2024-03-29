@@ -1,6 +1,9 @@
-use ecrs::{prelude::{population::PopulationGenerator, replacement::ReplacementOperator}, ga::GAMetadata};
+use ecrs::{
+    ga::GAMetadata,
+    prelude::{population::PopulationGenerator, replacement::ReplacementOperator},
+};
 
-use crate::stats::{StatsEngine, StatsAware};
+use crate::stats::{StatsAware, StatsEngine};
 
 use super::{individual::JsspIndividual, population::JsspPopProvider};
 
@@ -8,10 +11,10 @@ pub struct JsspReplacement<'stats> {
     pop_gen: JsspPopProvider,
     elite_rate: f64,
     sample_rate: f64,
-    stats_engine: Option<&'stats StatsEngine>
+    stats_engine: Option<&'stats StatsEngine>,
 }
 
-impl <'stats> JsspReplacement<'stats> {
+impl<'stats> JsspReplacement<'stats> {
     pub fn new(pop_gen: JsspPopProvider, elite_rate: f64, sample_rate: f64) -> Self {
         Self {
             pop_gen,
@@ -22,7 +25,7 @@ impl <'stats> JsspReplacement<'stats> {
     }
 }
 
-impl <'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
+impl<'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
     fn apply(
         &mut self,
         metadata: &GAMetadata,
@@ -66,7 +69,6 @@ impl <'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
             );
         }
 
-
         population
     }
 
@@ -75,7 +77,7 @@ impl <'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
     }
 }
 
-impl <'stats> StatsAware<'stats> for JsspReplacement<'stats> {
+impl<'stats> StatsAware<'stats> for JsspReplacement<'stats> {
     fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
         self.stats_engine = Some(engine)
     }
@@ -86,13 +88,16 @@ pub struct ReplaceWithRandomPopulation<'stats> {
     stats_engine: Option<&'stats StatsEngine>,
 }
 
-impl <'stats> ReplaceWithRandomPopulation<'stats> {
+impl<'stats> ReplaceWithRandomPopulation<'stats> {
     pub fn new(pop_gen: JsspPopProvider) -> Self {
-        Self { pop_gen, stats_engine: None }
+        Self {
+            pop_gen,
+            stats_engine: None,
+        }
     }
 }
 
-impl <'stats> ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulation<'stats> {
+impl<'stats> ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulation<'stats> {
     fn apply(
         &mut self,
         _metadata: &GAMetadata,
@@ -107,7 +112,7 @@ impl <'stats> ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulatio
     }
 }
 
-impl <'stats> StatsAware<'stats> for ReplaceWithRandomPopulation<'stats> {
+impl<'stats> StatsAware<'stats> for ReplaceWithRandomPopulation<'stats> {
     fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
         self.stats_engine = Some(engine);
     }

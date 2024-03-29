@@ -3,10 +3,9 @@ pub mod telemetry;
 use ecrs::ga::GAMetadata;
 pub use telemetry::IndividualTelemetry;
 
-use std::{rc::Rc, cell::RefCell};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::problem::individual::JsspIndividual;
-
 
 pub trait StatsAware<'stats> {
     fn set_stats_engine(&mut self, engine: &'stats StatsEngine);
@@ -45,9 +44,8 @@ impl Default for Stats {
     }
 }
 
-
 pub struct StatsEngine {
-    pub stats: Rc<RefCell<Stats>>
+    pub stats: Rc<RefCell<Stats>>,
 }
 
 impl StatsEngine {
@@ -61,4 +59,3 @@ impl StatsEngine {
         self.stats.borrow().clone()
     }
 }
-

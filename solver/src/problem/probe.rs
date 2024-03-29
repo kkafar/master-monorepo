@@ -1,9 +1,13 @@
 use std::cmp::Ordering;
 
-use crate::{util::euclidean_distance, problem::Operation, stats::{StatsAware, StatsEngine}};
+use crate::{
+    problem::Operation,
+    stats::{StatsAware, StatsEngine},
+    util::euclidean_distance,
+};
 use ecrs::ga::{individual::IndividualTrait, Probe};
-use itertools::{Itertools, repeat_n};
-use log::{info, warn, trace};
+use itertools::{repeat_n, Itertools};
+use log::{info, trace, warn};
 use md5;
 
 use crate::logging::OutputData;
@@ -22,7 +26,7 @@ enum State {
     Visited,
 }
 
-impl <'stats> JsspProbe<'stats> {
+impl<'stats> JsspProbe<'stats> {
     pub(crate) fn new(stats_engine: &'stats StatsEngine) -> Self {
         // Deferring creation of vector as we do not know the required capacity
         // Self { repeated: Vec::new() }
@@ -84,7 +88,7 @@ impl <'stats> JsspProbe<'stats> {
     }
 }
 
-impl <'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
+impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
     // CSV OUTLINE:
     // popmetrics,<generation>,<total_duration>,<population_size>,<diversity>,<distance_avg>
     // newbest,<generation>,<total_duration>,<fitness>
@@ -190,7 +194,6 @@ impl <'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             stats.update_stats_from_indvidual(metadata, indv);
         }
 
-
         let mut ops = best_individual.operations.clone();
 
         for op in ops.iter() {
@@ -245,9 +248,13 @@ impl <'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
 
         for op_id in topo_order.into_iter().skip(1) {
             let op = &ops[op_id];
-            let job_pred_finish_time = ops[*op.preds.last().unwrap()].finish_time.expect("We skipped zero-op thus there should always be a job pred");
+            let job_pred_finish_time = ops[*op.preds.last().unwrap()]
+                .finish_time
+                .expect("We skipped zero-op thus there should always be a job pred");
             let machine_pred_finish_time = if let Some(machine_pred) = op.machine_pred {
-                ops[machine_pred].finish_time.expect("We're visiting nodes in reverse topo order, thus this must not be None")
+                ops[machine_pred]
+                    .finish_time
+                    .expect("We're visiting nodes in reverse topo order, thus this must not be None")
             } else {
                 usize::MIN
             };
@@ -256,17 +263,26 @@ impl <'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
 
             // This won't work for sink operation, however we do filter it away anyway, so this
             // won't be a problem.
-            let new_finish_time = Some(usize::max(job_pred_finish_time, machine_pred_finish_time) + op.duration);
+            let new_finish_time =
+                Some(usize::max(job_pred_finish_time, machine_pred_finish_time) + op.duration);
 
             if new_finish_time != op.finish_time {
-                trace!("Updating finish time of op {} from {:?} to {:?}", op.id, op.finish_time, new_finish_time);
+                trace!(
+                    "Updating finish time of op {} from {:?} to {:?}",
+                    op.id,
+                    op.finish_time,
+                    new_finish_time
+                );
                 op.finish_time = new_finish_time;
             }
         }
 
         let reconstruction_time = start_time.elapsed();
 
-        info!("Reconstructed finish times in graph in {}ms", reconstruction_time.as_millis());
+        info!(
+            "Reconstructed finish times in graph in {}ms",
+            reconstruction_time.as_millis()
+        );
         info!("Best fitness found: {}", best_individual.fitness);
 
         #[allow(clippy::if_same_then_else)]
@@ -311,9 +327,8 @@ impl <'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
     }
 }
 
-impl <'stats> StatsAware<'stats> for JsspProbe<'stats> {
+impl<'stats> StatsAware<'stats> for JsspProbe<'stats> {
     fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
         self.stats_engine = engine;
-
     }
 }

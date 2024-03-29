@@ -24,11 +24,16 @@ pub struct JsspIndividual {
     /// TODO: Determine what I've used it for
     pub is_dirty: bool,
 
-    pub telemetry: IndividualTelemetry
+    pub telemetry: IndividualTelemetry,
 }
 
 impl JsspIndividual {
-    pub fn new(chromosome: Vec<f64>, operations: Vec<Operation>, machines: Vec<Machine>, fitness: usize) -> Self {
+    pub fn new(
+        chromosome: Vec<f64>,
+        operations: Vec<Operation>,
+        machines: Vec<Machine>,
+        fitness: usize,
+    ) -> Self {
         Self {
             chromosome,
             operations,

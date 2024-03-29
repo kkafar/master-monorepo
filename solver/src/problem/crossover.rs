@@ -1,6 +1,9 @@
 #![allow(dead_code)]
 
-use ecrs::{ga::{individual::IndividualTrait, GAMetadata}, prelude::crossover::CrossoverOperator};
+use ecrs::{
+    ga::{individual::IndividualTrait, GAMetadata},
+    prelude::crossover::CrossoverOperator,
+};
 use rand::{rngs::ThreadRng, thread_rng, Rng};
 
 use crate::stats::IndividualTelemetry;
@@ -60,7 +63,6 @@ impl CrossoverOperator<JsspIndividual> for JsspCrossover {
         child_2.is_fitness_valid = false;
         child_2.chromosome = child_2_ch;
         child_2.telemetry = IndividualTelemetry::new(metadata.generation, 0);
-
 
         (child_1, child_2)
     }

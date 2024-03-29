@@ -97,8 +97,8 @@ impl TryFrom<PartialConfig> for Config {
             solver_type: partial_cfg
                 .solver_type
                 .unwrap_or(String::from(SOLVER_TYPE_DEFAULT)),
-            elitism_rate: partial_cfg.elitism_rate.unwrap_or(0.1),  // Defaults from paper
-            sampling_rate: partial_cfg.sampling_rate.unwrap_or(0.2),  // Defaults from paper
+            elitism_rate: partial_cfg.elitism_rate.unwrap_or(0.1), // Defaults from paper
+            sampling_rate: partial_cfg.sampling_rate.unwrap_or(0.2), // Defaults from paper
         })
     }
 }

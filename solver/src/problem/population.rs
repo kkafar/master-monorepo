@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use ecrs::{prelude::population::{self, PopulationGenerator}, ga::GAMetadata};
+use ecrs::{
+    ga::GAMetadata,
+    prelude::population::{self, PopulationGenerator},
+};
 use itertools::Itertools;
 
 use crate::{parse::JsspInstanceLoadingError, stats::IndividualTelemetry};

@@ -91,10 +91,13 @@ impl JsspFitness {
                 let pred_j_finish = indv.operations[*op_j.preds.last().unwrap()].finish_time.unwrap();
 
                 // Calculate the earliest finish time (in terms of precedence and capacity)
-                let finish_time_j = indv.operations
+                let finish_time_j = indv
+                    .operations
                     .iter()
                     .filter_map(|op| op.finish_time)
-                    .filter(|&t| t >= pred_j_finish && indv.machines[op_j_machine].is_idle(t..t + op_j_duration))
+                    .filter(|&t| {
+                        t >= pred_j_finish && indv.machines[op_j_machine].is_idle(t..t + op_j_duration)
+                    })
                     .min()
                     .unwrap()
                     + op_j_duration;
@@ -118,7 +121,8 @@ impl JsspFitness {
                 //     indv.operations[j].machine_pred = Some(last_sch_op);
                 // }
 
-                let neighs = indv.machines[op_j_machine].reserve(finish_time_j - op_j_duration..finish_time_j, j);
+                let neighs =
+                    indv.machines[op_j_machine].reserve(finish_time_j - op_j_duration..finish_time_j, j);
 
                 if neighs.pred.is_some() && neighs.succ.is_some() {
                     let pred_id = unsafe { neighs.pred.unwrap_unchecked() };
@@ -132,7 +136,9 @@ impl JsspFitness {
                     machine_pred.edges_out.push(Edge::new(j, EdgeKind::MachineSucc));
 
                     indv.operations[j].machine_pred = Some(pred_id);
-                    indv.operations[j].edges_out.push(Edge::new(succ_id, EdgeKind::MachineSucc));
+                    indv.operations[j]
+                        .edges_out
+                        .push(Edge::new(succ_id, EdgeKind::MachineSucc));
 
                     indv.operations[succ_id].machine_pred = Some(j);
                 } else if neighs.pred.is_some() {
@@ -147,7 +153,9 @@ impl JsspFitness {
                 } else if neighs.succ.is_some() {
                     let succ_id = unsafe { neighs.succ.unwrap_unchecked() };
 
-                    indv.operations[j].edges_out.push(Edge::new(succ_id, EdgeKind::MachineSucc));
+                    indv.operations[j]
+                        .edges_out
+                        .push(Edge::new(succ_id, EdgeKind::MachineSucc));
                     indv.operations[succ_id].machine_pred = Some(j);
                 }
 
@@ -159,7 +167,13 @@ impl JsspFitness {
                 j = self.update_delay_feasibles_and_highest_prior_op(indv, delay, t_g);
             }
             // Update the scheduling time t_g associated with g
-            t_g = indv.operations.iter().filter_map(|op| op.finish_time).filter(|&t| t > t_g).min().unwrap();
+            t_g = indv
+                .operations
+                .iter()
+                .filter_map(|op| op.finish_time)
+                .filter(|&t| t > t_g)
+                .min()
+                .unwrap();
         }
         let makespan = usize::min(last_finish_time, self.local_search(indv));
 
@@ -225,13 +239,17 @@ impl JsspFitness {
                 // space to store only the direct predecessor (list of direct predecessors?).
                 if op.id != indv.operations.len() - 1 {
                     if let Some(direct_pred_id) = op.preds.last() {
-                        if indv.operations[*direct_pred_id].finish_time.unwrap_or(usize::MAX) as f64 > time as f64 + delay {
+                        if indv.operations[*direct_pred_id].finish_time.unwrap_or(usize::MAX) as f64
+                            > time as f64 + delay
+                        {
                             return false;
                         }
                     }
                 } else {
                     for &pred in op.preds.iter() {
-                        if indv.operations[pred].finish_time.unwrap_or(usize::MAX) as f64 > time as f64 + delay {
+                        if indv.operations[pred].finish_time.unwrap_or(usize::MAX) as f64
+                            > time as f64 + delay
+                        {
                             return false;
                         }
                     }
