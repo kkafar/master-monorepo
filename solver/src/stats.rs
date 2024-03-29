@@ -8,11 +8,11 @@ use std::{rc::Rc, cell::RefCell};
 use crate::problem::individual::JsspIndividual;
 
 
-
 pub trait StatsAware<'stats> {
     fn set_stats_engine(&mut self, engine: &'stats StatsEngine);
 }
 
+#[derive(Clone, Copy)]
 pub struct Stats {
     pub age_sum: usize,
     pub individual_count: usize,
@@ -45,6 +45,7 @@ impl Default for Stats {
     }
 }
 
+
 pub struct StatsEngine {
     pub stats: Rc<RefCell<Stats>>
 }
@@ -54,6 +55,10 @@ impl StatsEngine {
         Self {
             stats: Rc::new(RefCell::new(Stats::default())),
         }
+    }
+
+    pub fn inner_owned(&self) -> Stats {
+        self.stats.borrow().clone()
     }
 }
 

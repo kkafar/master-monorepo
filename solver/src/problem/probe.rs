@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, os::macos::fs::MetadataExt};
+use std::cmp::Ordering;
 
 use crate::{util::euclidean_distance, problem::Operation, stats::{StatsAware, StatsEngine}};
 use ecrs::ga::{individual::IndividualTrait, Probe};
@@ -181,9 +181,16 @@ impl <'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
     fn on_end(
         &mut self,
         metadata: &ecrs::ga::GAMetadata,
-        _population: &[JsspIndividual],
+        population: &[JsspIndividual],
         best_individual: &JsspIndividual,
     ) {
+        // Final individuals haven't been included in statistics yet.
+        let mut stats = self.stats_engine.stats.borrow_mut();
+        for indv in population.iter() {
+            stats.update_stats_from_indvidual(metadata, indv);
+        }
+
+
         let mut ops = best_individual.operations.clone();
 
         for op in ops.iter() {
@@ -294,6 +301,10 @@ impl <'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             generation_count: metadata.generation,
             total_time: metadata.total_dur.unwrap().as_millis(),
             chromosome: best_individual.chromosome(),
+            age_avg: (stats.age_sum as f64 / stats.individual_count as f64),
+            individual_count: stats.individual_count,
+            crossover_involvement_max: stats.crossover_involvement_max,
+            crossover_involvement_min: stats.crossover_involvement_min,
         };
         let serialized_object = serde_json::to_string_pretty(&outdata).unwrap();
         info!(target: "metadata", "{serialized_object}");
