@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 from experiment.model import Experiment
 from data.model import JoinedExperimentData, ExperimentValidationResult
-from .tools import experiment_data_from_all_series
+from .tools import experiment_data_from_all_series, extract_solver_desc_from_experiment_batch
 from .plot import create_plots_for_experiment, plot_perf_cmp, visualise_instance_solution
 from .stat import (
     compute_per_exp_stats,
@@ -89,6 +89,8 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
 
+    solver_desc_res = extract_solver_desc_from_experiment_batch(batch)
+
     res_sum_df = compute_stats_from_solver_summary(batch, data)
     global_df = compute_global_exp_stats(batch, data, tabledir)
     conv_df = compute_convergence_iteration_per_exp(batch, data, tabledir)
@@ -102,16 +104,23 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
 
         if res_sum_df:
             run_sum_df, sols_df = res_sum_df
-            run_sum_df.write(
+            run_sum_df.write_csv(
                 tabledir / 'run_summary_stats.csv',
                 has_header=True,
                 float_precision=2
             )
-            sols_df.write(
+            sols_df.write_csv(
                 tabledir / 'solutions.csv',
                 has_header=True,
                 float_precision=2
             )
+
+    if outdir and solver_desc_res:
+        solver_desc, json_str = solver_desc_res
+        with open(outdir / 'solver_desc.json', 'w') as file:
+            # Fingers crossed that everything will be written in single op
+            # TODO: Handle this in human way
+            file.write(json_str)
 
 
 def compare_exp_batch_outputs(basedir: Path, benchdir: Path):

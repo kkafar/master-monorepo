@@ -9,6 +9,7 @@ from experiment.model import (
     ExperimentResult,
     Experiment,
     SeriesOutputMetadata,
+    SolverDescription,
 )
 from data.model import (
     Col,
@@ -127,4 +128,48 @@ def maybe_load_instance_metadata(metadata_file: Optional[Path]) -> Optional[Dict
         metadata = InstanceMetadata(*record)
         metadata_store[metadata.id] = metadata
     return metadata_store
+
+
+def extract_solver_desc_from_experiment_batch(batch: list[Experiment]) -> Optional[tuple[SolverDescription, str]]:
+    assert len(batch) > 0, "Can not extract solver desc, because batch is empty"
+    exp = batch[0]
+
+    assert exp.result is not None, "Can not extract solver desc, because exp has no result"
+    assert len(exp.result.series_outputs) > 0, "Can not extract solver desc, because there are no series outputs"
+    series_output = exp.result.series_outputs[0]
+    logfile = series_output.files.logfile
+
+    assert logfile is not None, "Can not extract solver desc, because logfile is None"
+    assert logfile.is_file(), f"Can not extract solver desc, because given logfile {logfile} is not a file"
+
+    return _parse_solver_description_from_file(logfile)
+
+
+def _parse_solver_description_from_file(file: Path) -> Optional[tuple[SolverDescription, str]]:
+    start_marker = "BEGIN_SOLVER_DESC"
+    end_marker = "END_SOLVER_DESC"
+
+    json_str = None
+
+    print('parsing')
+    with open(file, 'r') as fd:
+        while (line := fd.readline()) != '':
+            if not line.startswith(start_marker):
+                continue
+            break
+        else:
+            return None
+
+        buffer = []
+
+        while not (json_line := fd.readline()).startswith(end_marker):
+            buffer.append(json_line)
+
+        json_str = ''.join(buffer)
+
+    if not json_str:
+        return None
+
+    desc = json.loads(json_str, object_hook=SolverDescription.from_dict)
+    return desc, json_str
 
