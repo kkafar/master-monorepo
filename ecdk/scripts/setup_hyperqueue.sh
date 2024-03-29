@@ -2,10 +2,32 @@
 #!/usr/bin/bash
 
 function assert_envvar_set() {
-  cmdname=$1
+  local cmdname=$1
   if [ -z "${!cmdname}" ]; then
       echo "$cmdname is unset or set to the empty string"
       exit 1
+  fi
+}
+
+function load_module_if_needed() {
+  local module_name=$1
+  module is-loaded ${module_name}
+  local retval=$(echo $?)
+  if [[ ${retval} -ne 0 ]]; then
+    module add ${module_name}
+  fi
+}
+
+function start_hq_server_if_needed() {
+  hq server info 2> /dev/null
+  local retval=$(echo $?)
+  if [[ ${retval} -ne 0 ]]; then
+    echo "Seems that HyperQueue server is not running, starting one..."
+    nohup hq server start &
+    echo "Sleeping for 5s to let server start in background..."
+    sleep 5
+  else
+    echo "Seems that HyperQueue server is already running"
   fi
 }
 
@@ -13,17 +35,18 @@ assert_envvar_set MY_PARTITION
 assert_envvar_set MY_GRANT
 assert_envvar_set MY_GRANT_RES_CPU
 
-module load python/3.10.8-gcccore-12.2.0
+# module load python/3.10.8-gcccore-12.2.0
+# pip install -r requirements.txt
+load_module_if_needed python/3.10.8-gcccore-12.2.0
 pip install -r requirements.txt
+
 
 # Had issues starting a server after a restrat with liberec
 # module load hyperqueue/0.17.0-liberec
-module load hyperqueue/0.17.0
+# module load hyperqueue/0.17.0
+load_module_if_needed hyperqueue/0.17.0
 
-nohup hq server start &
-
-# Let the server start
-sleep 5
+start_hq_server_if_needed
 
 # Enable automatic allocation (create queue)
 # hq alloc add slurm \
