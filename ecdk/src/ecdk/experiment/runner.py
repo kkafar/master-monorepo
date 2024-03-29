@@ -180,5 +180,5 @@ class HyperQueueRunner:
         print("Submitting job to HQ server with postprocessing tasks")
         print(zip_cmd)
         print(analyze_cmd)
-        # self._client.submit(job)
+        self._client.submit(job)
 
