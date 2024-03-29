@@ -1,9 +1,8 @@
-use std::{rc::Rc, cell::RefCell};
+use std::{cell::RefCell, rc::Rc};
 
 use ecrs::ga::GAMetadata;
 
 use crate::problem::individual::JsspIndividual;
-
 
 #[derive(Debug, Clone, Copy)]
 struct Inner {
@@ -16,7 +15,7 @@ struct Inner {
 
 #[derive(Debug, Clone)]
 pub struct IndividualTelemetry {
-    state: Rc<RefCell<Inner>>
+    state: Rc<RefCell<Inner>>,
 }
 
 impl IndividualTelemetry {

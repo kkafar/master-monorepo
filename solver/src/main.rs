@@ -4,8 +4,8 @@ mod logging;
 mod parse;
 mod problem;
 mod solver;
-mod util;
 mod stats;
+mod util;
 
 use config::Config;
 use solver::registry::SolverRegistry;
@@ -43,8 +43,12 @@ fn run() -> anyhow::Result<()> {
     register_solvers(&mut solver_registry);
 
     let run_config = get_run_config(&instance, &config);
-    let solver = solver_registry.get(&config.solver_type).unwrap_or_else(|| panic!("Failed to find solver of type {} in registry",
-        &config.solver_type));
+    let solver = solver_registry.get(&config.solver_type).unwrap_or_else(|| {
+        panic!(
+            "Failed to find solver of type {} in registry",
+            &config.solver_type
+        )
+    });
     solver.run(instance, run_config)
 }
 
