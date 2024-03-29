@@ -175,7 +175,8 @@ class HyperQueueRunner:
                        '--output-dir', f'{str(ctx.long_term_cache_dir)}/processed/{archive_name}',
                        '--no-plot']
 
-        job.program(zip_cmd, deps=computing_tasks, name='zipping')
+        zip_task = job.program(zip_cmd, deps=computing_tasks, name='zipping')
+        job.program(analyze_cmd, deps=[zip_task], name='analyzing')
 
         print("Submitting job to HQ server with postprocessing tasks")
         print(zip_cmd)
