@@ -25,7 +25,7 @@ impl <'stats> JsspReplacement<'stats> {
 impl <'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
     fn apply(
         &mut self,
-        _metadata: &GAMetadata,
+        metadata: &GAMetadata,
         mut population: Vec<JsspIndividual>,
         mut children: Vec<JsspIndividual>,
     ) -> Vec<JsspIndividual> {
@@ -40,6 +40,8 @@ impl <'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
             population.sort();
         }
 
+        let mut stats = self.stats_engine.unwrap().stats.borrow_mut();
+
         // Divergence from the papaer here. They do sample children population randomly (or just
         // create just right amount of children).
         //
@@ -50,15 +52,20 @@ impl <'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
         //
         // Selection of parents is also done differently to the paper.
         for i in elite_size..(elite_size + crossover_size) {
+            stats.update_stats_from_indvidual(metadata, &population[i]);
             std::mem::swap(&mut population[i], &mut children[i - elite_size]);
         }
 
         if sample_size > 0 {
+            for indv in population.iter().skip(elite_size + crossover_size) {
+                stats.update_stats_from_indvidual(metadata, indv);
+            }
             population.splice(
                 (elite_size + crossover_size)..population.len(),
-                self.pop_gen.generate(sample_size),
+                self.pop_gen.generate_with_metadata(metadata, sample_size),
             );
         }
+
 
         population
     }

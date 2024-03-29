@@ -36,7 +36,7 @@ impl JsspIndividual {
             fitness,
             is_fitness_valid: false,
             is_dirty: false,
-            telemetry: IndividualTelemetry::new(),
+            telemetry: IndividualTelemetry::dummy(),
         }
     }
 
@@ -108,7 +108,7 @@ impl From<Vec<f64>> for JsspIndividual {
             fitness: usize::MAX,
             is_fitness_valid: false,
             is_dirty: false,
-            telemetry: IndividualTelemetry::new(),
+            telemetry: IndividualTelemetry::dummy(),
         }
     }
 }

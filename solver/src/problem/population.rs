@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
-use ecrs::prelude::population::{self, PopulationGenerator};
+use ecrs::{prelude::population::{self, PopulationGenerator}, ga::GAMetadata};
 use itertools::Itertools;
 
-use crate::parse::JsspInstanceLoadingError;
+use crate::{parse::JsspInstanceLoadingError, stats::IndividualTelemetry};
 
 use super::{individual::JsspIndividual, Edge, EdgeKind, JsspInstance, Machine, Operation};
 
@@ -52,6 +52,23 @@ impl JsspPopProvider {
         assert_eq!(operations.len(), dim + 2);
 
         Self { instance, operations }
+    }
+
+    pub fn generate_with_metadata(&mut self, metadata: &GAMetadata, count: usize) -> Vec<JsspIndividual> {
+        population::tools::PointGenerator::new()
+            .generate_with_single_constraint(2 * (self.operations.len() - 2), count, 0.0..1.0)
+            .into_iter()
+            .map(|chromosome| {
+                let mut indv = JsspIndividual::new(
+                    chromosome,
+                    self.operations.clone(),
+                    Vec::from_iter((0..self.instance.cfg.n_machines).map(Machine::new)),
+                    usize::MAX,
+                );
+                indv.telemetry = IndividualTelemetry::new(metadata.generation, 0);
+                indv
+            })
+            .collect()
     }
 }
 

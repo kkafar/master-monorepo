@@ -28,6 +28,9 @@ impl CrossoverOperator<JsspIndividual> for JsspCrossover {
     ) -> (JsspIndividual, JsspIndividual) {
         let chromosome_len = parent_1.chromosome().len();
 
+        parent_1.telemetry.on_crossover();
+        parent_2.telemetry.on_crossover();
+
         let mut child_1_ch = <JsspIndividual as IndividualTrait>::ChromosomeT::default();
         let mut child_2_ch = <JsspIndividual as IndividualTrait>::ChromosomeT::default();
 
@@ -45,12 +48,19 @@ impl CrossoverOperator<JsspIndividual> for JsspCrossover {
 
         let mut child_1 = parent_1.clone();
         let mut child_2 = parent_2.clone();
+
         child_1.is_fitness_valid = false;
         child_1.chromosome = child_1_ch;
-        child_1.telemetry = IndividualTelemetry::new();
+
+        // We do not call `child_1.telemetry.on_create(metadata.generation)` because
+        // we replace child's telemetry with a new object anyway.
+        // TODO: Create separate method for cloning individual with right semantics.
+
+        child_1.telemetry = IndividualTelemetry::new(metadata.generation, 0);
         child_2.is_fitness_valid = false;
         child_2.chromosome = child_2_ch;
-        child_2.telemetry = IndividualTelemetry::new();
+        child_2.telemetry = IndividualTelemetry::new(metadata.generation, 0);
+
 
         (child_1, child_2)
     }
@@ -71,6 +81,8 @@ impl CrossoverOperator<JsspIndividual> for NoopCrossover {
         parent_1: &JsspIndividual,
         parent_2: &JsspIndividual,
     ) -> (JsspIndividual, JsspIndividual) {
+        parent_1.telemetry.on_crossover();
+        parent_2.telemetry.on_crossover();
         (parent_1.clone(), parent_2.clone())
     }
 }
@@ -93,6 +105,9 @@ impl CrossoverOperator<JsspIndividual> for MidPoint {
         let mut child_1 = parent_1.clone();
         let mut child_2 = parent_2.clone();
 
+        parent_1.telemetry.on_crossover();
+        parent_2.telemetry.on_crossover();
+
         let chromosome_len = parent_1.chromosome.len();
 
         // We are using here problem trait, that chromosome_len is divisible by 2
@@ -104,9 +119,9 @@ impl CrossoverOperator<JsspIndividual> for MidPoint {
         }
 
         child_1.is_fitness_valid = false;
-        child_1.telemetry = IndividualTelemetry::new();
+        child_1.telemetry = IndividualTelemetry::new(metadata.generation, 0);
         child_2.is_fitness_valid = false;
-        child_2.telemetry = IndividualTelemetry::new();
+        child_2.telemetry = IndividualTelemetry::new(metadata.generation, 0);
 
         (child_1, child_2)
     }
@@ -144,6 +159,9 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
         let mut child_1 = parent_1.clone();
         let mut child_2 = parent_2.clone();
 
+        parent_1.telemetry.on_crossover();
+        parent_2.telemetry.on_crossover();
+
         // It draws from the uniform distribution. It turns out that normal distribution for
         // integers is not supported. Need to work on that.
         let left_midpoint = self.rng.sample(self.left_dist);
@@ -170,9 +188,9 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
         }
 
         child_1.is_fitness_valid = false;
-        child_1.telemetry = IndividualTelemetry::new();
+        child_1.telemetry = IndividualTelemetry::new(metadata.generation, 0);
         child_2.is_fitness_valid = false;
-        child_2.telemetry = IndividualTelemetry::new();
+        child_2.telemetry = IndividualTelemetry::new(metadata.generation, 0);
 
         (child_1, child_2)
     }
