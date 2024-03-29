@@ -151,19 +151,6 @@ class HyperQueueRunner:
             self._client.submit(job)
             return
 
-        # We need to submit either another job here, or create another task in previous one.
-        # TODO: Find info how to set dependency between tasks / jobs and add such dependency between
-        # computation and postprocessing.
-        # The post processing should include following:
-        # 1. zipping all the files in the expeiment directory,
-        # 2. making sure created archive is not empty (all files are present),
-        # 3. copying the archive to target loaction (if one is provided via CLI args),
-        # 4. making sure, nothing copy process returned successfully,
-        # 5. removing raw files to save the disk space.
-        #
-        # Maybe it would actually make more sense to create separate postprocess command from it
-        # and just run it after completing computations? This looks like more than few lines of code.
-
         experiment_dir = batch.output_dir
         assert experiment_dir.parent == ctx.short_term_cache_dir, "Expected to use short term cache dir..."
 
@@ -175,7 +162,7 @@ class HyperQueueRunner:
         analyze_cmd = ['python', 'src/ecdk/main.py', 'analyze', '--input-dir', str(experiment_dir),
                        '--metadata-file', str(ctx.instance_metadata_file),
                        '--output-dir', analyze_output_dir,
-                       '--no-plot']
+                       '--plot']
         zip_analyze_res_cmd = ['zip', '-q', '-r', f'{analyze_output_dir}.zip', analyze_output_dir]
         rm_analyze_res_cmd = ['rm', '-r', analyze_output_dir]
 
