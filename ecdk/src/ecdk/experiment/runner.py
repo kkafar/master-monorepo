@@ -139,9 +139,9 @@ class HyperQueueRunner:
             # With current implemntation this will be True, however it is not guaranteed in general
             if params.stdout_file is not None:
                 task = job.program(self._solver.exec_cmd_from_params(params, stringify_args=True),
-                            name=f'Task_{id}',
-                            stdout=params.stdout_file,
-                            stderr=params.stdout_file)
+                                   name=f'Task_{id}',
+                                   stdout=params.stdout_file,
+                                   stderr=params.stdout_file)
             else:
                 task = job.program(self._solver.exec_cmd_from_params(params, stringify_args=True), name=f'Task_{id}')
             computing_tasks.append(task)
