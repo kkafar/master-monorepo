@@ -159,7 +159,8 @@ class HyperQueueRunner:
         analyze_output_dir = f'{str(ctx.long_term_cache_dir)}/processed/{archive_name}'
 
         zip_cmd = ['zip', '-q', '-r', output_archive, str(experiment_dir)]
-        analyze_cmd = ['python', 'src/ecdk/main.py', 'analyze', '--input-dir', str(experiment_dir),
+        analyze_cmd = ['python', 'src/ecdk/main.py', 'analyze',
+                       '--input-dir', str(experiment_dir),
                        '--metadata-file', str(ctx.instance_metadata_file),
                        '--output-dir', analyze_output_dir,
                        '--plot']
