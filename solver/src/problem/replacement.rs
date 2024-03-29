@@ -1,4 +1,4 @@
-use ecrs::prelude::{population::PopulationGenerator, replacement::ReplacementOperator};
+use ecrs::{prelude::{population::PopulationGenerator, replacement::ReplacementOperator}, ga::GAMetadata};
 
 use crate::stats::{StatsEngine, StatsAware};
 
@@ -25,6 +25,7 @@ impl <'stats> JsspReplacement<'stats> {
 impl <'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
     fn apply(
         &mut self,
+        _metadata: &GAMetadata,
         mut population: Vec<JsspIndividual>,
         mut children: Vec<JsspIndividual>,
     ) -> Vec<JsspIndividual> {
@@ -87,6 +88,7 @@ impl <'stats> ReplaceWithRandomPopulation<'stats> {
 impl <'stats> ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulation<'stats> {
     fn apply(
         &mut self,
+        _metadata: &GAMetadata,
         population: Vec<JsspIndividual>,
         _children: Vec<JsspIndividual>,
     ) -> Vec<JsspIndividual> {

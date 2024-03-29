@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use ecrs::{ga::individual::IndividualTrait, prelude::crossover::CrossoverOperator};
+use ecrs::{ga::{individual::IndividualTrait, GAMetadata}, prelude::crossover::CrossoverOperator};
 use rand::{rngs::ThreadRng, thread_rng, Rng};
 
 use crate::stats::IndividualTelemetry;
@@ -22,6 +22,7 @@ impl JsspCrossover {
 impl CrossoverOperator<JsspIndividual> for JsspCrossover {
     fn apply(
         &mut self,
+        metadata: &GAMetadata,
         parent_1: &JsspIndividual,
         parent_2: &JsspIndividual,
     ) -> (JsspIndividual, JsspIndividual) {
@@ -66,6 +67,7 @@ impl NoopCrossover {
 impl CrossoverOperator<JsspIndividual> for NoopCrossover {
     fn apply(
         &mut self,
+        _metadata: &GAMetadata,
         parent_1: &JsspIndividual,
         parent_2: &JsspIndividual,
     ) -> (JsspIndividual, JsspIndividual) {
@@ -84,6 +86,7 @@ impl MidPoint {
 impl CrossoverOperator<JsspIndividual> for MidPoint {
     fn apply(
         &mut self,
+        metadata: &GAMetadata,
         parent_1: &JsspIndividual,
         parent_2: &JsspIndividual,
     ) -> (JsspIndividual, JsspIndividual) {
@@ -134,6 +137,7 @@ impl DoubledCrossover {
 impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
     fn apply(
         &mut self,
+        metadata: &GAMetadata,
         parent_1: &JsspIndividual,
         parent_2: &JsspIndividual,
     ) -> (JsspIndividual, JsspIndividual) {
@@ -177,6 +181,7 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
 #[cfg(test)]
 mod test {
     use ecrs::ga::operators::crossover::CrossoverOperator;
+    use ecrs::ga::GAMetadata;
     use itertools::Itertools;
 
     use crate::problem::{
@@ -194,7 +199,7 @@ mod test {
         let p1 = JsspIndividual::from(parent_1_chromosome.clone());
         let p2 = JsspIndividual::from(parent_2_chromosome.clone());
 
-        let (child_1, child_2) = op.apply(&p1, &p2);
+        let (child_1, child_2) = op.apply(&GAMetadata::default(), &p1, &p2);
 
         let child_1_expected_chromosome = vec![8.0, 4.0, 7.0, 3.0, 6.0, 5.0, 6.0, 7.0, 8.0, 9.0];
         let child_2_expected_chromosome = vec![0.0, 1.0, 2.0, 3.0, 4.0, 2.0, 5.0, 1.0, 9.0, 0.0];
@@ -215,7 +220,7 @@ mod test {
         let p1 = JsspIndividual::from(parent_1_chromosome.clone());
         let p2 = JsspIndividual::from(parent_2_chromosome.clone());
 
-        let (child_1, child_2) = op.apply(&p1, &p2);
+        let (child_1, child_2) = op.apply(&GAMetadata::default(), &p1, &p2);
         println!(
             "{parent_1_chromosome:?}\n{parent_2_chromosome:?}\n{:?}\n{:?}",
             &child_1.chromosome, &child_2.chromosome
