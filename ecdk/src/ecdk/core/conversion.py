@@ -7,14 +7,18 @@ from experiment.model import (
 )
 
 
-def deserialize_series_metadata_from_dict(metadata_dict: Dict) -> SeriesOutputMetadata:
+def deserialize_series_metadata_from_dict(md: Dict) -> SeriesOutputMetadata:
     return SeriesOutputMetadata(
-        solution_string=metadata_dict["solution_string"],
-        hash=metadata_dict["hash"],
-        fitness=metadata_dict["fitness"],
-        generation_count=metadata_dict["generation_count"],
-        total_time=metadata_dict["total_time"],
-        chromosome=metadata_dict["chromosome"]
+        solution_string=md["solution_string"],
+        hash=md["hash"],
+        fitness=md["fitness"],
+        generation_count=md["generation_count"],
+        total_time=md["total_time"],
+        chromosome=md["chromosome"],
+        age_avg=md.get("age_avg"),
+        individual_count=md.get("individual_count"),
+        crossover_involvement_max=md.get("crossover_involvement_max"),
+        crossover_involvement_min=md.get("crossover_involvement_min")
     )
 
 

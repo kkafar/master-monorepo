@@ -38,6 +38,13 @@ class SeriesOutputMetadata:
     total_time: int
     chromosome: list[float]
 
+    # These are optional because they were just recently introduced
+    # and older computation results do not have them!
+    age_avg: Optional[float]
+    individual_count: Optional[int]
+    crossover_involvement_max: Optional[int]
+    crossover_involvement_min: Optional[int]
+
 
 @dataclass(frozen=True)
 class SeriesOutputData:
