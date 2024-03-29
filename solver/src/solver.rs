@@ -156,7 +156,11 @@ impl Solver for Goncalves2005MidPoint {
         );
 
         let stats_engine = StatsEngine::new();
-        let mut replacement_op = JsspReplacement::new(JsspPopProvider::new(instance.clone()), 0.1, 0.2);
+        let mut replacement_op = JsspReplacement::new(
+            JsspPopProvider::new(instance.clone()),
+            run_config.elitism_rate,
+            run_config.sampling_rate,
+        );
         replacement_op.set_stats_engine(&stats_engine);
 
         ga::Builder::new()
@@ -195,7 +199,11 @@ impl Solver for Goncalves2005DoubleMidPoint {
         );
 
         let stats_engine = StatsEngine::new();
-        let mut replacement_op = JsspReplacement::new(JsspPopProvider::new(instance.clone()), 0.1, 0.2);
+        let mut replacement_op = JsspReplacement::new(
+            JsspPopProvider::new(instance.clone()),
+            run_config.elitism_rate,
+            run_config.sampling_rate,
+        );
         replacement_op.set_stats_engine(&stats_engine);
 
         ga::Builder::new()
