@@ -20,6 +20,24 @@ KEY_BKS_HITRATIO = 'bks_hitratio'  # fraction of series where bks was achieved
 KEY_ITERTIME_AVG = 'itertime_avg'
 KEY_ITERTIME_STD = 'itertime_std'
 
+# Dataframe from run_metadata of each series
+KEY_HASH = 'hash'  # hash of the solution in given series
+KEY_TOTAL_TIME = 'total_time'  # total time of solver run in given series
+KEY_TOTAL_TIME_AVG = 'total_time_avg'
+KEY_TOTAL_TIME_STD = 'total_time_std'
+KEY_BEST_HASH = 'best_hash'  # hash of best individual across all series
+KEY_UNIQUE_SOLS = 'unique_sols'  # number of unique solutions across series
+KEY_UNIQUE_SOLS_MAX = 'unique_sols_max'
+KEY_UNIQUE_SOLS_AVG = 'unique_sols_avg'  # number of unique solutions across series
+KEY_UNIQUE_SOLS_STD = 'unique_sols_std'  # number of unique solutions across series
+KEY_AGE_AVG = 'age_avg'  # each series reports an average age of death of indv., this is average of this value across all series
+KEY_AGE_STD = 'age_std'  # ^ look above ^ std of this value
+KEY_INDV_COUNT = 'indv_count'  # number of different individuals in population across all generations in given series
+KEY_INDV_COUNT_AVG = 'indiv_count_avg'  # aggregate of above ^ value
+KEY_INDV_COUNT_STD = 'indiv_count_std'  # std of above ^ value
+KEY_CROSSOVER_INV_MAX = 'co_inv_max'  # max of how many times a single indvidual took part in crossover in given series
+KEY_CROSSOVER_INV_MIN = 'co_inv_min'  # min of how many times a single indvidual took part in crossover in given series
+
 
 def compute_per_exp_stats(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path]):
     pass
@@ -181,13 +199,13 @@ def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[Jo
         nb_df: pl.DataFrame = nb_df
         # print(nb_df)
         nb_df = (nb_df.lazy()
-            .group_by(pl.col(Col.SID))
-            .agg([
-                pl.all().sort_by(colgen).last()
-            ])
-            .collect()
-            .sort(pl.col(Col.SID))
-        )
+                 .group_by(pl.col(Col.SID))
+                 .agg([
+                     pl.all().sort_by(colgen).last()
+                 ])
+                 .collect()
+                 .sort(pl.col(Col.SID))
+                 )
 
         n_series = nb_df.height
 
@@ -199,17 +217,17 @@ def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[Jo
 
         n_converged = converged_exps_df.height
         avg_cvg_iter = (converged_exps_df
-            .select([
-                pl.lit(pl.Series(KEY_EXPNAME, (exp.name,))),
-                colgen.mean().alias('avg_cvg_iter'),
-                colgen.std().alias('std_cvg_iter'),
-                colgen.median().alias('median_cvg_iter'),
-                colgen.min().alias('min_cvg_iter'),
-                colgen.max().alias('max_cvg_iter'),
-                pl.lit(pl.Series(KEY_BKS_HITRATIO, (n_converged * 100 / n_series,))),
-                pl.lit(pl.Series('pre400_bks_hitratio', (pre400_df.height * 100 / n_series,)))
-            ])
-        )
+                        .select([
+                            pl.lit(pl.Series(KEY_EXPNAME, (exp.name,))),
+                            colgen.mean().alias('avg_cvg_iter'),
+                            colgen.std().alias('std_cvg_iter'),
+                            colgen.median().alias('median_cvg_iter'),
+                            colgen.min().alias('min_cvg_iter'),
+                            colgen.max().alias('max_cvg_iter'),
+                            pl.lit(pl.Series(KEY_BKS_HITRATIO, (n_converged * 100 / n_series,))),
+                            pl.lit(pl.Series('pre400_bks_hitratio', (pre400_df.height * 100 / n_series,)))
+                        ])
+                        )
 
         main_df.vstack(avg_cvg_iter, in_place=True)
 
@@ -218,8 +236,78 @@ def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[Jo
         # break
     main_df = main_df.drop_nulls().sort(KEY_EXPNAME)
     print(main_df)
-
     return main_df
 
 
+def compute_stats_from_solver_summary(
+        batch: list[Experiment],
+        data: list[JoinedExperimentData]) -> Optional[tuple[pl.DataFrame, pl.DataFrame]]:
+    main_df = pl.DataFrame()
+    hash_df = pl.DataFrame()
+
+    for exp, summary_df in zip(batch, map(lambda d: d.summarydf, data)):
+        summary_df: pl.DataFrame = summary_df
+
+        # As old data does not have data in certain columns we want to shortcircuit
+        # and just don't compute these stats at all
+        null_counts = summary_df.null_count().row(0)
+        if any(map(lambda value: value > 0, null_counts)):
+            return None
+
+        # Desired table schema:
+        #
+        # KEY_AGE_AVG = 'age_avg'  # each series reports an average age of death of indv., this is average of this value across all series
+        # KEY_AGE_STD = 'age_std'  # ^ look above ^ std of this value
+        # KEY_UNIQUE_SOLS_MAX = 'unique_sols_max'
+        # KEY_UNIQUE_SOLS_AVG = 'unique_sols_avg'  # number of unique solutions across series
+        # KEY_UNIQUE_SOLS_STD = 'unique_sols_std'  # number of unique solutions across series
+        # KEY_INDV_COUNT = 'indv_count'  # number of different individuals in population across all generations in given series
+        # KEY_INDV_COUNT_AVG = 'indiv_count_avg'  # aggregate of above ^ value
+        # KEY_INDV_COUNT_STD = 'indiv_count_std'  # std of above ^ value
+        # KEY_CROSSOVER_INV_MAX = 'co_inv_max'  # max of how many times a single indvidual took part in crossover in given series
+        # KEY_CROSSOVER_INV_MIN = 'co_inv_min'  # min of how many times a single indvidual took part in crossover in given series
+
+        # This should be a separate table, as there might be multiple hashes with best fitness
+        # KEY_BEST_HASH = 'best_hash'  # hash of best individual across all series
+
+        # TODO: Think this through, maybe it would be better to split this into few separate tables
+        new_df = (
+            summary_df
+            .lazy()
+            .select([
+                pl.lit(pl.Series(KEY_EXPNAME, (exp.name,))),
+                pl.col(KEY_AGE_AVG).mean().alias(KEY_AGE_AVG),
+                pl.col(KEY_AGE_AVG).std().alias(KEY_AGE_STD),
+                pl.col(KEY_HASH).n_unique().alias(KEY_UNIQUE_SOLS),
+                pl.col(KEY_INDV_COUNT).mean().alias(KEY_INDV_COUNT_AVG),
+                pl.col(KEY_INDV_COUNT).std().alias(KEY_INDV_COUNT_STD),
+                pl.col(KEY_CROSSOVER_INV_MAX).max(),
+                pl.col(KEY_CROSSOVER_INV_MIN).min(),
+                pl.col(Col.FITNESS).min().alias(KEY_FITNESS_BEST),
+                pl.col(KEY_TOTAL_TIME).mean().alias(KEY_TOTAL_TIME_AVG),
+                pl.col(KEY_TOTAL_TIME).std().alias(KEY_TOTAL_TIME_STD),
+            ])
+            .collect()
+        )
+
+        best_fitness = new_df.get_column(KEY_FITNESS_BEST).item()
+
+        new_hash_df = (
+            summary_df
+            .lazy()
+            .filter(pl.col(Col.FITNESS) == best_fitness)
+            .select([
+                pl.lit(pl.Series(KEY_EXPNAME, (exp.name,))),
+                pl.col(KEY_HASH).unique().alias(KEY_BEST_HASH),
+                pl.col(Col.FITNESS).alias(KEY_FITNESS_BEST)
+            ])
+            .collect()
+        )
+
+        main_df.vstack(new_df, in_place=True)
+        hash_df.vstack(new_hash_df, in_place=True)
+
+    print(main_df)
+    print(hash_df)
+    return main_df, hash_df
 

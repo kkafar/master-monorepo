@@ -13,7 +13,8 @@ from .stat import (
     compute_per_exp_stats,
     compute_global_exp_stats,
     compare_perf_info,
-    compute_convergence_iteration_per_exp
+    compute_convergence_iteration_per_exp,
+    compute_stats_from_solver_summary
 )
 from core.fs import get_plotdir_for_exp, get_main_tabledir
 from problem import (
@@ -87,6 +88,8 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
         print("Validation: OK")
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
+
+    res_sum_df = compute_stats_from_solver_summary(batch, data)
     global_df = compute_global_exp_stats(batch, data, tabledir)
     conv_df = compute_convergence_iteration_per_exp(batch, data, tabledir)
 
@@ -96,6 +99,19 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
             has_header=True,
             float_precision=2
         )
+
+        if res_sum_df:
+            run_sum_df, sols_df = res_sum_df
+            run_sum_df.write(
+                tabledir / 'run_summary_stats.csv',
+                has_header=True,
+                float_precision=2
+            )
+            sols_df.write(
+                tabledir / 'solutions.csv',
+                has_header=True,
+                float_precision=2
+            )
 
 
 def compare_exp_batch_outputs(basedir: Path, benchdir: Path):
