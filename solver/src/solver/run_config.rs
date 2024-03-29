@@ -1,4 +1,4 @@
-use crate::{problem::JsspInstance, config::Config};
+use crate::{config::Config, problem::JsspInstance};
 use serde::Serialize;
 
 #[derive(Serialize, Clone, Copy)]

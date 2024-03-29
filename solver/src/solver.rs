@@ -1,9 +1,9 @@
+pub mod description;
 pub mod registry;
 pub mod run_config;
-pub mod description;
 
-pub use run_config::RunConfig;
 pub use description::SolverDescription;
+pub use run_config::RunConfig;
 
 use ecrs::ga::{
     self,
@@ -13,8 +13,7 @@ use log::info;
 
 use crate::{
     config::{
-        SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER, SOLVER_TYPE_MIDPOINT,
-        SOLVER_TYPE_RANDOMSEARCH,
+        SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER, SOLVER_TYPE_MIDPOINT, SOLVER_TYPE_RANDOMSEARCH,
     },
     problem::{
         crossover::{DoubledCrossover, JsspCrossover, MidPoint, NoopCrossover},

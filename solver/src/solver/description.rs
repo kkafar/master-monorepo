@@ -1,7 +1,6 @@
 use super::RunConfig;
 use serde::Serialize;
 
-
 #[derive(Clone, Serialize)]
 pub struct SolverDescription {
     codename: String,
@@ -22,4 +21,3 @@ impl SolverDescription {
         serde_json::to_string_pretty(&self).unwrap()
     }
 }
-
