@@ -14,6 +14,7 @@ use solver::{
 };
 
 use crate::problem::JsspInstance;
+use crate::util::dump_solver_description;
 
 fn register_solvers(registry: &mut SolverRegistry) {
     registry.insert(Box::new(Goncalves2005));
@@ -49,7 +50,8 @@ fn run() -> anyhow::Result<()> {
             &config.solver_type
         )
     });
-    println!("{}", solver.description(run_config.clone()).to_json());
+    
+    dump_solver_description(solver.description(run_config.clone()).to_json());
     solver.run(instance, run_config)
 }
 

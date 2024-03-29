@@ -53,3 +53,9 @@ pub fn euclidean_distance(vec_1: &[f64], vec_2: &[f64]) -> f64 {
         .unwrap()
         .sqrt()
 }
+
+pub fn dump_solver_description(desc: String) {
+    println!("BEGIN_SOLVER_DESC");
+    println!("{}", desc);
+    println!("END_SOLVER_DESC");
+}
