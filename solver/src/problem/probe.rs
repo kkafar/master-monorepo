@@ -1,6 +1,6 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, os::macos::fs::MetadataExt};
 
-use crate::{util::euclidean_distance, problem::Operation};
+use crate::{util::euclidean_distance, problem::Operation, stats::{StatsAware, StatsEngine}};
 use ecrs::ga::{individual::IndividualTrait, Probe};
 use itertools::{Itertools, repeat_n};
 use log::{info, warn, trace};
@@ -10,8 +10,9 @@ use crate::logging::OutputData;
 
 use super::individual::JsspIndividual;
 
-pub(crate) struct JsspProbe {
-    repeated: Vec<bool>,
+pub(crate) struct JsspProbe<'stats> {
+    stats_engine: &'stats StatsEngine,
+    // repeated: Vec<bool>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -21,10 +22,11 @@ enum State {
     Visited,
 }
 
-impl JsspProbe {
-    pub(crate) fn new() -> Self {
+impl <'stats> JsspProbe<'stats> {
+    pub(crate) fn new(stats_engine: &'stats StatsEngine) -> Self {
         // Deferring creation of vector as we do not know the required capacity
-        Self { repeated: Vec::new() }
+        // Self { repeated: Vec::new() }
+        Self { stats_engine }
     }
 
     #[allow(dead_code)]
@@ -82,7 +84,7 @@ impl JsspProbe {
     }
 }
 
-impl Probe<JsspIndividual> for JsspProbe {
+impl <'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
     // CSV OUTLINE:
     // popmetrics,<generation>,<total_duration>,<population_size>,<diversity>,<distance_avg>
     // newbest,<generation>,<total_duration>,<fitness>
@@ -105,8 +107,14 @@ impl Probe<JsspIndividual> for JsspProbe {
         metadata: &ecrs::ga::GAMetadata,
         population: &[JsspIndividual],
     ) {
-        debug_assert_eq!(self.repeated.len(), 0);
-        self.repeated.resize(population.len(), false);
+        // debug_assert_eq!(self.repeated.len(), 0);
+        // self.repeated.resize(population.len(), false);
+
+        // We do it here, as population generation does not have
+        // access to information on genetic algorithm state (generation etc.)
+        for indv in population {
+            indv.telemetry.on_create(metadata.generation);
+        }
 
         // TODO: As this metric is useless right now I'm disabling it temporarily
         // let diversity = self.estimate_pop_diversity(population);
@@ -129,6 +137,8 @@ impl Probe<JsspIndividual> for JsspProbe {
     fn on_new_generation(&mut self, metadata: &ecrs::ga::GAMetadata, generation: &[JsspIndividual]) {
         // TODO: As this metric is useless right now I'm disabling it temporarily
         // let diversity = self.estimate_pop_diversity(generation);
+        //
+
         let diversity = self.estimate_pop_diversity(generation);
         let distance_avg = self.estimate_avg_distance(generation);
         info!(
@@ -287,5 +297,12 @@ impl Probe<JsspIndividual> for JsspProbe {
         };
         let serialized_object = serde_json::to_string_pretty(&outdata).unwrap();
         info!(target: "metadata", "{serialized_object}");
+    }
+}
+
+impl <'stats> StatsAware<'stats> for JsspProbe<'stats> {
+    fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
+        self.stats_engine = engine;
+
     }
 }
