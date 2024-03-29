@@ -10,7 +10,7 @@ mod util;
 use config::Config;
 use solver::registry::SolverRegistry;
 use solver::{
-    get_run_config, Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005MidPoint, RandomSearch,
+    Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005MidPoint, RandomSearch, RunConfig,
 };
 
 use crate::problem::JsspInstance;
@@ -42,13 +42,14 @@ fn run() -> anyhow::Result<()> {
     let mut solver_registry = SolverRegistry::new();
     register_solvers(&mut solver_registry);
 
-    let run_config = get_run_config(&instance, &config);
+    let run_config = RunConfig::new(&instance, &config);
     let solver = solver_registry.get(&config.solver_type).unwrap_or_else(|| {
         panic!(
             "Failed to find solver of type {} in registry",
             &config.solver_type
         )
     });
+    println!("{}", solver.description(run_config.clone()).to_json());
     solver.run(instance, run_config)
 }
 
