@@ -147,7 +147,8 @@ class HyperQueueRunner:
             computing_tasks.append(task)
 
         if not postprocess:
-            self._client.submit(job)
+            print("Submitting job to HQ server w/o postprocessing tasks")
+            # self._client.submit(job)
             return
 
         # We need to submit either another job here, or create another task in previous one.
@@ -164,13 +165,20 @@ class HyperQueueRunner:
         # and just run it after completing computations? This looks like more than few lines of code.
 
         experiment_dir = batch.output_dir
-
         assert experiment_dir.parent == ctx.short_term_cache_dir, "Expected to use short term cache dir..."
 
         archive_name = experiment_dir.stem
         output_archive = f'{ctx.long_term_cache_dir}/{archive_name}.zip'
+        zip_cmd = ['zip', '-q', '-r', output_archive, str(experiment_dir)]
+        analyze_cmd = ['python', 'src/ecdk/main.py', 'analyze', '--input-dir', str(experiment_dir),
+                       '--metadata-file', str(ctx.instance_metadata_file),
+                       '--output-dir', f'{str(ctx.long_term_cache_dir)}/processed/{archive_name}',
+                       '--no-plot']
 
-        job.program(['zip', '-q', '-r', output_archive, f'{experiment_dir}'], deps=computing_tasks, name='zipping')
+        job.program(zip_cmd, deps=computing_tasks, name='zipping')
 
-        self._client.submit(job)
+        print("Submitting job to HQ server with postprocessing tasks")
+        print(zip_cmd)
+        print(analyze_cmd)
+        # self._client.submit(job)
 
