@@ -148,7 +148,7 @@ class HyperQueueRunner:
 
         if not postprocess:
             print("Submitting job to HQ server w/o postprocessing tasks")
-            # self._client.submit(job)
+            self._client.submit(job)
             return
 
         # We need to submit either another job here, or create another task in previous one.
@@ -169,17 +169,25 @@ class HyperQueueRunner:
 
         archive_name = experiment_dir.stem
         output_archive = f'{ctx.long_term_cache_dir}/{archive_name}.zip'
+        analyze_output_dir = f'{str(ctx.long_term_cache_dir)}/processed/{archive_name}'
+
         zip_cmd = ['zip', '-q', '-r', output_archive, str(experiment_dir)]
         analyze_cmd = ['python', 'src/ecdk/main.py', 'analyze', '--input-dir', str(experiment_dir),
                        '--metadata-file', str(ctx.instance_metadata_file),
-                       '--output-dir', f'{str(ctx.long_term_cache_dir)}/processed/{archive_name}',
+                       '--output-dir', analyze_output_dir,
                        '--no-plot']
+        zip_analyze_res_cmd = ['zip', '-q', '-r', f'{analyze_output_dir}.zip', analyze_output_dir]
+        rm_analyze_res_cmd = ['rm', '-r', analyze_output_dir]
 
         zip_task = job.program(zip_cmd, deps=computing_tasks, name='zipping')
-        job.program(analyze_cmd, deps=[zip_task], name='analyzing')
+        analyze_task = job.program(analyze_cmd, deps=[zip_task], name='analyzing')
+        zip_analyze_task = job.program(zip_analyze_res_cmd, deps=[analyze_task], name='zip_analyze_res')
+        job.program(rm_analyze_res_cmd, deps=[zip_analyze_task], name='rm_analyze_res')
 
         print("Submitting job to HQ server with postprocessing tasks")
         print(zip_cmd)
         print(analyze_cmd)
+        print(zip_analyze_res_cmd)
+        print(rm_analyze_res_cmd)
         self._client.submit(job)
 
