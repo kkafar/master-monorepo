@@ -31,6 +31,56 @@ function start_hq_server_if_needed() {
   fi
 }
 
+function create_auto_alloc_queue_if_needed() {
+  local line_count=$(hq alloc list | wc -l)
+  # Relying on structure of command output here
+  if [[ ${line_count} -eq 3 ]]; then
+    echo "Seems that there are no auto allocation queues present, attempting to create one..."
+    # hq alloc add slurm \
+    #   --workers-per-alloc 1 \
+    #   --max-worker-count 48 \
+    #   --backlog 36 \
+    #   --idle-timeout 1m \
+    #   --time-limit 9h \
+    #   -- \
+    #   --partition=${MY_PARTITION} \
+    #   --account=${MY_GRANT_RES_CPU} \
+    #   --mem-per-cpu=256M
+
+    # Experiment with 2 CPU workers
+    # Tried this out, however it allocated single-cpu workers anyway (as reported by `squeue`).
+    # However HQ reported that each worker had two cores... Dunno, need more experimentation.
+    # hq alloc add slurm \
+    #   --workers-per-alloc 1 \
+    #   --max-worker-count 48 \
+    #   --backlog 36 \
+    #   --idle-timeout 1m \
+    #   --time-limit 9h \
+    #   --cpus 2 \
+    #   -- \
+    #   --partition=${MY_PARTITION} \
+    #   --account=${MY_GRANT_RES_CPU} \
+    #   --mem-per-cpu=256M
+
+    hq alloc add slurm \
+      --workers-per-alloc 1 \
+      --max-worker-count 4 \
+      --backlog 4 \
+      --idle-timeout 1m \
+      --time-limit 5m \
+      --cpus 2 \
+      -- \
+      --partition=${MY_PARTITION} \
+      --account=${MY_GRANT_RES_CPU} \
+      --mem-per-cpu=256M
+
+  else
+    echo "Seems that there are auto allocation queues present. Not starting another one."
+    echo "You might want to run 'hq alloc list' and inspect your allocation queues."
+  fi
+
+}
+
 assert_envvar_set MY_PARTITION
 assert_envvar_set MY_GRANT
 assert_envvar_set MY_GRANT_RES_CPU
@@ -47,29 +97,6 @@ pip install -r requirements.txt
 load_module_if_needed hyperqueue/0.17.0
 
 start_hq_server_if_needed
-
-# Enable automatic allocation (create queue)
-# hq alloc add slurm \
-#   --workers-per-alloc 1 \
-#   --max-worker-count 48 \
-#   --backlog 36 \
-#   --idle-timeout 1m \
-#   --time-limit 9h \
-#   -- \
-#   --partition=${MY_PARTITION} \
-#   --account=${MY_GRANT_RES_CPU} \
-#   --mem-per-cpu=256M
+create_auto_alloc_queue_if_needed
 
 
-# Experiment with 2 CPU workers
-hq alloc add slurm \
-  --workers-per-alloc 1 \
-  --max-worker-count 48 \
-  --backlog 36 \
-  --idle-timeout 1m \
-  --time-limit 9h \
-  --cpus 2 \
-  -- \
-  --partition=${MY_PARTITION} \
-  --account=${MY_GRANT_RES_CPU} \
-  --mem-per-cpu=256M
