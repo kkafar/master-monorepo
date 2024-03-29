@@ -151,6 +151,9 @@ class HyperQueueRunner:
             self._client.submit(job)
             return
 
+
+        # TODO: refactor this monster below
+
         experiment_dir = batch.output_dir
         assert experiment_dir.parent == ctx.short_term_cache_dir, "Expected to use short term cache dir..."
 
