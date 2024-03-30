@@ -13,10 +13,12 @@ impl SolverRegistry {
         self.0.insert(solver.codename(), solver);
     }
 
+    #[allow(dead_code)]
     pub fn insert_with_name(&mut self, name: impl Into<String>, solver: Box<dyn Solver>) {
         self.0.insert(name.into(), solver);
     }
 
+    #[allow(dead_code)]
     pub fn remove(&mut self, name: impl Into<String>) {
         self.0.remove(&name.into());
     }

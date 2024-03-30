@@ -7,10 +7,6 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::problem::individual::JsspIndividual;
 
-pub trait StatsAware<'stats> {
-    fn set_stats_engine(&mut self, engine: &'stats StatsEngine);
-}
-
 #[derive(Clone, Copy)]
 pub struct Stats {
     pub age_sum: usize,
