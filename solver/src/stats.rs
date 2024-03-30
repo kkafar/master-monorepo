@@ -13,6 +13,7 @@ pub struct Stats {
     pub individual_count: usize,
     pub crossover_involvement_max: usize,
     pub crossover_involvement_min: usize,
+    pub age_max: usize,
 }
 
 impl Stats {
@@ -22,12 +23,19 @@ impl Stats {
             individual_count,
             crossover_involvement_max: usize::MIN,
             crossover_involvement_min: usize::MAX,
+            age_max: usize::MIN,
         }
     }
 
     pub fn update_stats_from_indvidual(&mut self, md: &GAMetadata, indv: &JsspIndividual) {
-        self.age_sum += md.generation - indv.telemetry.birth_generation();
+        let indv_age = md.generation - indv.telemetry.birth_generation();
+        assert!(indv_age > 0, "Individual can not be replaced in the same generation it was created");
+
+        self.age_sum += indv_age;
+        self.age_max = self.age_max.max(indv_age);
+
         self.individual_count += 1;
+
         let indv_crossover_involvement = indv.telemetry.crossover_involvement();
         self.crossover_involvement_min = self.crossover_involvement_min.min(indv_crossover_involvement);
         self.crossover_involvement_max = self.crossover_involvement_max.max(indv_crossover_involvement);
@@ -51,6 +59,7 @@ impl StatsEngine {
         }
     }
 
+    #[allow(dead_code)]
     pub fn inner_owned(&self) -> Stats {
         self.stats.borrow().clone()
     }
