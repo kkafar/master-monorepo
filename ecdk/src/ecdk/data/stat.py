@@ -299,7 +299,7 @@ def compute_stats_from_solver_summary(
             .select([
                 pl.lit(pl.Series(KEY_EXPNAME, (exp.name,))),
                 pl.col(KEY_HASH).unique().alias(KEY_BEST_HASH),
-                pl.col(Col.FITNESS).alias(KEY_FITNESS_BEST)
+                pl.lit(pl.Series(KEY_FITNESS_BEST, (best_fitness,)))
             ])
             .collect()
         )

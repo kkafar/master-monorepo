@@ -131,6 +131,9 @@ class SolverConfigFileContents:
     # Solver type to run. If not present `default` is being used.
     solver_type: Optional[str]
 
+    # Not adding rest of the fields for now, as most of them is unset
+    # in solver config file anyway...
+
     @classmethod
     def from_dict(cls, d: Dict):
         return SolverConfigFileContents(
@@ -285,6 +288,7 @@ class SolverRunConfig:
     elitism_rate: float
     sampling_rate: float
     delay_const_factor: float
+    local_search_enabled: bool
 
     @classmethod
     def from_dict(cls, md: dict):
@@ -293,7 +297,10 @@ class SolverRunConfig:
             n_gen=md['n_gen'],
             elitism_rate=md['elitism_rate'],
             sampling_rate=md['sampling_rate'],
-            delay_const_factor=md['delay_const_factor']
+            delay_const_factor=md['delay_const_factor'],
+
+            # When not set it defaults to True. Also allows for backward compat.
+            local_search_enabled=md.get('local_search_enabled', True),
         )
 
 

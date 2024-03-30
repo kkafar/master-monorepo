@@ -47,6 +47,12 @@ pub struct Args {
     /// See JsspCrossover implementation to understand its meaning exactly.
     #[arg(long = "sampling-rate")]
     pub sampling_rate: Option<f64>,
+
+    /// Whether the Nowicki & Smutnicki local search operator should be used
+    /// in an attempt to improve makespan. Note that this is utilised only
+    /// by solvers that do use "standard" JsspFitness.
+    #[arg(long = "local-search-enabled")]
+    pub local_search_enabled: Option<bool>,
 }
 
 fn validate_args(args: &Args) -> Result<(), String> {
