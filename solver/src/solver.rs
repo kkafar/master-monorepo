@@ -24,7 +24,7 @@ use crate::{
         selection::EmptySelection,
         JsspInstance,
     },
-    stats::{StatsAware, StatsEngine},
+    stats::StatsEngine,
 };
 
 pub trait Solver {
@@ -51,12 +51,12 @@ impl Solver for Goncalves2005 {
         info!("Running {} solver", self.describe());
 
         let stats_engine = StatsEngine::new();
-        let mut replacement_op = JsspReplacement::new(
+        let replacement_op = JsspReplacement::new(
             JsspPopProvider::new(instance.clone()),
             cfg.elitism_rate,
             cfg.sampling_rate,
+            &stats_engine,
         );
-        replacement_op.set_stats_engine(&stats_engine);
 
         ga::Builder::new()
             .set_selection_operator(selection::Random::new())
@@ -93,8 +93,8 @@ impl Solver for RandomSearch {
         info!("Running {} solver", self.describe());
 
         let stats_engine = StatsEngine::new();
-        let mut replacement_op = ReplaceWithRandomPopulation::new(JsspPopProvider::new(instance.clone()));
-        replacement_op.set_stats_engine(&stats_engine);
+        let replacement_op =
+            ReplaceWithRandomPopulation::new(JsspPopProvider::new(instance.clone()), &stats_engine);
 
         ga::Builder::new()
             .set_population_generator(JsspPopProvider::new(instance))
@@ -129,12 +129,12 @@ impl Solver for Goncalves2005MidPoint {
         info!("Running {} solver", self.describe());
 
         let stats_engine = StatsEngine::new();
-        let mut replacement_op = JsspReplacement::new(
+        let replacement_op = JsspReplacement::new(
             JsspPopProvider::new(instance.clone()),
             cfg.elitism_rate,
             cfg.sampling_rate,
+            &stats_engine,
         );
-        replacement_op.set_stats_engine(&stats_engine);
 
         ga::Builder::new()
             .set_selection_operator(selection::Random::new())
@@ -170,12 +170,12 @@ impl Solver for Goncalves2005DoubleMidPoint {
         info!("Running {} solver", self.describe());
 
         let stats_engine = StatsEngine::new();
-        let mut replacement_op = JsspReplacement::new(
+        let replacement_op = JsspReplacement::new(
             JsspPopProvider::new(instance.clone()),
             cfg.elitism_rate,
             cfg.sampling_rate,
+            &stats_engine,
         );
-        replacement_op.set_stats_engine(&stats_engine);
 
         ga::Builder::new()
             .set_selection_operator(selection::Random::new())

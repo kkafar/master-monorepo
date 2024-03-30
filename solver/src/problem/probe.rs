@@ -1,10 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::{
-    problem::Operation,
-    stats::{StatsAware, StatsEngine},
-    util::euclidean_distance,
-};
+use crate::{problem::Operation, stats::StatsEngine, util::euclidean_distance};
 use ecrs::ga::{individual::IndividualTrait, Probe};
 use itertools::{repeat_n, Itertools};
 use log::{info, trace, warn};
@@ -324,11 +320,5 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         };
         let serialized_object = serde_json::to_string_pretty(&outdata).unwrap();
         info!(target: "metadata", "{serialized_object}");
-    }
-}
-
-impl<'stats> StatsAware<'stats> for JsspProbe<'stats> {
-    fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
-        self.stats_engine = engine;
     }
 }

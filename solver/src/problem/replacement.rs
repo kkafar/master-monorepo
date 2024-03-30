@@ -3,7 +3,7 @@ use ecrs::{
     prelude::{population::PopulationGenerator, replacement::ReplacementOperator},
 };
 
-use crate::stats::{StatsAware, StatsEngine};
+use crate::stats::StatsEngine;
 
 use super::{individual::JsspIndividual, population::JsspPopProvider};
 
@@ -11,16 +11,21 @@ pub struct JsspReplacement<'stats> {
     pop_gen: JsspPopProvider,
     elite_rate: f64,
     sample_rate: f64,
-    stats_engine: Option<&'stats StatsEngine>,
+    stats_engine: &'stats StatsEngine,
 }
 
 impl<'stats> JsspReplacement<'stats> {
-    pub fn new(pop_gen: JsspPopProvider, elite_rate: f64, sample_rate: f64) -> Self {
+    pub fn new(
+        pop_gen: JsspPopProvider,
+        elite_rate: f64,
+        sample_rate: f64,
+        stats_engine: &'stats StatsEngine,
+    ) -> Self {
         Self {
             pop_gen,
             elite_rate,
             sample_rate,
-            stats_engine: None,
+            stats_engine,
         }
     }
 }
@@ -43,7 +48,7 @@ impl<'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
             population.sort();
         }
 
-        let mut stats = self.stats_engine.unwrap().stats.borrow_mut();
+        let mut stats = self.stats_engine.stats.borrow_mut();
 
         // Divergence from the papaer here. They do sample children population randomly (or just
         // create just right amount of children).
@@ -77,22 +82,16 @@ impl<'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
     }
 }
 
-impl<'stats> StatsAware<'stats> for JsspReplacement<'stats> {
-    fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
-        self.stats_engine = Some(engine)
-    }
-}
-
 pub struct ReplaceWithRandomPopulation<'stats> {
     pop_gen: JsspPopProvider,
-    stats_engine: Option<&'stats StatsEngine>,
+    stats_engine: &'stats StatsEngine,
 }
 
 impl<'stats> ReplaceWithRandomPopulation<'stats> {
-    pub fn new(pop_gen: JsspPopProvider) -> Self {
+    pub fn new(pop_gen: JsspPopProvider, stats_engine: &'stats StatsEngine) -> Self {
         Self {
             pop_gen,
-            stats_engine: None,
+            stats_engine,
         }
     }
 }
@@ -109,11 +108,5 @@ impl<'stats> ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulation
 
     fn requires_children_fitness(&self) -> bool {
         false
-    }
-}
-
-impl<'stats> StatsAware<'stats> for ReplaceWithRandomPopulation<'stats> {
-    fn set_stats_engine(&mut self, engine: &'stats StatsEngine) {
-        self.stats_engine = Some(engine);
     }
 }
