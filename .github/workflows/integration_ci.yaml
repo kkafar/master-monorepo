@@ -1,0 +1,44 @@
+name: Integration CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - '.github/workflows/integration_ci.yaml'
+
+env:
+  SOLVER_DIR: solver
+  ECDK_DIR: ecdk
+
+jobs:
+  ecdk-run:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: integration-ci-ecdk-run-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        working-directory: ${{ env.ECDK_DIR }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Update toolchain
+        working-directory: ${{ env.SOLVER_DIR }}
+        run: rustup update
+      - name: Build solver
+        working-directory: ${{ env.SOLVER_DIR }}
+        run: cargo build --release
+      - name: Test run on mock instances
+        working-directory: ${{ env.ECDK_DIR }}
+        run: |
+          source .envrc.ci && python src/ecdk/main.py run -i data/instances-mock/test_instances -o raw.out/test_instances -m data/metadata-mock/metadata.txt -p 1 -n 1 ../solver/target/release/solver
+
