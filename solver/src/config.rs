@@ -9,6 +9,8 @@ pub const SOLVER_TYPE_RANDOMSEARCH: &str = "randomsearch";
 pub const SOLVER_TYPE_MIDPOINT: &str = "midpoint";
 pub const SOLVER_TYPE_DOUBLED_CROSSOVER: &str = "double_singlepoint";
 
+/// This struct is mirrored inside ecdk's code by
+/// `SolverConfigFileContents` method. Update it accordingly.
 #[derive(Debug, Clone)]
 pub struct Config {
     /// Path to file with instance specification
@@ -39,6 +41,11 @@ pub struct Config {
     /// Sampling rate passed to JsspCrossover operator in solvers that utilise it
     /// See JsspCrossover implementation to understand its meaning exactly.
     pub sampling_rate: f64,
+
+    /// Whether the Nowicki & Smutnicki local search operator should be used
+    /// in an attempt to improve makespan. Note that this is utilised only
+    /// by solvers that do use "standard" JsspFitness.
+    pub local_search_enabled: Option<bool>
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -51,6 +58,7 @@ pub struct PartialConfig {
     pub solver_type: Option<String>,
     pub elitism_rate: Option<f64>,
     pub sampling_rate: Option<f64>,
+    pub local_search_enabled: Option<bool>,
 }
 
 impl PartialConfig {
@@ -64,6 +72,7 @@ impl PartialConfig {
             solver_type: None,
             elitism_rate: None,
             sampling_rate: None,
+            local_search_enabled: None,
         }
     }
 }
@@ -99,6 +108,7 @@ impl TryFrom<PartialConfig> for Config {
                 .unwrap_or(String::from(SOLVER_TYPE_DEFAULT)),
             elitism_rate: partial_cfg.elitism_rate.unwrap_or(0.1), // Defaults from paper
             sampling_rate: partial_cfg.sampling_rate.unwrap_or(0.2), // Defaults from paper
+            local_search_enabled: partial_cfg.local_search_enabled,
         })
     }
 }
@@ -139,6 +149,9 @@ impl TryFrom<Args> for Config {
         }
         if let Some(sampling_rate) = args.sampling_rate {
             partial_cfg.sampling_rate = Some(sampling_rate);
+        }
+        if let Some(local_search_enabled) = args.local_search_enabled {
+            partial_cfg.local_search_enabled = Some(local_search_enabled);
         }
 
         Config::try_from(partial_cfg)

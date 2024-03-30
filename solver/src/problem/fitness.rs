@@ -13,24 +13,29 @@ enum DfsNodeState {
 }
 
 pub struct JsspFitness {
-    // Delay feasible operations are those operations that:
-    // 1. have not yet been scheduled up to iteration g (counter defined below),
-    // 2. all their predecesors have finished / will have been finished in time window t_g +
-    //    delay_g (also defined below)
-    // To put this in other way: all jobs that can be scheduled in time window considered in
-    // given iteration g.
+    /// Delay feasible operations are those operations that:
+    /// 1. have not yet been scheduled up to iteration g (counter defined below),
+    /// 2. all their predecesors have finished / will have been finished in time window t_g +
+    ///    delay_g (also defined below)
+    /// To put this in other way: all jobs that can be scheduled in time window considered in
+    /// given iteration g.
     delay_feasibles: Vec<usize>,
 
     /// The constant used to compute delay for given iteration g. The default value used in paper
     /// is 1.5.
     delay_const: f64,
+
+    /// Whether the Nowicki & Smutnicki local search operator should be used
+    /// in an attempt to improve makespan.
+    local_search_enabled: bool,
 }
 
 impl JsspFitness {
-    pub fn new(delay_constant: f64) -> Self {
+    pub fn new(delay_constant: f64, local_search_enabled: bool) -> Self {
         Self {
             delay_feasibles: Vec::new(),
             delay_const: delay_constant,
+            local_search_enabled,
         }
     }
 
@@ -121,6 +126,7 @@ impl JsspFitness {
                 //     indv.operations[j].machine_pred = Some(last_sch_op);
                 // }
 
+                // Improved version of the code:
                 let neighs =
                     indv.machines[op_j_machine].reserve(finish_time_j - op_j_duration..finish_time_j, j);
 
@@ -175,12 +181,17 @@ impl JsspFitness {
                 .min()
                 .unwrap();
         }
-        let makespan = usize::min(last_finish_time, self.local_search(indv));
+        let makespan = if self.local_search_enabled {
+            usize::min(last_finish_time, self.local_search(indv))
+        } else {
+            last_finish_time
+        };
 
         // After local search finish times of particual operations might not be accurate, due to
         // changes in graph structure (machine precedences) and lack of updates of finish times
         // alongside. But the graph structure is correct -> it should be possible to reconstruct
         // the exact schedule, not only the makespan.
+        // This ^ reconstruction is done in probe's on_end callback.
 
         indv.fitness = makespan;
         indv.is_fitness_valid = true;
@@ -336,6 +347,8 @@ impl JsspFitness {
 
             let mut has_unvisited_neighs = false;
 
+            // There are at most two edges_out here (except zero-op),
+            // so we don't mind iterating "over whole" array every single time.
             for edge in indv.operations[crt_op_id].edges_out.iter() {
                 if visited[edge.neigh_id] == DfsNodeState::Unvisited {
                     has_unvisited_neighs = true;
