@@ -17,4 +17,9 @@ zips/
 .DS_Store
 bin/
 *.out
+!raw.out/
+raw.out/**
+!processed.out/
+processed.out/**
+!.gitkeep
 dist/
