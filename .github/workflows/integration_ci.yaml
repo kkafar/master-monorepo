@@ -40,8 +40,7 @@ jobs:
       - name: Source env files
         working-directory: ${{ env.ECDK_DIR }}
         run: |
-          source .envrc
-          source .envrc.dev
+          source .envrc.ci
       - name: Test run on mock instances
         working-directory: ${{ env.ECDK_DIR }}
         run: |
