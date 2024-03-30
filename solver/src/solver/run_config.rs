@@ -26,7 +26,7 @@ pub struct RunConfig {
     /// Whether the Nowicki & Smutnicki local search operator should be used
     /// in an attempt to improve makespan. Note that this is utilised only
     /// by solvers that do use "standard" JsspFitness.
-    pub local_search_enabled: bool
+    pub local_search_enabled: bool,
 }
 
 impl RunConfig {

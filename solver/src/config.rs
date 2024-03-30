@@ -45,7 +45,7 @@ pub struct Config {
     /// Whether the Nowicki & Smutnicki local search operator should be used
     /// in an attempt to improve makespan. Note that this is utilised only
     /// by solvers that do use "standard" JsspFitness.
-    pub local_search_enabled: Option<bool>
+    pub local_search_enabled: Option<bool>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
