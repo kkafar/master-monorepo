@@ -37,6 +37,11 @@ jobs:
       - name: Build solver
         working-directory: ${{ env.SOLVER_DIR }}
         run: cargo build --release
+      - name: Source env files
+        working-directory: ${{ env.ECDK_DIR }}
+        run: |
+          source .envrc
+          source .envrc.dev
       - name: Test run on mock instances
         working-directory: ${{ env.ECDK_DIR }}
         run: |
