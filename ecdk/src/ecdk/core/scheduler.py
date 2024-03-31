@@ -3,6 +3,7 @@ import subprocess as sp
 from typing import NamedTuple, Tuple, Dict
 from time import sleep
 from pathlib import Path
+# from tqdm import tqdm
 
 
 class Task(NamedTuple):
@@ -128,6 +129,7 @@ class MultiProcessTaskRunner:
 
         # Note that at most :param process_limit descriptios are open at the same time
         fileobjs = {}
+        # progress_bar = tqdm(total=n_tasks)
 
         for task_id, task in enumerate(tasks[:n_scheduled]):
             self.__log_run(task)
@@ -159,6 +161,7 @@ class MultiProcessTaskRunner:
                     failed_count += 1
                 else:
                     self.__log_complete_success(completed_task)
+                    pass
 
                 # If there are any tasks left to schedule
                 if n_scheduled < n_tasks:
@@ -166,6 +169,8 @@ class MultiProcessTaskRunner:
                     self.__log_run(task)
                     self.__schedule_task(task, just_scheduled_tasks, fileobjs)
                     n_scheduled += 1
+
+                # progress_bar.update()
 
             running_tasks.difference_update(just_finished_tasks)
             running_tasks.update(just_scheduled_tasks)

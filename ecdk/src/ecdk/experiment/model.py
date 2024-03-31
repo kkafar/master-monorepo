@@ -41,6 +41,7 @@ class SeriesOutputMetadata:
     # These are optional because they were just recently introduced
     # and older computation results do not have them!
     age_avg: Optional[float]
+    age_max: Optional[int]
     individual_count: Optional[int]
     crossover_involvement_max: Optional[int]
     crossover_involvement_min: Optional[int]

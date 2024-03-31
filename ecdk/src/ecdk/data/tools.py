@@ -86,6 +86,7 @@ def _df_from_metadata(md: SeriesOutputMetadata) -> pl.DataFrame:
 
         # These might be None
         'age_avg': md.age_avg,
+        'age_max': md.age_max,
         'indv_count': md.individual_count,
         'co_inv_max': md.crossover_involvement_max,
         'co_inv_min': md.crossover_involvement_min,
