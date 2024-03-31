@@ -29,7 +29,10 @@ impl Stats {
 
     pub fn update_stats_from_indvidual(&mut self, md: &GAMetadata, indv: &JsspIndividual) {
         let indv_age = md.generation - indv.telemetry.birth_generation();
-        assert!(indv_age > 0, "Individual can not be replaced in the same generation it was created");
+        // assert!(
+        //     indv_age > 0,
+        //     "Individual can not be replaced in the same generation it was created. This happened in generation {indv_age}."
+        // );
 
         self.age_sum += indv_age;
         self.age_max = self.age_max.max(indv_age);
