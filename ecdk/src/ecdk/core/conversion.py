@@ -16,6 +16,7 @@ def deserialize_series_metadata_from_dict(md: Dict) -> SeriesOutputMetadata:
         total_time=md["total_time"],
         chromosome=md["chromosome"],
         age_avg=md.get("age_avg"),
+        age_max=md.get("age_max"),
         individual_count=md.get("individual_count"),
         crossover_involvement_max=md.get("crossover_involvement_max"),
         crossover_involvement_min=md.get("crossover_involvement_min")

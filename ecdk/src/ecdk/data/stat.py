@@ -30,6 +30,7 @@ KEY_UNIQUE_SOLS = 'unique_sols'  # number of unique solutions across series
 KEY_UNIQUE_SOLS_MAX = 'unique_sols_max'
 KEY_UNIQUE_SOLS_AVG = 'unique_sols_avg'  # number of unique solutions across series
 KEY_UNIQUE_SOLS_STD = 'unique_sols_std'  # number of unique solutions across series
+KEY_AGE_MAX = 'age_max'  # max age of individual in given series / also used in summary across series context
 KEY_AGE_AVG = 'age_avg'  # each series reports an average age of death of indv., this is average of this value across all series
 KEY_AGE_STD = 'age_std'  # ^ look above ^ std of this value
 KEY_INDV_COUNT = 'indv_count'  # number of different individuals in population across all generations in given series
@@ -276,8 +277,9 @@ def compute_stats_from_solver_summary(
             .lazy()
             .select([
                 pl.lit(pl.Series(KEY_EXPNAME, (exp.name,))),
-                pl.col(KEY_AGE_AVG).mean().alias(KEY_AGE_AVG),
+                pl.col(KEY_AGE_AVG).mean(),
                 pl.col(KEY_AGE_AVG).std().alias(KEY_AGE_STD),
+                pl.col(KEY_AGE_MAX).max(),
                 pl.col(KEY_HASH).n_unique().alias(KEY_UNIQUE_SOLS),
                 pl.col(KEY_INDV_COUNT).mean().alias(KEY_INDV_COUNT_AVG),
                 pl.col(KEY_INDV_COUNT).std().alias(KEY_INDV_COUNT_STD),

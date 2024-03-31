@@ -18,6 +18,7 @@ pub struct OutputData<'a> {
     // We do not use nested structure here, so it is simpler to parse
     // structurized JSON in Python...
     pub age_avg: f64,
+    pub age_max: usize,
     pub individual_count: usize,
     pub crossover_involvement_max: usize,
     pub crossover_involvement_min: usize,

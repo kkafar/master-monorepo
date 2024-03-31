@@ -65,13 +65,12 @@ impl<'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
         }
 
         if sample_size > 0 {
-            for indv in population.iter().skip(elite_size + crossover_size) {
-                stats.update_stats_from_indvidual(metadata, indv);
-            }
-            population.splice(
-                (elite_size + crossover_size)..population.len(),
-                self.pop_gen.generate_with_metadata(metadata, sample_size),
-            );
+            population
+                .splice(
+                    (elite_size + crossover_size)..population.len(),
+                    self.pop_gen.generate_with_metadata(metadata, sample_size),
+                )
+                .for_each(|indv| stats.update_stats_from_indvidual(metadata, &indv))
         }
 
         population

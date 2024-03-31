@@ -314,6 +314,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             total_time: metadata.total_dur.unwrap().as_millis(),
             chromosome: best_individual.chromosome(),
             age_avg: (stats.age_sum as f64 / stats.individual_count as f64),
+            age_max: stats.age_max,
             individual_count: stats.individual_count,
             crossover_involvement_max: stats.crossover_involvement_max,
             crossover_involvement_min: stats.crossover_involvement_min,
