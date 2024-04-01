@@ -4,9 +4,9 @@ from experiment.model import (
     SeriesOutputFiles,
     SeriesOutputData,
     SeriesOutput,
+    SeriesOutputMetadata,
 )
 from core.util import find_first_or_none
-from core.conversion import deserialize_series_metadata_from_dict
 import polars as pl
 import json
 
@@ -38,7 +38,7 @@ def _load_series_metadata_from_file(metadata_file: Path) -> SeriesOutputFiles:
     metadata = None
 
     with open(metadata_file, 'r') as file:
-        metadata = json.load(file, object_hook=deserialize_series_metadata_from_dict)
+        metadata = json.load(file, object_hook=SeriesOutputMetadata.from_dict)
 
     return metadata
 
