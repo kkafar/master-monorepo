@@ -5,10 +5,13 @@ use ecrs::ga::{individual::IndividualTrait, Probe};
 use itertools::{repeat_n, Itertools};
 use log::{info, trace, warn};
 use md5;
+use time::OffsetDateTime;
 
 use crate::logging::OutputData;
 
 use super::individual::JsspIndividual;
+
+const TIME_FORMAT_STRING: &str = "[year][month][day]T[hour][minute][second].[subsecond digits:6]";
 
 pub(crate) struct JsspProbe<'stats> {
     stats_engine: &'stats StatsEngine,
@@ -100,6 +103,8 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         info!(target: "newbest", "event_name,generation,total_duration,fitness");
         info!(target: "bestingen", "event_name,generation,total_duration,fitness");
         info!(target: "iterinfo", "event_name,generation,eval_time,sel_time,cross_time,mut_time,repl_time,iter_time");
+
+        self.stats_engine.stats.borrow_mut().start_timestamp = std::time::SystemTime::now();
     }
 
     fn on_initial_population_created(
@@ -306,6 +311,14 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             .join("_");
 
         let hash = md5::compute(solution_string.clone());
+
+        stats.end_timestamp = std::time::SystemTime::now();
+
+        let start_timestamp: OffsetDateTime = stats.start_timestamp.into();
+        let end_timestamp: OffsetDateTime = stats.end_timestamp.into();
+
+        let time_format = time::format_description::parse(TIME_FORMAT_STRING).unwrap_or(Vec::new());
+
         let outdata = OutputData {
             solution_string,
             hash: format!("{:x}", hash),
@@ -318,6 +331,8 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             individual_count: stats.individual_count,
             crossover_involvement_max: stats.crossover_involvement_max,
             crossover_involvement_min: stats.crossover_involvement_min,
+            start_timestamp: start_timestamp.format(&time_format).unwrap_or("error".into()),
+            end_timestamp: end_timestamp.format(&time_format).unwrap_or("error".into()),
         };
         let serialized_object = serde_json::to_string_pretty(&outdata).unwrap();
         info!(target: "metadata", "{serialized_object}");
