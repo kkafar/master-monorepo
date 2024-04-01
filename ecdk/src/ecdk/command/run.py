@@ -2,7 +2,6 @@ from cli.args import RunCmdArgs
 from experiment.runner import LocalExperimentBatchRunner, HyperQueueRunner
 from experiment.solver import SolverProxy
 from experiment.model import (
-    ExperimentResult,
     ExperimentConfig,
     Experiment,
     ExperimentBatch,

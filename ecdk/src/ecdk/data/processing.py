@@ -85,7 +85,7 @@ def process_experiment_data(exp: Experiment,
                                 some_best_series,
                                 exp_plotdir)
 
-    create_plots_for_experiment(exp, data, exp_plotdir)
+    create_plots_for_experiment(exp, data, some_best_series, exp_plotdir)
 
     # compute_per_exp_stats(exp, data)
 
