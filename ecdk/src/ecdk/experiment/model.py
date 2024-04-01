@@ -287,7 +287,7 @@ class ExperimentBatch:
     solver_config: Optional[SolverConfigFile]
 
     # ISO 8601 timestamp
-    start_time: Optional[str]
+    start_time: Optional[str] = None
 
     def as_dict(self) -> dict:
         result = {
