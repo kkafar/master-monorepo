@@ -2,11 +2,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from core.util import iter_batched
 from typing import Optional
-from pprint import pprint
+from copy import copy, deepcopy
 
 
 @dataclass
 class IdSpan:
+    """ Represents range of operation ids that given job is comprised of. """
+
     start: int
     end: int
 
@@ -29,32 +31,24 @@ class Job:
     span: IdSpan
 
 
-# TODO: Make use of this class when reconstructing & validating solution string
-# in context of instance
-@dataclass
-class ScheduleReconstructionResult:
-    schedule: list[list[Operation]]
-    err: Optional[list[str]]
-
-    @property
-    def ok(self) -> bool:
-        return self.err is None or len(self.err) == 0
-
-
 @dataclass
 class JsspInstance:
     """ I do not care about complexity in this class. At least for now.
     Future me will hate this. """
 
-    jobs: list[Job]
+    inner_jobs: list[Job]
     n_machines: int
 
     @property
+    def jobs(self) -> list[Job]:
+        return self.inner_jobs[1:]
+
+    @property
     def n_jobs(self):
-        return len(self.jobs)
+        return len(self.inner_jobs) - 1
 
     def job_for_op_with_id(self, opid: int) -> Optional[Job]:
-        for job in self.jobs[1:]:
+        for job in self.jobs:
             if opid in job.span:
                 return job
         return None
@@ -85,7 +79,7 @@ class JsspInstance:
             raise ValueError(f"Failed to find job for op with id {id}")
 
     def reset(self):
-        for job in self.jobs[1:]:
+        for job in self.jobs:
             for op in job.ops:
                 op.finish_time = None
 
@@ -129,7 +123,19 @@ class JsspInstance:
         return JsspInstance(jobs, n_machines)
 
 
-def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspInstance, fitness: int) -> tuple[bool, list[list[Operation]], str]:
+# TODO: Make use of this class when reconstructing & validating solution string
+# in context of instance
+@dataclass
+class ScheduleReconstructionResult:
+    instance: JsspInstance
+    err: Optional[str]
+
+    @property
+    def ok(self) -> bool:
+        return self.err is None or len(self.err) == 0
+
+
+def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspInstance, fitness: int) -> ScheduleReconstructionResult:
     """ Verify the solution string according to problem instance constraints. Basically we create the full
     schedule (lists of jobs in order of execution for each machine) based on solution string and instance spec.
     After building up the schedule, problem constraints are validated (jobs precedence) and the fitness value is verified
@@ -138,15 +144,14 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
     :param solstr: solution string as outputted by solver
     :param instance: specification of the problem instance (job description, etc.)
     :param fitness: fitness the solver claims this solution has
-    :returns: tuple of three elements:
-        1. True if the reconstructed solution satisfies problem constraints and it has the same fitness as claimed by the solver. False otherwise.
-        2. reconstructed schedule for each machine
-        3. error message if the schedule is not valid
+    :returns: reconstruction result, see structure definition for details
     """
 
     assert solstr is not None
     assert instance is not None
     assert fitness is not None
+
+    instance.reset()
 
     def last_schedule_time_for_machine(machines: list[list[Operation]], mid: int) -> int:
         machine = machines[mid]
@@ -179,14 +184,18 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
             machine_earliest_schedule_time = last_schedule_time_for_machine(machine_schedules, op.machine)
             earliest_schedule_time = max(machine_earliest_schedule_time, pred_ft)
             op.finish_time = earliest_schedule_time + op.duration
+
             machine_schedules[op.machine].append(op)
         else:
             raise ValueError(f"Received None for op with id: {id}")
 
-    # pprint(machine_schedules)
+    # We need to copy the instance as it is then returned and used further in processing,
+    # while instance object is reset and reused and operation objects are modified.
+    # We must create a deepcopy...
+
     makespan = find_makespan(machine_schedules)
     if makespan != fitness:
         err = f"Reconstructed solution has different fitness than reported by solver. {makespan} vs {fitness}"
-        return False, machine_schedules, err
-    return True, machine_schedules, ""
+        return ScheduleReconstructionResult(instance=deepcopy(instance), err=err)
+    return ScheduleReconstructionResult(instance=deepcopy(instance), err=None)
 

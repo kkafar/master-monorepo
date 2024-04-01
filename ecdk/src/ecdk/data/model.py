@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from polars import DataFrame
 from typing import Optional
+from problem import ScheduleReconstructionResult
 
 
 @dataclass(frozen=True)
@@ -176,7 +177,11 @@ SeriesId = int
 @dataclass
 class ExperimentValidationResult:
     expname: str
-    corrupted_series: Optional[list[tuple[SeriesId, str]]]
+    reconstructed_schedules: list[ScheduleReconstructionResult]
+
+    # Series ids of corrupted reconstruction results. Values in this array
+    # can be used to index into reconstructed_schedules.
+    corrupted_series: Optional[list[int]]
 
     @property
     def ok(self) -> bool:
