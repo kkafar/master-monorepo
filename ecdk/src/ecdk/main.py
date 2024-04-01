@@ -15,6 +15,7 @@ sys.path.append(str(Path.cwd().joinpath('src')))
 import polars as pl
 import matplotlib.pyplot as plt
 import cli
+import logging
 from context import Context
 
 
@@ -24,6 +25,7 @@ def configure_env():
     pl.Config.set_fmt_float('mixed')
     pl.Config.set_float_precision(2)
     plt.rcParams['figure.figsize'] = (16, 9)
+    logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
 
 
 def main():

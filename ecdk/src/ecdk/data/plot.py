@@ -106,7 +106,7 @@ def plot_distance_avg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMeta
         xlabel="Generation",
         ylabel="Avgerage euc. dist."
     )
-    plot.legend()
+    # plot.legend()
 
 
 def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: str):
