@@ -2,7 +2,6 @@ from cli.args import RunCmdArgs
 from experiment.runner import LocalExperimentBatchRunner, HyperQueueRunner
 from experiment.solver import SolverProxy
 from experiment.model import (
-    ExperimentResult,
     ExperimentConfig,
     Experiment,
     ExperimentBatch,
@@ -14,7 +13,7 @@ from core.tools import (
     exp_name_from_input_file,
     output_dir_for_experiment_with_name,
     attach_timestamp_to_dir,
-    current_timestamp
+    current_timestamp_iso8601
 )
 from core.fs import initialize_file_hierarchy
 from context import Context
@@ -28,8 +27,10 @@ def run(ctx: Context, args: RunCmdArgs):
 
     base_dir = args.output_dir
 
+    start_timestamp = current_timestamp_iso8601()
+
     if not ctx.is_ares and args.attach_timestamp:
-        base_dir = attach_timestamp_to_dir(base_dir, current_timestamp())
+        base_dir = attach_timestamp_to_dir(base_dir, start_timestamp)
 
     batch = []
     for file in input_files:
@@ -51,7 +52,10 @@ def run(ctx: Context, args: RunCmdArgs):
         )
 
     solver_config = SolverConfigFile(args.config_file) if args.config_file else None
-    batch = ExperimentBatch(output_dir=base_dir, experiments=batch, solver_config=solver_config)
+    batch = ExperimentBatch(output_dir=base_dir,
+                            experiments=batch,
+                            solver_config=solver_config,
+                            start_time=start_timestamp)
 
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)

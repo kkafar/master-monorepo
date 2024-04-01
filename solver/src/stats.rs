@@ -14,6 +14,8 @@ pub struct Stats {
     pub crossover_involvement_max: usize,
     pub crossover_involvement_min: usize,
     pub age_max: usize,
+    pub start_timestamp: std::time::SystemTime,
+    pub end_timestamp: std::time::SystemTime,
 }
 
 impl Stats {
@@ -24,6 +26,8 @@ impl Stats {
             crossover_involvement_max: usize::MIN,
             crossover_involvement_min: usize::MAX,
             age_max: usize::MIN,
+            start_timestamp: std::time::UNIX_EPOCH,
+            end_timestamp: std::time::UNIX_EPOCH,
         }
     }
 

@@ -22,6 +22,9 @@ pub struct OutputData<'a> {
     pub individual_count: usize,
     pub crossover_involvement_max: usize,
     pub crossover_involvement_min: usize,
+
+    pub start_timestamp: String,
+    pub end_timestamp: String,
 }
 
 pub fn init_logging(

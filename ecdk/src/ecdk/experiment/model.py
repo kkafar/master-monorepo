@@ -45,6 +45,26 @@ class SeriesOutputMetadata:
     individual_count: Optional[int]
     crossover_involvement_max: Optional[int]
     crossover_involvement_min: Optional[int]
+    start_timestamp: Optional[str]
+    end_timestamp: Optional[str]
+
+    @classmethod
+    def from_dict(cls, md: Dict):
+        return cls(
+            solution_string=md["solution_string"],
+            hash=md["hash"],
+            fitness=md["fitness"],
+            generation_count=md["generation_count"],
+            total_time=md["total_time"],
+            chromosome=md["chromosome"],
+            age_avg=md.get("age_avg"),
+            age_max=md.get("age_max"),
+            individual_count=md.get("individual_count"),
+            crossover_involvement_max=md.get("crossover_involvement_max"),
+            crossover_involvement_min=md.get("crossover_involvement_min"),
+            start_timestamp=md.get("start_timestamp"),
+            end_timestamp=md.get("end_timestamp"),
+        )
 
 
 @dataclass(frozen=True)
@@ -266,6 +286,9 @@ class ExperimentBatch:
 
     solver_config: Optional[SolverConfigFile]
 
+    # ISO 8601 timestamp
+    start_time: Optional[str] = None
+
     def as_dict(self) -> dict:
         result = {
             "output_dir": str(self.output_dir),
@@ -274,6 +297,9 @@ class ExperimentBatch:
 
         if self.solver_config is not None:
             result["solver_config"] = self.solver_config.contents.as_dict()
+
+        if self.start_time:
+            result["start_time"] = self.start_time
 
         return result
 

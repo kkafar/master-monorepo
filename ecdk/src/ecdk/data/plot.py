@@ -1,5 +1,6 @@
 import polars as pl
 import matplotlib.pyplot as plt
+import itertools as it
 from pathlib import Path
 from typing import Optional
 from .model import Col
@@ -9,7 +10,10 @@ from experiment.model import Experiment
 from problem import Operation, JsspInstance
 
 
-def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData, plotdir: Optional[Path]):
+def create_plots_for_experiment(exp: Experiment,
+                                data: JoinedExperimentData,
+                                best_series: int,
+                                plotdir: Optional[Path]):
     # fig, plot = plt.subplots(nrows=1, ncols=1)
     # plot_best_in_gen(plot, data.bestingen, exp.instance)
     # plot.set(
@@ -29,20 +33,36 @@ def create_plots_for_experiment(exp: Experiment, data: JoinedExperimentData, plo
     # plot.legend()
 
     fig_popmet, axes = plt.subplots(nrows=1, ncols=2)
+
     plot_diversity_avg(axes[0], data.popmetrics, exp.instance)
+
     if Col.DISTANCE in data.popmetrics.columns:  # Fix it by doing some kind of data-migration (insert empty column and rename files in old results)
         plot_distance_avg(axes[1], data.popmetrics, exp.instance)
 
     fig_bfavg, plot = plt.subplots(nrows=1, ncols=1)
     plot_best_in_gen_agg(plot, data.bestingen, exp.instance)
 
+    fig_best_fitness, plot = plt.subplots(nrows=1, ncols=1)
+    plot_fitness_from_best_run(plot, data.bestingen, exp.instance, best_series)
+
+    fig_best_in_gen_and_best_fitness_compund, plot = plt.subplots(nrows=1, ncols=1)
+    plot_best_in_gen_agg_and_best_run(plot, data.bestingen, exp.instance, best_series)
+
     if plotdir is not None:
         fig_popmet.tight_layout()
         fig_bfavg.tight_layout()
+        fig_best_fitness.tight_layout()
+        fig_best_in_gen_and_best_fitness_compund.tight_layout()
         fig_popmet.savefig(plotdir.joinpath(f'{exp.name}_pop_met.png'), dpi='figure', format='png')
         fig_bfavg.savefig(plotdir.joinpath(f'{exp.name}_fit_avg.png'), dpi='figure', format='png')
+        fig_best_fitness.savefig(plotdir / f'{exp.name}_best_run_fit.png', dpi='figure', format='png')
+        fig_best_in_gen_and_best_fitness_compund.savefig(plotdir / f'{exp.name}_best_run_fit_avg_compound.png',
+                                                         dpi='figure',
+                                                         format='png')
     plt.close(fig_popmet)
     plt.close(fig_bfavg)
+    plt.close(fig_best_fitness)
+    plt.close(fig_best_in_gen_and_best_fitness_compund)
 
     # plt.show()
 
@@ -127,6 +147,11 @@ def plot_column_by_generation(plot: plt.Axes, data: pl.DataFrame, column_name: s
         plot.plot(x_data, y_data, marker='o', linestyle='--', label=f'Series {sid}')
 
 
+def maybe_plot_best_known_solution(plot: plt.Axes, metadata: Optional[InstanceMetadata], x_data: list[int]):
+    if metadata and metadata.best_solution:
+        plot.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
+
+
 def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata):
     data_agg = (
         data.lazy()
@@ -145,11 +170,83 @@ def plot_best_in_gen_agg(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceM
 
     plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. best fitness', linestyle='', marker='*', elinewidth=0.1)
 
-    if metadata and metadata.best_solution:
-        plot.plot(x_data, [metadata.best_solution for _ in range(len(x_data))], label='Best known sol.')
+    maybe_plot_best_known_solution(plot, metadata, x_data)
 
     plot.set(
         title=f"Average best fitness by generation, {metadata.id}, {metadata.jobs}j/{metadata.machines}m",
+        xlabel="Generation",
+        ylabel="Average best fitness"
+    )
+    plot.legend()
+
+
+def plot_fitness_from_best_run(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata, best_series_id: int):
+    """ Expects data from bestingen event.  """
+    data_agg = (
+        data
+        .lazy()
+        .filter(pl.col(Col.SID) == best_series_id)
+        .select([
+            pl.col(Col.GENERATION),
+            pl.col(Col.FITNESS),
+        ])
+        .sort(Col.GENERATION)
+        .collect()
+    )
+
+    x_data = data_agg.get_column(Col.GENERATION)
+    y_data = data_agg.get_column(Col.FITNESS)
+
+    plot.scatter(x_data, y_data, label='Best run fitness', marker='*')
+    maybe_plot_best_known_solution(plot, metadata, x_data)
+
+    plot.set(
+        title=f"Best run (series {best_series_id})",
+        xlabel="Generation",
+        ylabel="Fitness"
+    )
+    plot.legend()
+
+
+def plot_best_in_gen_agg_and_best_run(plot: plt.Axes, data: pl.DataFrame, metadata: InstanceMetadata, best_series_id: int):
+    """ Expects data from bestingen event.  """
+    data_agg_big = (
+        data.lazy()
+        .groupby(pl.col(Col.GENERATION))
+        .agg(
+            pl.col(Col.FITNESS).mean().alias('fitness_avg'),
+            pl.col(Col.FITNESS).std().alias('fitness_std')
+        )
+        .sort(pl.col(Col.GENERATION))
+        .collect()
+    )
+
+    x_data = data_agg_big.get_column(Col.GENERATION)
+    y_avg_data = data_agg_big.get_column('fitness_avg')
+    y_std_data = data_agg_big.get_column('fitness_std')
+
+    plot.errorbar(x_data, y_avg_data, yerr=y_std_data, label='Avg. best fitness', linestyle='', marker='*', elinewidth=0.1)
+
+    data_agg_best_run = (
+        data
+        .lazy()
+        .filter(pl.col(Col.SID) == best_series_id)
+        .select([
+            pl.col(Col.GENERATION),
+            pl.col(Col.FITNESS),
+        ])
+        .sort(Col.GENERATION)
+        .collect()
+    )
+
+    y_data = data_agg_best_run.get_column(Col.FITNESS)
+
+    plot.scatter(x_data, y_data, label='Best run fitness', marker='*')
+
+    maybe_plot_best_known_solution(plot, metadata, x_data)
+
+    plot.set(
+        title=f"Best average fitness & best run fitness, {metadata.id}, {metadata.jobs}j/{metadata.machines}m",
         xlabel="Generation",
         ylabel="Average best fitness"
     )
