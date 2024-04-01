@@ -266,6 +266,9 @@ class ExperimentBatch:
 
     solver_config: Optional[SolverConfigFile]
 
+    # ISO 8601 timestamp
+    start_time: Optional[str]
+
     def as_dict(self) -> dict:
         result = {
             "output_dir": str(self.output_dir),
@@ -274,6 +277,9 @@ class ExperimentBatch:
 
         if self.solver_config is not None:
             result["solver_config"] = self.solver_config.contents.as_dict()
+
+        if self.start_time:
+            result["start_time"] = self.start_time
 
         return result
 

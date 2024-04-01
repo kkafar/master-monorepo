@@ -40,5 +40,9 @@ def current_timestamp() -> str:
     return timestamp
 
 
+def current_timestamp_iso8601() -> str:
+    return dt.datetime.now().strftime("%y%m%dT%H%M%S")
+
+
 def attach_timestamp_to_dir(directory: Path, timestamp: str) -> Path:
     return directory.joinpath(timestamp)
