@@ -4,7 +4,7 @@ import itertools as it
 from tqdm import tqdm
 from pprint import pprint
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Generator
 from experiment.model import Experiment
 from data.model import JoinedExperimentData, ExperimentValidationResult
 from .tools import experiment_data_from_all_series, extract_solver_desc_from_experiment_batch
@@ -19,34 +19,75 @@ from .stat import (
 from core.fs import get_plotdir_for_exp, get_main_tabledir
 from problem import (
     validate_solution_string_in_context_of_instance,
-    JsspInstance
+    JsspInstance,
+    ScheduleReconstructionResult,
 )
 
 
-def process_experiment_data(exp: Experiment, data: JoinedExperimentData, outdir: Optional[Path], should_plot: bool = True) -> ExperimentValidationResult:
-    """ :param outdir: directory for saving processed data """
+def validate_experiment_data(exp: Experiment, data: JoinedExperimentData) -> ExperimentValidationResult:
+    """ Validates data of single experiment.
+
+    :param exp: experiment with non-null result
+    :param data: joined experiment data
+    :returns: validation result with status & reconstructed schedules. The schedules are computed here
+    as they are required for solution string validation anyway.
+    """
+
+    instance = JsspInstance.from_instance_file(exp.config.input_file)
+    sol_reconstruction_results: list[ScheduleReconstructionResult] = []
+    invalid_series: list[int] = []
+
+    for s_id, s_output in enumerate(exp.result.series_outputs):
+        md = s_output.data.metadata
+        result = validate_solution_string_in_context_of_instance(md.solution_string,
+                                                                 instance,
+                                                                 md.fitness)
+        sol_reconstruction_results.append(result)
+        if not result.ok:
+            invalid_series.append(s_id)
+
+    invalid_series = invalid_series if len(invalid_series) > 0 else None
+    return ExperimentValidationResult(exp.name, sol_reconstruction_results, invalid_series)
+
+
+def validate_experiment_batch_data_gen(batch: list[Experiment],
+                                       batch_data: list[JoinedExperimentData]) -> Generator[ExperimentValidationResult, None, None]:
+    return (validate_experiment_data(exp, exp_data) for exp, exp_data in zip(batch, batch_data))
+
+
+def validate_experiment_batch_data(batch: list[Experiment],
+                                   batch_data: list[JoinedExperimentData]) -> list[ExperimentValidationResult]:
+    return list(validate_experiment_batch_data_gen(batch, batch_data))
+
+
+def find_some_best_series(exp: Experiment) -> int:
+    return min(range(len(exp.result.series_outputs)), key=lambda i: exp.result.series_outputs[i].data.metadata.fitness)
+
+
+def process_experiment_data(exp: Experiment,
+                            data: JoinedExperimentData,
+                            validation_result: ExperimentValidationResult,
+                            outdir: Optional[Path],
+                            should_plot: bool = True):
+    """ Main processing of per-exp data, expects validation_result to be OK """
+
+    assert validation_result.ok, "Validation result must be OK in processing stage"
+
+    if not should_plot:
+        return
 
     exp_plotdir = get_plotdir_for_exp(exp, outdir) if outdir is not None else None
 
-    invalid_series = []
+    some_best_series = find_some_best_series(exp)
 
-    instance = JsspInstance.from_instance_file(exp.config.input_file)
-    for sid, series_output in enumerate(exp.result.series_outputs):
-        md = series_output.data.metadata
-        ok, schedule, errstr = validate_solution_string_in_context_of_instance(md.solution_string, instance, md.fitness)
+    visualise_instance_solution(exp,
+                                validation_result.reconstructed_schedules[some_best_series].instance,
+                                some_best_series,
+                                exp_plotdir)
 
-        if not ok:
-            invalid_series.append((sid, errstr))
+    create_plots_for_experiment(exp, data, exp_plotdir)
 
-        # if should_plot:
-        #     visualise_instance_solution(exp, instance, sid, exp_plotdir)
-        instance.reset()
-
-    if should_plot:
-        create_plots_for_experiment(exp, data, exp_plotdir)
     # compute_per_exp_stats(exp, data)
-
-    return ExperimentValidationResult(exp.name, invalid_series if len(invalid_series) > 0 else None)
 
 
 def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Path], process_count: int = 1, should_plot: bool = True):
@@ -55,37 +96,39 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     print("Joining data from different series into single data frame...")
     data: list[JoinedExperimentData] = [experiment_data_from_all_series(exp) for exp in tqdm(batch)]
 
-    validation_results: list[ExperimentValidationResult] = []
+    # validation_results: Generator[ExperimentValidationResult, None, None] = validate_experiment_batch_data_gen(batch, data)
+    validation_results: list[ExperimentValidationResult] = validate_experiment_batch_data(batch, data)
     has_corrupted_data = False
 
-    if process_count == 1:
-        print("Processing experiments data in single process...")
-        for exp, expdata in tqdm(zip(batch, data), total=len(batch)):
-            result = process_experiment_data(exp, expdata, outdir, should_plot)
-            validation_results.append(result)
-    else:
-        print("Processing experiments data in multiprocess context...")
-        from multiprocessing import get_context
-        with get_context("spawn").Pool(process_count) as pool:
-            validation_results = pool.starmap(process_experiment_data,
-                                              tqdm(zip(batch,
-                                                       data,
-                                                       it.repeat(outdir),
-                                                       it.repeat(should_plot)),
-                                                   total=len(batch)))
-
-    for result in filter(lambda res: not res.ok, validation_results):
+    print("Validating batch output...")
+    for result in filter(lambda res: not res.ok, tqdm(validation_results, total=len(batch))):
         print(f"[ERROR] Experiment: {result.expname} has {len(result.corrupted_series)} corrupted series")
-        pprint(result.corrupted_series)
+        pprint(list(map(lambda sid: (sid, result.reconstructed_schedules[sid]))))
         has_corrupted_data = True
 
     # As there are not mechanisms for handling (skipping during processing) corrupted data
     # it is best to just terminate processing.
     if has_corrupted_data:
-        print("Validation: ERR")
+        print("[ERROR] Validation failed")
         exit(1)
     else:
-        print("Validation: OK")
+        print("Validation finished successfully")
+
+    if process_count == 1:
+        print("Processing experiments data in single process...")
+        for exp, expdata, valres in tqdm(zip(batch, data, validation_results), total=len(batch)):
+            process_experiment_data(exp, expdata, valres, outdir, should_plot)
+    else:
+        print("Processing experiments data in multiprocess context...")
+        from multiprocessing import get_context
+        with get_context("spawn").Pool(process_count) as pool:
+            pool.starmap(process_experiment_data,
+                         tqdm(zip(batch,
+                                  data,
+                                  validation_results,
+                                  it.repeat(outdir),
+                                  it.repeat(should_plot)),
+                              total=len(batch)))
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
 
@@ -147,13 +190,13 @@ def compare_processed_exps(exp_dirs: list[Path], outdir: Optional[Path]):
 
         joined_df = exp_conv_df_1.join(exp_conv_df_2, on='expname')
         stat_df = (joined_df.lazy()
-            .select([
-                pl.col('expname')
-            ] + [
-                (pl.col(col + '_right') - pl.col(col)).alias(col + '_diff')
-                for col in numeric_cols
-            ])
-        ).collect()
+                   .select([
+                       pl.col('expname')
+                   ] + [
+                       (pl.col(col + '_right') - pl.col(col)).alias(col + '_diff')
+                       for col in numeric_cols
+                   ])
+                   ).collect()
 
         print(stat_df)
         print(exp_dir_2.stem, '-', exp_dir_1.stem)
