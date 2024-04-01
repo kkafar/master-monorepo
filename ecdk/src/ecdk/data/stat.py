@@ -309,6 +309,9 @@ def compute_stats_from_solver_summary(
         main_df.vstack(new_df, in_place=True)
         hash_df.vstack(new_hash_df, in_place=True)
 
+    main_df = main_df.sort(KEY_EXPNAME)
+    hash_df = hash_df.sort(KEY_EXPNAME)
+
     print(main_df)
     print(hash_df)
     return main_df, hash_df
