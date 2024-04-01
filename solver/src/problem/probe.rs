@@ -134,7 +134,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             target: "newbest",
             "newbest,{},{},{}",
             metadata.generation,
-            metadata.total_dur.unwrap().as_millis(),
+            metadata.total_dur.unwrap().as_millis(), // `total_dur` is accurate here
             individual.fitness
         );
     }
@@ -150,7 +150,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             target: "popmetrics",
             "diversity,{},{},{},{diversity},{distance_avg}",
             metadata.generation,
-            metadata.total_dur.unwrap().as_millis(),
+            metadata.start_time.unwrap().elapsed().as_millis(),
             generation.len()
         );
     }
@@ -160,7 +160,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             target: "bestingen",
             "bestingen,{},{},{}",
             metadata.generation,
-            metadata.total_dur.unwrap().as_millis(),
+            metadata.start_time.unwrap().elapsed().as_millis(),
             individual.fitness
         );
     }
