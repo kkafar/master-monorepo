@@ -170,7 +170,7 @@ def visualise_instance_solution(exp: Experiment, instance: JsspInstance, series_
             y_data.extend([op.machine for _ in range(op.finish_time - op.duration, op.finish_time)])
             x_ranges.extend(range(op.finish_time - op.duration, op.finish_time))
 
-        plt.scatter(x_ranges, y_data, label=f'Job {op.job_id}')
+        plt.scatter(x_ranges, y_data, label=f'Job {op.job_id}', marker='s')
 
     plot.set_ylim(bottom=-1, top=instance.n_machines)
     plot.set_yticks(range(0, instance.n_machines))
