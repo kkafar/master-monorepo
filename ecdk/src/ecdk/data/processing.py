@@ -57,10 +57,20 @@ def validate_experiment_batch_data_gen(batch: list[Experiment],
 
 def validate_experiment_batch_data(batch: list[Experiment],
                                    batch_data: list[JoinedExperimentData],
+                                   process_count: int = 1,
                                    progress_bar: bool = False) -> list[ExperimentValidationResult]:
-    if progress_bar:
-        return list(tqdm(validate_experiment_batch_data_gen(batch, batch_data), total=len(batch)))
-    return list(validate_experiment_batch_data_gen(batch, batch_data))
+    assert process_count >= 1
+    if process_count == 1:
+        if progress_bar:
+            return list(tqdm(validate_experiment_batch_data_gen(batch, batch_data), total=len(batch)))
+        return list(validate_experiment_batch_data_gen(batch, batch_data))
+    else:
+        from multiprocessing import get_context
+        print("MULTIPROCESS VALIDATION")
+        with get_context("spawn").Pool(process_count) as pool:
+            args = tqdm(zip(batch, batch_data), total=len(batch)) if progress_bar else zip(batch, batch_data)
+            return pool.starmap(validate_experiment_data, args)
+
 
 
 def find_some_best_series(exp: Experiment) -> int:
@@ -98,11 +108,22 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
 
     print("Joining data from different series into single data frame...")
     data: list[JoinedExperimentData] = [experiment_data_from_all_series(exp) for exp in tqdm(batch)]
+    # if process_count == 1:
+    #     data = [experiment_data_from_all_series(exp) for exp in tqdm(batch)]
+    # else:
+    #     from multiprocessing import get_context
+    #     with get_context("spawn").Pool(process_count) as pool:
+    #         data = pool.map(experiment_data_from_all_series, tqdm(batch))
+
+    assert data is not None, "Failed to extract data from file system"
 
     print("Validating batch output...")
 
     # validation_results: Generator[ExperimentValidationResult, None, None] = validate_experiment_batch_data_gen(batch, data)
-    validation_results: list[ExperimentValidationResult] = validate_experiment_batch_data(batch, data, progress_bar=True)
+    validation_results: list[ExperimentValidationResult] = validate_experiment_batch_data(batch,
+                                                                                          data,
+                                                                                          process_count=process_count,
+                                                                                          progress_bar=True)
     has_corrupted_data = False
 
     for result in filter(lambda res: not res.ok, validation_results):
