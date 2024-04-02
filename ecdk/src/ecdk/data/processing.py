@@ -66,7 +66,6 @@ def validate_experiment_batch_data(batch: list[Experiment],
         return list(validate_experiment_batch_data_gen(batch, batch_data))
     else:
         from multiprocessing import get_context
-        print("MULTIPROCESS VALIDATION")
         with get_context("spawn").Pool(process_count) as pool:
             args = tqdm(zip(batch, batch_data), total=len(batch)) if progress_bar else zip(batch, batch_data)
             return pool.starmap(validate_experiment_data, args)
