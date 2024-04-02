@@ -56,7 +56,10 @@ def validate_experiment_batch_data_gen(batch: list[Experiment],
 
 
 def validate_experiment_batch_data(batch: list[Experiment],
-                                   batch_data: list[JoinedExperimentData]) -> list[ExperimentValidationResult]:
+                                   batch_data: list[JoinedExperimentData],
+                                   progress_bar: bool = False) -> list[ExperimentValidationResult]:
+    if progress_bar:
+        return list(tqdm(validate_experiment_batch_data_gen(batch, batch_data), total=len(batch)))
     return list(validate_experiment_batch_data_gen(batch, batch_data))
 
 
@@ -96,12 +99,13 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     print("Joining data from different series into single data frame...")
     data: list[JoinedExperimentData] = [experiment_data_from_all_series(exp) for exp in tqdm(batch)]
 
+    print("Validating batch output...")
+
     # validation_results: Generator[ExperimentValidationResult, None, None] = validate_experiment_batch_data_gen(batch, data)
-    validation_results: list[ExperimentValidationResult] = validate_experiment_batch_data(batch, data)
+    validation_results: list[ExperimentValidationResult] = validate_experiment_batch_data(batch, data, progress_bar=True)
     has_corrupted_data = False
 
-    print("Validating batch output...")
-    for result in filter(lambda res: not res.ok, tqdm(validation_results, total=len(batch))):
+    for result in filter(lambda res: not res.ok, validation_results):
         print(f"[ERROR] Experiment: {result.expname} has {len(result.corrupted_series)} corrupted series")
         pprint(list(map(lambda sid: (sid, result.reconstructed_schedules[sid]))))
         has_corrupted_data = True
