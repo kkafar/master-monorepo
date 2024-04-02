@@ -232,10 +232,15 @@ def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[Jo
 
         main_df.vstack(avg_cvg_iter, in_place=True)
 
-        # print(avg_cvg_iter)
-        # print(n_converged)
-        # break
-    main_df = main_df.drop_nulls().sort(KEY_EXPNAME)
+    main_df = (
+        main_df
+        .filter(pl.col('avg_cvg_iter').is_not_null())
+        .sort(KEY_EXPNAME)
+        .with_columns((
+            # Null values occur when there is only single data point
+            pl.col('std_cvg_iter').fill_null(pl.lit(0))
+        ))
+    )
     print(main_df)
     return main_df
 
