@@ -71,7 +71,6 @@ def validate_experiment_batch_data(batch: list[Experiment],
             return pool.starmap(validate_experiment_data, args)
 
 
-
 def find_some_best_series(exp: Experiment) -> int:
     return min(range(len(exp.result.series_outputs)), key=lambda i: exp.result.series_outputs[i].data.metadata.fitness)
 
