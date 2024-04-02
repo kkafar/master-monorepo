@@ -1,6 +1,5 @@
 import polars as pl
 import core.fs
-import core.conversion
 import json
 from tqdm import tqdm
 from typing import Dict, Optional
@@ -42,7 +41,7 @@ def experiment_from_dir(directory: Path, materialize: bool = False) -> Experimen
     exp_file = core.fs.experiment_file_from_directory(directory)
     exp: Experiment = None
     with open(exp_file, 'r') as file:
-        exp = json.load(file, object_hook=core.conversion.deserialize_experiment_from_dict)
+        exp = json.load(file, object_hook=Experiment.from_dict)
 
     assert exp is not None, f"Failed to load experiment configuration data for {exp_file}"
 
