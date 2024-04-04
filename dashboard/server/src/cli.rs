@@ -13,5 +13,9 @@ pub struct Args {
     /// If it does not exist, it will be created and new processing results will be stored there.
     #[arg(short = 'p', long = "processed")]
     pub processed_results_dir: PathBuf,
+
+    /// Port for the server to run on. Right now it always runs on local host.
+    #[arg(long = "port")]
+    pub port: Option<usize>,
 }
 

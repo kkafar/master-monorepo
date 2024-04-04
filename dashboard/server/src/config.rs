@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use anyhow::anyhow;
 
+use crate::cli::Args;
+
 
 #[derive(Debug, Clone)]
 pub struct Config {
@@ -12,12 +14,31 @@ pub struct Config {
     /// Directory in which already processed batch results are stored.
     /// If it does not exist, it will be created and new processing results will be stored there.
     pub processed_results_dir: PathBuf,
+
+    /// Port for the server to run on. Right now it always runs on local host.
+    pub port: usize,
 }
 
+impl Config {
+    pub fn try_from_args(args: &Args) -> anyhow::Result<Self> {
+        Self::try_from(PartialConfig::from_args(args))
+    }
+}
 
 pub struct PartialConfig {
     pub results_dir: Option<PathBuf>,
     pub processed_results_dir: Option<PathBuf>,
+    pub port: Option<usize>,
+}
+
+impl PartialConfig {
+    pub fn from_args(args: &Args) -> Self {
+        Self {
+            results_dir: Some(args.results_dir.clone()),
+            processed_results_dir: Some(args.processed_results_dir.clone()),
+            port: args.port.clone(),
+        }
+    }
 }
 
 impl TryFrom<PartialConfig> for Config {
@@ -39,6 +60,7 @@ impl TryFrom<PartialConfig> for Config {
         Ok(Config {
             results_dir,
             processed_results_dir,
+            port: partial_cfg.port.unwrap_or(8088),
         })
     }
 }
