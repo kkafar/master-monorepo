@@ -1,11 +1,17 @@
-use axum::{response::{Html, IntoResponse}, routing::get, Router};
+pub mod cli;
+pub mod config;
 
-async fn handler() -> impl IntoResponse {
-    Html("<h1>Hello, World!</h1>")
+pub use clap::Parser;
+
+use axum::{response::{Html, IntoResponse, Response}, routing::get, Router};
+
+async fn handler() -> Response {
+    Html("<h1>Hello, World!</h1>").into_response()
 }
 
 #[tokio::main]
 async fn main() {
+    let args: cli::Args = cli::Args::parse();
 
     // build our application with a route
     let app = Router::new().route("/", get(handler));
