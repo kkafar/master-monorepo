@@ -18,4 +18,3 @@ pub struct Args {
     #[arg(long = "port")]
     pub port: Option<usize>,
 }
-
