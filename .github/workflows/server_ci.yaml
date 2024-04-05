@@ -1,0 +1,84 @@
+name: Server CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main", "development", "@*/*" ]
+    paths:
+      - 'dashboard/server/**'
+      - '.github/workflows/server_ci.yaml'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  WORKING_DIRECTORY: dashboard/server
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: server-ci-build-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update toolchain
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: rustup update
+      - name: Build
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo build --release
+
+  test:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: server-ci-test-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update toolchain
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: rustup update
+      - name: Build
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo build --release
+      - name: Run tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo test --release
+
+  code-format:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: server-ci-code-format-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update toolchain
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: rustup update
+      - name: Code check with cargo fmt
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo fmt --check
+
+  clippy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: server-ci-clippy-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Update toolchain
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: rustup update
+      - name: Code check with clippy
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: cargo clippy
+
