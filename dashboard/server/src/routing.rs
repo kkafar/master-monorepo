@@ -1,8 +1,11 @@
-use axum::{http::HeaderValue, routing::{get, Route}, Router};
+use axum::{
+    http::HeaderValue,
+    routing::{get, Route},
+    Router,
+};
 use tower_http::cors::CorsLayer;
 
 use crate::{handler, ServerState};
-
 
 pub fn create_router(server_state: ServerState) -> Router {
     let router = Router::new()

@@ -4,7 +4,6 @@ use anyhow::anyhow;
 
 use crate::cli::Args;
 
-
 #[derive(Debug, Clone)]
 pub struct Config {
     /// Either directory of experiment batch result or directory containing other directories
@@ -64,4 +63,3 @@ impl TryFrom<PartialConfig> for Config {
         })
     }
 }
-
