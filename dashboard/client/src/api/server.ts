@@ -1,14 +1,29 @@
-export interface ServerAPI {
+export type BatchListRequest = {
 
+};
+
+export type BatchListResponse = {
+  batchNames: string[];
 }
 
-
 class Server {
-  base_url: string;
-
+  baseUrl: string;
+  endpoints: {
+    batches: string,
+  }
 
   constructor() {
-    this.base_url = "localhost:8088";
+    this.baseUrl = "http://localhost:8088";
+    this.endpoints = {
+      batches: this.baseUrl + '/batches',
+    };
+  }
+
+  async fetchBatches(signal?: AbortSignal): Promise<BatchListResponse | undefined> {
+    const response = await fetch(this.endpoints.batches, { method: 'GET', signal: signal });
+    const parsedResponse = await response.json();
+    console.log(parsedResponse);
+    return parsedResponse;
   }
 
 }

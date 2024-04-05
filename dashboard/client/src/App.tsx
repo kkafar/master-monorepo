@@ -1,28 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import './App.css';
+import AppRouter from './route/AppRouter';
+import ServerContext from './contexts/ServerContext';
+import Server from './api/server';
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-import Home from './pages/Home';
 
 function App() {
-  // return (
-  //   <div className="App">
-  //     <header className="App-header">
-  //       <p>
-  //         Edit <code>src/App.tsx</code> and save to reload.
-  //       </p>
-  //     </header>
-  //   </div>
-  // );
+  const server = useMemo(() => new Server(), []);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route index element={<Home />} />
-        <Route path='/home' element={<Home />} />
-      </Routes>
-    </BrowserRouter>
+    <ServerContext.Provider value={server}>
+      <AppRouter />
+    </ServerContext.Provider>
   );
 }
 
