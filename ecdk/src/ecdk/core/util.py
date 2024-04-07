@@ -1,4 +1,5 @@
 from typing import Iterable, Optional, TypeVar, Callable
+from pathlib import Path
 import itertools as it
 
 T = TypeVar('T')
@@ -24,4 +25,16 @@ def nonesafe_map(obj: Optional[T], mapping: Callable[[T], U]) -> Optional[U]:
     if obj is None:
         return None
     return mapping(obj)
+
+
+def write_string_to_file(string: str, file: Path, append: bool = False):
+    # https://stackoverflow.com/questions/30686701/python-get-size-of-string-in-bytes
+    string_byte_count = len(string.encode('utf-8'))
+    open_mode = 'w+' if append else 'w'
+
+    writed_bytes_count = 0
+    with open(file, mode=open_mode, encoding='utf-8') as writer:
+        writed_bytes_count = writer.write(string)
+
+    assert string_byte_count == writed_bytes_count
 
