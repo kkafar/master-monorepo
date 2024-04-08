@@ -1,21 +1,29 @@
 import React, { useContext, useEffect, useState } from "react";
-import { BatchListResponse } from "../api/server";
+import { BatchInfo, BatchListResponse } from "../api/server";
+import BatchSummary from "../components/BatchSummary";
 import ServerContext from "../contexts/ServerContext";
 import { useServer } from "../hooks/useServer";
 
 
 function Home(): React.JSX.Element {
   const serverApi = useServer();
-  const [batches, setBatches] = useState<string[]>([]);
+  const [batches, setBatches] = useState<BatchInfo[]>([]);
 
   useEffect(() => {
     const abortController = new AbortController();
 
     async function fetchBatches() {
-      const result = await serverApi?.fetchBatches(abortController.signal);
-      if (result !== undefined) {
-        setBatches(result.batchNames);
-      }
+      serverApi?.fetchBatches(abortController.signal)
+        .then(result => {
+          if (result !== undefined) {
+            setBatches(result.batchInfo);
+          } else {
+            console.error("Received null reponse from server");
+          }
+        })
+        .catch(err => {
+          console.error(`Received error: ${err}`);
+        })
     }
 
     fetchBatches();
@@ -28,9 +36,13 @@ function Home(): React.JSX.Element {
 
   return (
     <div>
-      <div>Some Text</div>
+      <h1>Batches</h1>
       {batches.length > 0 && (
-        batches.map(name => <div>{name}</div>)
+        <div>
+          <ul>
+            {batches.map(info => <BatchSummary batchInfo={info} />)}
+          </ul>
+        </div>
       )}
     </div>
   );
