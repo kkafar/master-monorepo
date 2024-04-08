@@ -1,11 +1,12 @@
 pub mod cli;
 pub mod config;
+pub mod data;
 pub mod handler;
-pub mod model;
 pub mod routing;
 
-use crate::{config::Config, model::ServerState};
 pub use clap::Parser;
+
+use crate::{config::Config, data::model::ServerState};
 
 #[tokio::main]
 async fn main() {

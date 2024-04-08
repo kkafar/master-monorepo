@@ -17,6 +17,7 @@ from .stat import (
     compute_stats_from_solver_summary
 )
 from core.fs import get_plotdir_for_exp, get_main_tabledir
+from core.util import write_string_to_file
 from problem import (
     validate_solution_string_in_context_of_instance,
     JsspInstance,
@@ -164,10 +165,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
 
     if outdir and solver_desc_res:
         solver_desc, json_str = solver_desc_res
-        with open(outdir / 'solver_desc.json', 'w') as file:
-            # Fingers crossed that everything will be written in single op
-            # TODO: Handle this in human way
-            file.write(json_str)
+        write_string_to_file(json_str, outdir / 'solver_desc.json')
 
 
 def compare_exp_batch_outputs(basedir: Path, benchdir: Path):

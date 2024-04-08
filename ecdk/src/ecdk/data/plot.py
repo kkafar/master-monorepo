@@ -49,16 +49,10 @@ def create_plots_for_experiment(exp: Experiment,
     plot_best_in_gen_agg_and_best_run(plot, data.bestingen, exp.instance, best_series)
 
     if plotdir is not None:
-        fig_popmet.tight_layout()
-        fig_bfavg.tight_layout()
-        fig_best_fitness.tight_layout()
-        fig_best_in_gen_and_best_fitness_compund.tight_layout()
-        fig_popmet.savefig(plotdir.joinpath(f'{exp.name}_pop_met.png'), dpi='figure', format='png')
-        fig_bfavg.savefig(plotdir.joinpath(f'{exp.name}_fit_avg.png'), dpi='figure', format='png')
-        fig_best_fitness.savefig(plotdir / f'{exp.name}_best_run_fit.png', dpi='figure', format='png')
-        fig_best_in_gen_and_best_fitness_compund.savefig(plotdir / f'{exp.name}_best_run_fit_avg_compound.png',
-                                                         dpi='figure',
-                                                         format='png')
+        _save_figure(fig_popmet, plotdir.joinpath(f'{exp.name}_pop_met.png'))
+        _save_figure(fig_bfavg, plotdir.joinpath(f'{exp.name}_fit_avg.png'))
+        _save_figure(fig_best_fitness, plotdir / f'{exp.name}_best_run_fit.png')
+        _save_figure(fig_best_in_gen_and_best_fitness_compund, plotdir / f'{exp.name}_best_run_fit_avg_compound.png')
     plt.close(fig_popmet)
     plt.close(fig_bfavg)
     plt.close(fig_best_fitness)
@@ -280,8 +274,15 @@ def visualise_instance_solution(exp: Experiment, instance: JsspInstance, series_
     plot.grid()
 
     if plotdir is not None:
-        fig.savefig(plotdir.joinpath(f'{exp.name}_sol_{series_id}.png'), dpi='figure', format='png')
+        _save_figure(fig, plotdir.joinpath(f'{exp.name}_sol_{series_id}.png'))
     else:
         plt.show()
     plt.close(fig)
 
+
+def _save_figure(fig: plt.Figure, path: Path, tight_layout: bool = True, close: bool = False):
+    if tight_layout:
+        fig.tight_layout()
+    fig.savefig(path, dpi='figure', format='png')
+    if close:
+        plt.close(fig)

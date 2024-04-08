@@ -1,9 +1,12 @@
-export type BatchListRequest = {
+import { BatchConfig } from "../model/problem";
 
-};
+export type BatchInfo = {
+  name: string,
+  config: BatchConfig,
+}
 
 export type BatchListResponse = {
-  batchNames: string[];
+  batchInfo: BatchInfo[];
 }
 
 class Server {
@@ -20,10 +23,15 @@ class Server {
   }
 
   async fetchBatches(signal?: AbortSignal): Promise<BatchListResponse | undefined> {
-    const response = await fetch(this.endpoints.batches, { method: 'GET', signal: signal });
-    const parsedResponse = await response.json();
-    console.log(parsedResponse);
-    return parsedResponse;
+    try {
+      const response = await fetch(this.endpoints.batches, { method: 'GET', signal: signal });
+      const parsedResponse = await response.json();
+      console.log(parsedResponse);
+      return parsedResponse;
+    } catch (err) {
+      console.error(`Error while fetching: ${err}`);
+    }
+    return undefined;
   }
 
 }
