@@ -4,29 +4,27 @@ use axum::{
     response::{Html, IntoResponse, Response},
     Json,
 };
-use serde;
+use crate::data::model::ServerState;
 
-use crate::ServerState;
-
-#[derive(serde::Serialize)]
-pub struct BatchesResponse {
-    #[serde(rename = "batchNames")]
-    pub batch_names: Vec<String>,
-}
 
 pub async fn handler() -> Response {
     Html("<h1>Hello, World!</h1>").into_response()
 }
 
 pub async fn batches(State(state): State<ServerState>) -> Response {
-    let batches = state
-        .cfg
-        .results_dir
-        .read_dir()
-        .unwrap()
-        .filter_map(|file| file.ok())
+    let directory_iter = match state.cfg.results_dir.read_dir() {
+        Ok(read_dir) => read_dir,
+        Err(err) => {
+            return (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response();
+        }
+    };
+
+    let batch_names = directory_iter
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .filter(|file| file.is_dir())
         .filter_map(|file| {
-            file.path()
+            file
                 .file_stem()
                 .unwrap()
                 .to_os_string()
@@ -35,13 +33,6 @@ pub async fn batches(State(state): State<ServerState>) -> Response {
         })
         .collect::<Vec<String>>();
 
-    println!("{:?}", batches);
-
-    (
-        StatusCode::OK,
-        Json(BatchesResponse {
-            batch_names: batches,
-        }),
-    )
-        .into_response()
+    // (StatusCode::OK, Json(BatchesResponse { batch_names })).into_response()
+    todo!()
 }
