@@ -44,7 +44,11 @@ pub async fn batches(State(state): State<ServerState>) -> Response {
 
     if !maybe_error.is_empty() {
         println!("Errors {:?}", maybe_error);
-        return (StatusCode::INTERNAL_SERVER_ERROR, maybe_error.first().unwrap().to_owned()).into_response();
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            maybe_error.first().unwrap().to_owned(),
+        )
+            .into_response();
     }
 
     let batch_info = batch_collection_dir
