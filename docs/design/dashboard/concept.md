@@ -57,3 +57,14 @@ Taking two main parameters: `raw-data-dir`, `processed-data-dir`, and some auxil
 
 HTTP & Json should be enough. In case of performance problems I can consider moving to gRPC.
 
+
+# Client in more details
+
+There should be header enabling navigation between different pages.
+
+## Home page
+
+List of experiment batches names. Each batch name is an `<summary>` element.
+
+
+
