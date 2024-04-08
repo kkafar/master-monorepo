@@ -1,7 +1,7 @@
-pub mod raw;
 pub mod messages;
+pub mod raw;
 
-pub use raw::{batch, experiment, series, problem};
+pub use raw::{batch, experiment, problem, series};
 
 use crate::config::Config;
 
@@ -9,5 +9,3 @@ use crate::config::Config;
 pub struct ServerState {
     pub cfg: Config,
 }
-
-

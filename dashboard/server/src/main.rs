@@ -1,9 +1,8 @@
 pub mod cli;
 pub mod config;
+pub mod data;
 pub mod handler;
 pub mod routing;
-pub mod data;
-pub mod filestructure;
 
 pub use clap::Parser;
 

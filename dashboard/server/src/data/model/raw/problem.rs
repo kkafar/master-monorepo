@@ -1,8 +1,7 @@
 ///! Definitions of problem model structures
+use serde::{Deserialize, Serialize};
 
-use serde::Serialize;
-
-#[derive(Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct InstanceInfo {
     pub id: String,
 

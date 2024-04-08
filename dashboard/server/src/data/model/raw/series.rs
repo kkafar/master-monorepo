@@ -1,7 +1,5 @@
 ///! Definitions of series level structures
-
 use serde::Serialize;
-
 
 #[derive(Serialize, Debug, Clone)]
 pub struct RunMetadataFileData {
@@ -20,4 +18,3 @@ pub struct RunMetadataFileData {
     pub start_timestamp: String,
     pub end_timestamp: String,
 }
-
