@@ -11,7 +11,7 @@ license = "MIT OR Apache-2.0"
 exclude = [".github/*", "Cargo.lock", "coco/"]
 
 [dependencies]
-ecrs = { path = "../ecrs/" }
+ecrs = { path = "../ecrs/", default-features = false, features = ["ga", "ga_impl_population", "ga_impl_mutation", "ga_impl_selection"]}
 log4rs = { version = "1.2.0" }
 clap = { version = "4.2.7", features = ["derive"] }
 md5 = { version = "0.7.0" }
@@ -23,3 +23,13 @@ rand = "0.8.5"
 anyhow = "1.0.80"
 thiserror = "1.0.57"
 time = { version = "0.3.34", features = ["formatting", "parsing"] }
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+# debug = 1 # For profiling, should be disabled for production builds
+lto = "fat"
+panic = "abort"
+opt-level = 3
