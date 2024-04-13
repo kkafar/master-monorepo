@@ -1,5 +1,6 @@
 pub mod messages;
 pub mod raw;
+pub mod processed;
 
 pub use raw::{batch, experiment, problem, series};
 

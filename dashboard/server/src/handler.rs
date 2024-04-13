@@ -1,10 +1,10 @@
-use crate::data::{
-    filestruct::BatchCollectionDir,
-    model::{
+use crate::{
+    data::model::{
         messages::{BatchInfo, BatchesResponse},
         ServerState,
-    },
+    }, filestruct::model::raw::BatchCollectionDir,
 };
+
 use axum::{
     extract::State,
     http::StatusCode,

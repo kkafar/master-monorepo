@@ -3,6 +3,7 @@ pub mod config;
 pub mod data;
 pub mod handler;
 pub mod routing;
+pub mod filestruct;
 
 pub use clap::Parser;
 

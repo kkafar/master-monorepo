@@ -5,6 +5,10 @@ use super::batch::BatchConfigModel;
 #[derive(serde::Serialize)]
 pub struct BatchInfo {
     pub name: String,
+
+    // #[serde(rename(serialize = "solvedCount"))]
+    // pub solved_count: usize,
+
     pub config: BatchConfigModel,
 }
 
