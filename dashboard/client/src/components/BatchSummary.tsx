@@ -1,6 +1,7 @@
 import React from "react";
 import { BatchInfo } from "../api/server";
 import { BatchConfig } from "../model/problem";
+import "./css/BatchSummary.css"
 
 
 export type BatchSummaryProps = {
@@ -42,17 +43,14 @@ function parseStartTime(startTime?: string): string | undefined {
 function BatchSummary({ batchInfo }: BatchSummaryProps): React.JSX.Element {
   // const batchName = resolveBatchName(batchInfo);
   const batchName = batchInfo.name;
-  const experimentNames = batchInfo.config.configs.map(exp => exp.name).join(' ');
-  console.log(batchInfo.name);
+  const experimentNames = batchInfo.config.configs.map(exp => exp.name).sort().join(' ');
   const startTime = parseStartTime(batchInfo.config.startTime) ?? "Unknown";
 
   return (
-    <div>
-      <details>
-        <summary>{batchName}</summary>
-        Start time: {startTime},
-        Experiments: {experimentNames}
-      </details>
+    <div className="batch-info-container" >
+      <h2 style={{ fontWeight: 400, marginBottom: 5, marginTop: 28 }}>{batchName}</h2>
+      <div>Start time: {startTime}</div>
+      <div>Experiments: {experimentNames}</div>
     </div>
   );
 }

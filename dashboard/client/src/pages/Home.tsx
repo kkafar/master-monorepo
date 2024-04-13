@@ -3,6 +3,7 @@ import { BatchInfo, BatchListResponse } from "../api/server";
 import BatchSummary from "../components/BatchSummary";
 import ServerContext from "../contexts/ServerContext";
 import { useServer } from "../hooks/useServer";
+import './css/Home.css';
 
 
 function Home(): React.JSX.Element {
@@ -38,10 +39,8 @@ function Home(): React.JSX.Element {
     <div>
       <h1>Batches</h1>
       {batches.length > 0 && (
-        <div>
-          <ul>
-            {batches.map(info => <BatchSummary batchInfo={info} />)}
-          </ul>
+        <div className="batch-list-container">
+          {batches.map(info => <BatchSummary batchInfo={info} />)}
         </div>
       )}
     </div>

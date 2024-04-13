@@ -1,4 +1,5 @@
 import { BatchConfig } from "../model/problem";
+import serverConfig from "../config/serverConfig.json"
 
 export type BatchInfo = {
   name: string,
@@ -16,22 +17,18 @@ class Server {
   }
 
   constructor() {
-    this.baseUrl = "http://localhost:8088";
+    this.baseUrl = `http://localhost:${serverConfig.port}`;
     this.endpoints = {
       batches: this.baseUrl + '/batches',
     };
   }
 
   async fetchBatches(signal?: AbortSignal): Promise<BatchListResponse | undefined> {
-    try {
-      const response = await fetch(this.endpoints.batches, { method: 'GET', signal: signal });
-      const parsedResponse = await response.json();
-      console.log(parsedResponse);
-      return parsedResponse;
-    } catch (err) {
-      console.error(`Error while fetching: ${err}`);
-    }
-    return undefined;
+    return fetch(this.endpoints.batches, { method: 'GET', signal: signal })
+      .then(response => response.json())
+      .catch(err => {
+        console.error(`Error while fetching ${err}`)
+      })
   }
 
 }
