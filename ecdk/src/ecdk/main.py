@@ -9,7 +9,7 @@
 
 import sys
 from pathlib import Path
-print(f"cwd/src: {Path.cwd().joinpath('src')}")
+# print(f"cwd/src: {Path.cwd().joinpath('src')}")
 sys.path.append(str(Path.cwd().joinpath('src')))
 
 import polars as pl
