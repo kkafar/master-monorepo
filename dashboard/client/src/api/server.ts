@@ -2,8 +2,9 @@ import { BatchConfig } from "../model/problem";
 import serverConfig from "../config/serverConfig.json"
 
 export type BatchInfo = {
-  name: string,
-  config: BatchConfig,
+  name: string;
+  solvedCount: number;
+  config: BatchConfig;
 }
 
 export type BatchListResponse = {

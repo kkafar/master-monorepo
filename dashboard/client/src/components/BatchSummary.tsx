@@ -45,12 +45,17 @@ function BatchSummary({ batchInfo }: BatchSummaryProps): React.JSX.Element {
   const batchName = batchInfo.name;
   const experimentNames = batchInfo.config.configs.map(exp => exp.name).sort().join(' ');
   const startTime = parseStartTime(batchInfo.config.startTime) ?? "Unknown";
+  const solverType = batchInfo.config.solverConfig?.solverType ?? "Unknown";
+  const nGenerations = batchInfo.config.solverConfig?.nGen ?? "Unknown";
 
   return (
     <div className="batch-info-container" >
-      <h2 style={{ fontWeight: 400, marginBottom: 5, marginTop: 28 }}>{batchName}</h2>
+      <h2 style={{ fontWeight: 400, marginBottom: 5 }}>{batchName}</h2>
       <div>Start time: {startTime}</div>
       <div>Experiments: {experimentNames}</div>
+      <div>Solved: Unknown / {batchInfo.config.configs.length}</div>
+      <div>Solver: {solverType}</div>
+      <div>Generations: {nGenerations}</div>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { BatchInfo, BatchListResponse } from "../api/server";
 import BatchSummary from "../components/BatchSummary";
-import ServerContext from "../contexts/ServerContext";
 import { useServer } from "../hooks/useServer";
 import './css/Home.css';
 
@@ -30,17 +29,24 @@ function Home(): React.JSX.Element {
     fetchBatches();
 
     return () => {
-      // abortController.abort();
+      abortController.abort();
     }
-  }, []);
+  }, [serverApi]);
 
+  const displayBatchList = batches.length > 0;
 
   return (
     <div>
-      <h1>Batches</h1>
-      {batches.length > 0 && (
-        <div className="batch-list-container">
-          {batches.map(info => <BatchSummary batchInfo={info} />)}
+      <h1 className="padded-left top-title">Batches</h1>
+      {displayBatchList && (
+        <div className="padded-left batch-list-container">
+          {batches.sort((a, b) => (a.name < b.name) ? -1 : 1).map(info => <BatchSummary batchInfo={info} />)}
+        </div>
+      )}
+      {!displayBatchList && (
+        <div className="padded-left">
+          Seems that there are no batches present...
+          Make sure that the server was passed appropriate directory with batch results.
         </div>
       )}
     </div>
