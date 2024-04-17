@@ -10,6 +10,7 @@ use crate::{handler, ServerState};
 pub fn create_router(server_state: ServerState) -> Router {
     let router = Router::new()
         .route("/batches", get(handler::batches))
+        .route("/table", get(handler::table))
         .layer(CorsLayer::new().allow_origin("*".parse::<HeaderValue>().unwrap()))
         .with_state(server_state);
 

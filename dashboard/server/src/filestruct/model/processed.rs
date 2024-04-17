@@ -56,6 +56,9 @@ impl PBatchCollectionDir {
 }
 
 impl PBatchDir {
+    pub fn batch_name(&self) -> &str {
+        return self.path.file_stem().unwrap().to_str().unwrap()
+    }
     pub fn try_from_dir(dir: impl Into<PathBuf>) -> anyhow::Result<Self> {
         let dir: PathBuf = dir.into();
 
@@ -76,7 +79,11 @@ impl PBatchDir {
         };
 
         let solver_desc_file = dir.join("solver_desc.json");
-        let solver_desc_file = if solver_desc_file.is_file() { Some(solver_desc_file) } else { None };
+        let solver_desc_file = if solver_desc_file.is_file() {
+            Some(solver_desc_file)
+        } else {
+            None
+        };
 
         Ok(Self {
             path: dir,
@@ -179,7 +186,8 @@ impl ExperimentPlotDir {
             anyhow::bail!("Missing plot: {:?}", pop_met_plot);
         }
 
-        let best_run_fit_avg_compound_plot = dir.join(format!("{expname}_best_run_fit_avg_compound.png"));
+        let best_run_fit_avg_compound_plot =
+            dir.join(format!("{expname}_best_run_fit_avg_compound.png"));
         let best_run_fit_avg_compound_plot = if best_run_fit_avg_compound_plot.is_file() {
             Some(best_run_fit_avg_compound_plot)
         } else {
@@ -199,4 +207,3 @@ impl ExperimentPlotDir {
         dir.file_name().unwrap().to_str().unwrap()
     }
 }
-

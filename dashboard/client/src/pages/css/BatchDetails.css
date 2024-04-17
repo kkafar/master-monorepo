@@ -1,0 +1,12 @@
+.padded-left {
+  padding-left: 1rem;
+}
+
+.top-title {
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: whitesmoke;
+}
+

@@ -1,28 +1,120 @@
+use std::{collections::HashMap, io::BufWriter};
+
 use crate::{
     data::model::{
-        messages::{BatchInfo, BatchesResponse},
+        messages::{BatchInfo, BatchesResponse, TableRequest},
         ServerState,
-    }, filestruct::model::raw::BatchCollectionDir,
+    },
+    filestruct::model::{processed::PBatchCollectionDir, raw::BatchCollectionDir},
 };
 
 use axum::{
-    extract::State,
+    extract::{Query, State},
     http::StatusCode,
-    response::{Html, IntoResponse, Response},
+    response::{IntoResponse, Response},
     Json,
 };
+use bytes::{Bytes, BytesMut};
+use polars::{
+    datatypes::AnyValue,
+    frame::DataFrame,
+    io::{json::JsonWriter, SerWriter},
+};
+use serde_json::Value;
 
-pub async fn handler() -> Response {
-    Html("<h1>Hello, World!</h1>").into_response()
+pub async fn table(State(state): State<ServerState>, request: Query<TableRequest>) -> Response {
+    // let request: TableRequest = match serde_json::from_value(payload) {
+    //     Ok(body) => body,
+    //     Err(err) => {
+    //         return (
+    //             StatusCode::BAD_REQUEST,
+    //             format!("Failed to parse request body with error: {:?}", err),
+    //         )
+    //             .into_response()
+    //     }
+    // };
+
+    let batch_coll_dir = match PBatchCollectionDir::try_from_dir(state.cfg.processed_results_dir) {
+        Ok(dir) => dir,
+        Err(err) => {
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response()
+        }
+    };
+
+    let batch_dir = match batch_coll_dir
+        .batch_dirs
+        .iter()
+        .find(|batch_dir| batch_dir.batch_name() == request.batch_name)
+    {
+        Some(dir) => dir,
+        None => {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json(format!(
+                    "Failed to find directory for batch of name: {}",
+                    request.batch_name
+                )),
+            )
+                .into_response()
+        }
+    };
+
+    let mut table = match batch_dir.tables_dir.load_table(request.table_name.as_ref()) {
+        Ok(df) => df,
+        Err(err) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(format!(
+                    "Failed to load table with name {} with error: {}",
+                    request.table_name,
+                    err.to_string()
+                )),
+            )
+                .into_response()
+        }
+    };
+
+    let mut buffer = Vec::<u8>::new();
+    let mut writer = BufWriter::new(&mut buffer);
+
+    JsonWriter::new(&mut writer)
+        .with_json_format(polars::io::json::JsonFormat::Json)
+        .finish(&mut table)
+        .unwrap();
+
+    std::mem::drop(writer);
+    let table_as_string = String::from_utf8(buffer).unwrap();
+
+    (StatusCode::OK, table_as_string).into_response()
 }
 
 pub async fn batches(State(state): State<ServerState>) -> Response {
-    let batch_collection_dir = match BatchCollectionDir::try_from_dir(state.cfg.results_dir) {
+    let batch_coll_dir = match BatchCollectionDir::try_from_dir(state.cfg.results_dir) {
         Ok(dir) => dir,
-        Err(err) => return (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response(),
+        Err(err) => {
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response()
+        }
     };
 
-    let batch_info = batch_collection_dir.batch_dirs.iter().map(|batch_dir| {
+    let processed_batch_coll_dir =
+        match PBatchCollectionDir::try_from_dir(state.cfg.processed_results_dir) {
+            Ok(dir) => dir,
+            Err(err) => {
+                return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response()
+            }
+        };
+
+    let mut processed_summary_tables = HashMap::<String, Option<DataFrame>>::new();
+
+    processed_batch_coll_dir
+        .batch_dirs
+        .iter()
+        .for_each(|batch_dir| {
+            let table = batch_dir.tables_dir.load_summary_total_table().ok();
+            processed_summary_tables.insert(batch_dir.batch_name().into(), table);
+        });
+
+    let batch_info = batch_coll_dir.batch_dirs.iter().map(|batch_dir| {
         (
             batch_dir
                 .path
@@ -46,23 +138,46 @@ pub async fn batches(State(state): State<ServerState>) -> Response {
         println!("Errors {:?}", maybe_error);
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
-            maybe_error.first().unwrap().to_owned(),
+            Json(maybe_error.first().unwrap().to_owned()),
         )
             .into_response();
     }
 
-    let batch_info = batch_collection_dir
+    let batch_info = batch_coll_dir
         .batch_dirs
         .iter()
-        .map(|batchdir| BatchInfo {
-            name: batchdir
+        .map(|batchdir| {
+            let batch_name = batchdir
                 .path
                 .file_stem()
                 .unwrap()
                 .to_str()
                 .unwrap()
-                .to_owned(),
-            config: batchdir.config_file.load_data().unwrap(),
+                .to_owned();
+
+            let is_processed = processed_summary_tables.contains_key(&batch_name);
+            let solved_count = if is_processed {
+                let df = processed_summary_tables
+                    .get(&batch_name)
+                    .unwrap()
+                    .as_ref()
+                    .unwrap();
+                let value = match df.column("bks_hit_total").unwrap().get(0).unwrap() {
+                    AnyValue::Int64(value) => Some(value as usize),
+                    AnyValue::Int32(value) => Some(value as usize),
+                    _ => None,
+                };
+                value
+            } else {
+                None
+            };
+
+            BatchInfo {
+                name: batch_name,
+                config: batchdir.config_file.load_data().unwrap(),
+                solved_count,
+                is_processed: Some(is_processed),
+            }
         })
         .collect();
 
