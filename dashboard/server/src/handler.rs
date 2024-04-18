@@ -1,8 +1,8 @@
-use std::{collections::HashMap, io::BufWriter};
+use std::{collections::HashMap, io::{self, BufWriter}};
 
 use crate::{
     data::model::{
-        messages::{BatchInfo, BatchesResponse, TableRequest},
+        messages::{BatchInfo, BatchesResponse, ProcessRequest, ProcessResponse, TableRequest},
         ServerState,
     },
     filestruct::model::{processed::PBatchCollectionDir, raw::BatchCollectionDir},
@@ -14,13 +14,19 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use bytes::{Bytes, BytesMut};
 use polars::{
     datatypes::AnyValue,
     frame::DataFrame,
     io::{json::JsonWriter, SerWriter},
 };
-use serde_json::Value;
+
+pub async fn process_batch(State(state): State<ServerState>, Json(request): Json<ProcessRequest>) -> Response {
+    println!("Process batch request");
+    match state.ecdk_proxy.process(&request.batch_name).await {
+        Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ProcessResponse::new_err(err.to_string()))).into_response(),
+        _ => (StatusCode::OK, Json(ProcessResponse::new_ok())).into_response(),
+    }
+}
 
 pub async fn table(State(state): State<ServerState>, request: Query<TableRequest>) -> Response {
     // let request: TableRequest = match serde_json::from_value(payload) {

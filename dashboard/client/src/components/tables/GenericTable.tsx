@@ -11,7 +11,7 @@ export function GenericTableRow<RowDataT extends RowRecord>({ data }: RowProps<R
   // type RowValuesT = typeof data[RowKeysT];
   return (
     <tr>
-      {Object.entries(data).map(([_key, value]) => <td>{value}</td>)}
+      {Object.entries(data).map(([_key, value], i) => <td key={i.toString()}>{value}</td>)}
     </tr>
   );
 }
@@ -30,7 +30,9 @@ export default function GenericTable<RowDataT extends RowRecord>(props: GenericT
   return (
     <table>
       <thead>
-        {data.length > 0 ? Object.entries(data[0]).map(([key, _value]) => <th>{key}</th>) : "No data"}
+        <tr>
+          {data.length > 0 ? Object.entries(data[0]).map(([key, _value]) => <th>{key}</th>) : "No data"}
+        </tr>
       </thead>
       <tbody>
         {data.map((row, i) => <RowComponent key={i.toString()} data={row} />)}

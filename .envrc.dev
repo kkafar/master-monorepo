@@ -1,6 +1,6 @@
 echo "Sourcing DEV env file"
 
-export MY_MASTER_REPO=$(pwd)/../
+export MY_MASTER_REPO=$(pwd)
 export MY_SCRATCH="$MY_MASTER_REPO/raw-data-archive"
 export MY_GROUPS_STORAGE="$MY_MASTER_REPO/ecdk/raw.out"
 export MY_USERNAME=$USER

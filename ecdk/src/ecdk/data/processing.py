@@ -108,7 +108,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
 
     for result in filter(lambda res: not res.ok, validation_results):
         print(f"[ERROR] Experiment: {result.expname} has {len(result.corrupted_series)} corrupted series")
-        pprint(list(map(lambda sid: (sid, result.reconstructed_schedules[sid]))))
+        # pprint(list(map(lambda sid: (sid, result.reconstructed_schedules[sid]), result.corrupted_series)))
         has_corrupted_data = True
 
     # As there are not mechanisms for handling (skipping during processing) corrupted data

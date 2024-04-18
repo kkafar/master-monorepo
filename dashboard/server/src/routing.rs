@@ -1,9 +1,9 @@
 use axum::{
     http::HeaderValue,
-    routing::{get, Route},
+    routing::{get, post, Route},
     Router,
 };
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 
 use crate::{handler, ServerState};
 
@@ -11,7 +11,8 @@ pub fn create_router(server_state: ServerState) -> Router {
     let router = Router::new()
         .route("/batches", get(handler::batches))
         .route("/table", get(handler::table))
-        .layer(CorsLayer::new().allow_origin("*".parse::<HeaderValue>().unwrap()))
+        .route("/process", post(handler::process_batch))
+        .layer(CorsLayer::new().allow_origin("*".parse::<HeaderValue>().unwrap()).allow_headers(Any))
         .with_state(server_state);
 
     return router;

@@ -21,11 +21,20 @@ export type TableResponse = {
 
 };
 
+export type ProcessRequest = {
+  batchName: string;
+}
+
+export type ProcessResponse = {
+  error?: string;
+}
+
 class Server {
   baseUrl: string;
   endpoints: {
     batches: string,
     table: string,
+    process: string,
   }
 
   constructor() {
@@ -33,6 +42,7 @@ class Server {
     this.endpoints = {
       batches: this.baseUrl + '/batches',
       table: this.baseUrl + '/table',
+      process: this.baseUrl + '/process'
     };
   }
 
@@ -70,6 +80,28 @@ class Server {
       })
   }
 
+  async processBatch(request: ProcessRequest, signal?: AbortSignal): Promise<ProcessResponse | undefined> {
+    const headers = new Headers();
+    headers.set("Content-Type", "application/json");
+
+    return fetch(this.endpoints.process, {
+      method: 'POST',
+      signal: signal,
+      body: JSON.stringify(request),
+      headers: headers,
+    })
+      .then(response => {
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw response.json();
+        }
+      })
+      .catch(err => {
+        console.error(`[API] Error while processing batch ${request.batchName}: ${JSON.stringify(err)}`);
+        throw err;
+      })
+  }
 }
 
 export default Server;

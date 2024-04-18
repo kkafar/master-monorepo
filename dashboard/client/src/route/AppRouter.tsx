@@ -10,8 +10,10 @@ export default function AppRouter(): React.JSX.Element {
     <BrowserRouter>
       <Routes>
         <Route index element={<Home />} />
-        <Route path='/home' element={<Home />} />
-        <Route path='/details/:batchName' element={<BatchDetails />} />
+        <Route path="/">
+          <Route path='home' element={<Home />} />
+          <Route path='details/:batchName' element={<BatchDetails />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
