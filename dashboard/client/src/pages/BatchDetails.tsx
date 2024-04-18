@@ -12,9 +12,9 @@ function BatchDetailsRoute(): React.JSX.Element {
   let { batchName } = useParams();
   const serverApi = useServer();
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [summaryTotal, setSummaryTotal] = useState<SummaryTotalTableData | null>(null);
   const [summaryByExp, setSummaryByExp] = useState<SummaryByExpTableData | null>(null);
+  // const [convergenceInfo, setConvergenceInfo] = useState
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -30,6 +30,7 @@ function BatchDetailsRoute(): React.JSX.Element {
         })
         .catch(err => {
           console.error(`Received error: ${err}`);
+          setSummaryTotal(null);
         })
 
       serverApi?.fetchTable({ tableName: 'summary_by_exp', batchName: batchName! }, abortController.signal)
@@ -42,6 +43,7 @@ function BatchDetailsRoute(): React.JSX.Element {
         })
         .catch(err => {
           console.error(`Received error: ${err}`);
+          setSummaryTotal(null);
         })
     }
     fetchBatchDetails();
@@ -57,10 +59,10 @@ function BatchDetailsRoute(): React.JSX.Element {
     <div className="padded-left">
       <h1 className="top-title">{batchName}</h1>
       {isLoaded && (
-        <SummaryTotalTable data={summaryTotal!} />
+        <SummaryTotalTable data={summaryTotal} />
       )}
       {isLoaded && (
-        <SummaryByExpTable data={summaryByExp!} />
+        <SummaryByExpTable data={summaryByExp} />
       )}
     </div>
   );

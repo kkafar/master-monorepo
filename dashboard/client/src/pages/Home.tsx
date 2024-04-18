@@ -26,6 +26,7 @@ function Home(): React.JSX.Element {
         })
         .catch(err => {
           console.error(`Received error: ${err}`);
+          setBatches([]);
           setIsLoading(false);
         })
     }

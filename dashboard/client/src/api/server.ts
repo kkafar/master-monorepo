@@ -38,13 +38,16 @@ class Server {
 
   async fetchBatches(signal?: AbortSignal): Promise<BatchListResponse | undefined> {
     return fetch(this.endpoints.batches, { method: 'GET', signal: signal })
-      .then(response => response.json())
       .then(response => {
-        console.log(response)
-        return response;
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw response.json();
+        }
       })
       .catch(err => {
-        console.error(`Error while fetching batches ${err}`);
+        console.error(`[API] Error while fetching batches ${err}`);
+        throw err;
       })
   }
 
@@ -54,13 +57,16 @@ class Server {
     url.searchParams.set("tableName", request.tableName);
 
     return fetch(url, { method: 'GET', signal: signal })
-      .then(response => response.json())
       .then(response => {
-        console.log(response);
-        return response;
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw response.json();
+        }
       })
       .catch(err => {
-        console.error(`Error while fetching table ${err}`);
+        console.error(`[API] Error while fetching table ${JSON.stringify(err)}`);
+        throw err;
       })
   }
 

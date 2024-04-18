@@ -1,3 +1,4 @@
+import "./css/Table.css"
 
 export type SummaryByExpTableRowData = {
   expname: string;
@@ -25,8 +26,14 @@ export type SummaryByExpTableRowProps = {
 }
 
 export function SummaryByExpTableRow({ data }: SummaryByExpTableRowProps): React.JSX.Element {
+  let rowClass = "";
+
+  if (data.fitness_best === data.bks) {
+    rowClass += " bold-row";
+  }
+
   return (
-    <tr>
+    <tr className={rowClass}>
       <td>{data.expname}</td>
       <td>{data.fitness_avg}</td>
       <td>{data.fitness_best}</td>

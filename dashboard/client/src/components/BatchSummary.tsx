@@ -69,7 +69,10 @@ function BatchSummary({ batchInfo }: BatchSummaryProps): React.JSX.Element {
   const solvedCount = batchInfo.solvedCount ?? "Unknown";
 
   function onClick(_event: React.MouseEvent<HTMLDivElement>) {
-    navigate(`/details/${batchName}`);
+    // if (isProcessed) {
+    //   navigate(`/details/${batchName}`);
+    // }
+      navigate(`/details/${batchName}`);
   }
 
   return (
