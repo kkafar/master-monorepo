@@ -6,7 +6,7 @@ import SummaryTotalTable, { SummaryTotalTableData } from "../components/tables/S
 import { useServer } from "../hooks/useServer";
 import './css/BatchDetails.css';
 import ConvergenceInfoTable, { ConvergenceInfoTableRowData } from "../components/tables/ConvergenceInfoTable";
-import RunInfoTable, { RunInfoTableRowData } from "../components/tables/RunInfoTable";
+import RunSummaryStatsTable, { RunInfoTableRowData as RunSummaryStatsTableRowData } from "../components/tables/RunSummaryStatsTable";
 
 function createTableRequest(tableName: string, batchName: string): TableRequest {
   return {
@@ -47,7 +47,7 @@ function BatchDetailsRoute(): React.JSX.Element {
   const [summaryTotal, setSummaryTotal] = useState<SummaryTotalTableData | null>(null);
   const [summaryByExp, setSummaryByExp] = useState<SummaryByExpTableData | null>(null);
   const [convergenceInfo, setConvergenceInfo] = useState<ConvergenceInfoTableRowData[] | null>(null);
-  const [runInfo, setRunInfo] = useState<RunInfoTableRowData[] | null>(null);
+  const [runSummaryStats, setRunSummaryStats] = useState<RunSummaryStatsTableRowData[] | null>(null);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -58,7 +58,7 @@ function BatchDetailsRoute(): React.JSX.Element {
       tableRequester(requestCreator('summary_total'), setSummaryTotal);
       tableRequester(requestCreator('summary_by_exp'), setSummaryByExp);
       tableRequester(requestCreator('convergence_info'), setConvergenceInfo);
-      tableRequester(requestCreator('run_summary_stats'), setRunInfo);
+      tableRequester(requestCreator('run_summary_stats'), setRunSummaryStats);
     }
     fetchBatchDetails();
 
@@ -81,8 +81,8 @@ function BatchDetailsRoute(): React.JSX.Element {
       {isLoaded && convergenceInfo != null && (
         <ConvergenceInfoTable data={convergenceInfo} />
       )}
-      {isLoaded && runInfo != null && (
-        <RunInfoTable data={runInfo} />
+      {isLoaded && runSummaryStats != null && (
+        <RunSummaryStatsTable data={runSummaryStats} />
       )}
     </div>
   );
