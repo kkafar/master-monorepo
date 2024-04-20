@@ -23,6 +23,7 @@ export type TableResponse = {
 
 export type ProcessRequest = {
   batchName: string;
+  maxCpus?: number;
 }
 
 export type ProcessResponse = {

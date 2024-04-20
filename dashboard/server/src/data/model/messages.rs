@@ -39,6 +39,9 @@ pub struct TableResponse {
 pub struct ProcessRequest {
     #[serde(rename(deserialize = "batchName"))]
     pub batch_name: String,
+    
+    #[serde(rename(deserialize = "maxCpus"))]
+    pub max_cpus: Option<usize>,
 }
 
 #[derive(serde::Serialize)]

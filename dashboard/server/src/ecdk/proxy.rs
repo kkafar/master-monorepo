@@ -16,7 +16,7 @@ impl EcdkProxy {
         }
     }
 
-    pub async fn process(&self, batch_name: &str) -> anyhow::Result<()> {
+    pub async fn process(&self, batch_name: &str, max_cpus: usize) -> anyhow::Result<()> {
         let input_dir = PathBuf::from_str("raw.out").unwrap().join(batch_name);
         let output_dir = PathBuf::from_str("processed.out").unwrap().join(batch_name);
 
@@ -28,10 +28,11 @@ impl EcdkProxy {
             .arg("analyze")
             .args(["--input-dir", input_dir_str])
             .args(["--output-dir", output_dir_str])
-            .args(["--procs", "12"])
+            .args(["--procs", max_cpus.to_string().as_str()])
             .arg("--plot")
             .current_dir(&self.ecdk_dir)
-            .status().await;
+            .status()
+            .await;
 
         match res {
             Ok(status) => {
@@ -44,9 +45,8 @@ impl EcdkProxy {
                 } else {
                     anyhow::bail!("No status code")
                 }
-            },
-            Err(err) => anyhow::bail!("Error while executing process: {}", err)
+            }
+            Err(err) => anyhow::bail!("Error while executing process: {}", err),
         }
     }
 }
-

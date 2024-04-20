@@ -22,7 +22,7 @@ use polars::{
 
 pub async fn process_batch(State(state): State<ServerState>, Json(request): Json<ProcessRequest>) -> Response {
     println!("Process batch request");
-    match state.ecdk_proxy.process(&request.batch_name).await {
+    match state.ecdk_proxy.process(&request.batch_name, request.max_cpus.unwrap_or(8)).await {
         Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, Json(ProcessResponse::new_err(err.to_string()))).into_response(),
         _ => (StatusCode::OK, Json(ProcessResponse::new_ok())).into_response(),
     }
