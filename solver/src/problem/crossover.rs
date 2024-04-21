@@ -23,7 +23,7 @@ impl JsspCrossover {
 }
 
 impl CrossoverOperator<JsspIndividual> for JsspCrossover {
-    fn apply(
+    fn apply_legacy(
         &mut self,
         metadata: &GAMetadata,
         parent_1: &JsspIndividual,
@@ -66,6 +66,15 @@ impl CrossoverOperator<JsspIndividual> for JsspCrossover {
 
         (child_1, child_2)
     }
+
+    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual], output: &mut Vec<JsspIndividual>) {
+        assert!(selected.len() & 1 == 0);
+        for parents in selected.chunks(2) {
+            let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
+            output.push(child_1);
+            output.push(child_2);
+        }
+    }
 }
 
 pub struct NoopCrossover;
@@ -77,7 +86,7 @@ impl NoopCrossover {
 }
 
 impl CrossoverOperator<JsspIndividual> for NoopCrossover {
-    fn apply(
+    fn apply_legacy(
         &mut self,
         _metadata: &GAMetadata,
         parent_1: &JsspIndividual,
@@ -86,6 +95,15 @@ impl CrossoverOperator<JsspIndividual> for NoopCrossover {
         parent_1.telemetry.on_crossover();
         parent_2.telemetry.on_crossover();
         (parent_1.clone(), parent_2.clone())
+    }
+
+    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual], output: &mut Vec<JsspIndividual>) {
+        assert!(selected.len() & 1 == 0);
+        for parents in selected.chunks(2) {
+            let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
+            output.push(child_1);
+            output.push(child_2);
+        }
     }
 }
 
@@ -98,7 +116,7 @@ impl MidPoint {
 }
 
 impl CrossoverOperator<JsspIndividual> for MidPoint {
-    fn apply(
+    fn apply_legacy(
         &mut self,
         metadata: &GAMetadata,
         parent_1: &JsspIndividual,
@@ -127,6 +145,15 @@ impl CrossoverOperator<JsspIndividual> for MidPoint {
 
         (child_1, child_2)
     }
+
+    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual], output: &mut Vec<JsspIndividual>) {
+        assert!(selected.len() & 1 == 0);
+        for parents in selected.chunks(2) {
+            let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
+            output.push(child_1);
+            output.push(child_2);
+        }
+    }
 }
 
 pub struct DoubledCrossover {
@@ -152,7 +179,7 @@ impl DoubledCrossover {
 }
 
 impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
-    fn apply(
+    fn apply_legacy(
         &mut self,
         metadata: &GAMetadata,
         parent_1: &JsspIndividual,
@@ -196,6 +223,15 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
 
         (child_1, child_2)
     }
+
+    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual], output: &mut Vec<JsspIndividual>) {
+        assert!(selected.len() & 1 == 0);
+        for parents in selected.chunks(2) {
+            let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
+            output.push(child_1);
+            output.push(child_2);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -219,7 +255,7 @@ mod test {
         let p1 = JsspIndividual::from(parent_1_chromosome.clone());
         let p2 = JsspIndividual::from(parent_2_chromosome.clone());
 
-        let (child_1, child_2) = op.apply(&GAMetadata::default(), &p1, &p2);
+        let (child_1, child_2) = op.apply_legacy(&GAMetadata::default(), &p1, &p2);
 
         let child_1_expected_chromosome = vec![8.0, 4.0, 7.0, 3.0, 6.0, 5.0, 6.0, 7.0, 8.0, 9.0];
         let child_2_expected_chromosome = vec![0.0, 1.0, 2.0, 3.0, 4.0, 2.0, 5.0, 1.0, 9.0, 0.0];
@@ -240,7 +276,7 @@ mod test {
         let p1 = JsspIndividual::from(parent_1_chromosome.clone());
         let p2 = JsspIndividual::from(parent_2_chromosome.clone());
 
-        let (child_1, child_2) = op.apply(&GAMetadata::default(), &p1, &p2);
+        let (child_1, child_2) = op.apply_legacy(&GAMetadata::default(), &p1, &p2);
         println!(
             "{parent_1_chromosome:?}\n{parent_2_chromosome:?}\n{:?}\n{:?}",
             &child_1.chromosome, &child_2.chromosome
