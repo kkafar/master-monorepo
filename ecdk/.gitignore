@@ -21,5 +21,8 @@ bin/
 raw.out/**
 !processed.out/
 processed.out/**
+!compare.out/
+compare.out/**
 !.gitkeep
 dist/
+
