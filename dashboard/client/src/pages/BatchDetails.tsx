@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { SetURLSearchParams, useParams, useSearchParams } from "react-router-dom";
 import Server, { TableRequest } from "../api/server";
 import SummaryByExpTable, { SummaryByExpTableData } from "../components/tables/SummaryByExpTable";
 import SummaryTotalTable, { SummaryTotalTableData } from "../components/tables/SummaryTotalTable";
@@ -7,6 +7,8 @@ import { useServer } from "../hooks/useServer";
 import './css/BatchDetails.css';
 import ConvergenceInfoTable, { ConvergenceInfoTableRowData } from "../components/tables/ConvergenceInfoTable";
 import RunSummaryStatsTable, { RunInfoTableRowData as RunSummaryStatsTableRowData } from "../components/tables/RunSummaryStatsTable";
+import TitledTable from "../components/TitledTable";
+import { table } from "console";
 
 function createTableRequest(tableName: string, batchName: string): TableRequest {
   return {
@@ -40,8 +42,65 @@ function tableRequesterFactory(signal: AbortSignal, serverApi?: Server) {
   }
 }
 
-function BatchDetailsRoute(): React.JSX.Element {
-  let { batchName } = useParams();
+type BatchHeaderProps = {
+  batchName: string;
+};
+
+function BatchHeader(props: BatchHeaderProps): React.JSX.Element {
+  const { batchName } = props;
+
+  return (
+      <h1 className="top-title">{batchName}</h1>
+  );
+}
+
+type BatchDetailsNavigationProps = {
+  activeTab: string;
+  setSearchParams: SetURLSearchParams;
+}
+
+function BatchDetailsNavigation(props: BatchDetailsNavigationProps): React.JSX.Element {
+  const {
+    activeTab,
+    setSearchParams
+  } = props;
+
+  function onTablesClicked(_event: React.MouseEvent<HTMLDivElement>) {
+    setSearchParams(old => {
+      old.set("activeTab", "tables");
+      return old;
+    })
+  }
+
+  function onPlotsClicked(_event: React.MouseEvent<HTMLDivElement>) {
+    setSearchParams(old => {
+      old.set("activeTab", "plots");
+      return old;
+    })
+  }
+
+  let tablesClass = "tab-button";
+  let plotsClass = "tab-button";
+
+  if (activeTab === "tables") {
+    tablesClass += " active";
+  } else {
+    plotsClass += " active";
+  }
+
+  return (
+    <div className="flexed topnav">
+      <div className={tablesClass} onClick={onTablesClicked}>Tables</div>
+      <div className={plotsClass} onClick={onPlotsClicked}>Plots</div>
+    </div>
+  );
+}
+
+type BatchDetailsTablesTabProps = {
+  batchName: string
+};
+
+function BatchDetailsTablesTab({ batchName }: BatchDetailsTablesTabProps): React.JSX.Element {
   const serverApi = useServer();
 
   const [summaryTotal, setSummaryTotal] = useState<SummaryTotalTableData | null>(null);
@@ -60,6 +119,7 @@ function BatchDetailsRoute(): React.JSX.Element {
       tableRequester(requestCreator('convergence_info'), setConvergenceInfo);
       tableRequester(requestCreator('run_summary_stats'), setRunSummaryStats);
     }
+
     fetchBatchDetails();
 
     return () => {
@@ -70,19 +130,51 @@ function BatchDetailsRoute(): React.JSX.Element {
   const isLoaded = summaryByExp && summaryTotal;
 
   return (
-    <div className="padded-left">
-      <h1 className="top-title">{batchName}</h1>
+    <div>
       {isLoaded && (
-        <SummaryTotalTable data={summaryTotal} />
+        <TitledTable tableComponentFactory={() => <SummaryTotalTable data={summaryTotal} />} />
       )}
       {isLoaded && (
-        <SummaryByExpTable data={summaryByExp} />
+        <TitledTable tableComponentFactory={() => <SummaryByExpTable data={summaryByExp} />} />
       )}
       {isLoaded && convergenceInfo != null && (
-        <ConvergenceInfoTable data={convergenceInfo} />
+        <TitledTable tableComponentFactory={() => <ConvergenceInfoTable data={convergenceInfo} />} />
       )}
       {isLoaded && runSummaryStats != null && (
-        <RunSummaryStatsTable data={runSummaryStats} />
+        <TitledTable tableComponentFactory={() => <RunSummaryStatsTable data={runSummaryStats} />} />
+      )}
+    </div>
+  );
+}
+
+type BatchDetailsPlotsTab = {
+  batchName: string
+};
+
+function BatchDetailsPlotsTab({ batchName }: BatchDetailsPlotsTab): React.JSX.Element {
+  return (
+    <div>
+      Some details
+    </div>
+  );
+}
+
+function BatchDetailsRoute(): React.JSX.Element {
+  const  { batchName = "Unknown" } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("activeTab") ?? "tables";
+
+  console.log("Render batch details route");
+
+  return (
+    <div className="padded-left">
+      <BatchDetailsNavigation activeTab={activeTab} setSearchParams={setSearchParams} />
+      <BatchHeader batchName={batchName} />
+      {activeTab === "tables" && (
+        <BatchDetailsTablesTab batchName={batchName} />
+      )}
+      {activeTab === "plots" && (
+        <BatchDetailsPlotsTab batchName={batchName} />
       )}
     </div>
   );

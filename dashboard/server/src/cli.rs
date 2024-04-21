@@ -14,6 +14,10 @@ pub struct Args {
     #[arg(short = 'p', long = "processed")]
     pub processed_results_dir: Option<PathBuf>,
 
+    /// Directory with results of running compare command
+    #[arg(long = "compare")]
+    pub compare_output_dir: Option<PathBuf>,
+
     /// Port for the server to run on. Right now it always runs on local host.
     #[arg(long = "port")]
     pub port: Option<usize>,

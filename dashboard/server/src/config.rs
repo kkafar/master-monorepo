@@ -15,6 +15,9 @@ pub struct Config {
     /// If it does not exist, it will be created and new processing results will be stored there.
     pub processed_results_dir: PathBuf,
 
+    /// Directory with results of running compare command
+    pub compare_output_dir: PathBuf,
+
     /// Port for the server to run on. Right now it always runs on local host.
     pub port: usize,
 
@@ -32,6 +35,7 @@ impl Config {
 pub struct PartialConfig {
     pub results_dir: Option<PathBuf>,
     pub processed_results_dir: Option<PathBuf>,
+    pub compare_output_dir: Option<PathBuf>,
     pub port: Option<usize>,
     pub ecdk_dir: Option<PathBuf>,
 }
@@ -41,6 +45,7 @@ impl PartialConfig {
         Self {
             results_dir: None,
             processed_results_dir: None,
+            compare_output_dir: None,
             port: None,
             ecdk_dir: None,
         }
@@ -62,6 +67,7 @@ impl PartialConfig {
         Self {
             results_dir: args.results_dir.clone().or(file_content.results_dir),
             processed_results_dir: args.processed_results_dir.clone().or(file_content.processed_results_dir),
+            compare_output_dir: args.compare_output_dir.clone().or(file_content.compare_output_dir),
             port: args.port.clone().or(file_content.port),
             ecdk_dir: args.ecdk_dir.clone().or(file_content.ecdk_dir),
         }
@@ -80,6 +86,10 @@ impl TryFrom<PartialConfig> for Config {
             return Err(anyhow!("Processed results dir must be provided"));
         };
 
+        let Some(compare_output_dir) = partial_cfg.compare_output_dir else {
+            anyhow::bail!("Compare command output dif must be provided");
+        };
+
         if !results_dir.is_dir() {
             return Err(anyhow!("Provided results directory is not a directory!"));
         }
@@ -88,9 +98,14 @@ impl TryFrom<PartialConfig> for Config {
             return Err(anyhow!("Ecdk directory must be provided"));
         }
 
+        if !compare_output_dir.is_dir() {
+            anyhow::bail!("Provided compare output directory: {:?} is to a directory", compare_output_dir);
+        }
+
         Ok(Config {
             results_dir,
             processed_results_dir,
+            compare_output_dir,
             port: partial_cfg.port.unwrap_or(8088),
             ecdk_dir: partial_cfg.ecdk_dir.unwrap(),
         })

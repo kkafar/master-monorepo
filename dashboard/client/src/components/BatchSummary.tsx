@@ -122,7 +122,7 @@ function BatchSummary({ batchInfo }: BatchSummaryProps): React.JSX.Element {
             <Oval></Oval>
           )}
           {isProcessed === false && !isProcessingBatch && processingStatus !== undefined && (
-            <div>{processingStatus}</div>
+            <div style={{ color: "darkred" }}>{processingStatus}</div>
           )}
         </div>
       </div>

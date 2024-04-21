@@ -84,3 +84,4 @@ def init_processed_data_file_hierarchy(exps: list[Experiment], basedir: Path):
         # Uncomment it once there is some per-experiment anaylisis done
         # get_tabledir_for_exp(exp, basedir).mkdir(parents=True, exist_ok=True)
 
+# def init_compare_data_file_hierarchy(exp_dirs: list[Path], basedir)
