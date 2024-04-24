@@ -9,7 +9,10 @@ mod util;
 
 use config::Config;
 use solver::registry::SolverRegistry;
-use solver::{Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005DoubledRank, Goncalves2005MidPoint, RandomSearch, RunConfig};
+use solver::{
+    Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005DoubledRank, Goncalves2005MidPoint,
+    RandomSearch, RunConfig,
+};
 
 use crate::problem::JsspInstance;
 use crate::util::dump_solver_description;

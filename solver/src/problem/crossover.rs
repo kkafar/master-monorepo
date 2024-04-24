@@ -67,7 +67,12 @@ impl CrossoverOperator<JsspIndividual> for JsspCrossover {
         (child_1, child_2)
     }
 
-    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual], output: &mut Vec<JsspIndividual>) {
+    fn apply(
+        &mut self,
+        metadata: &GAMetadata,
+        selected: &[&JsspIndividual],
+        output: &mut Vec<JsspIndividual>,
+    ) {
         assert!(selected.len() & 1 == 0);
         for parents in selected.chunks(2) {
             let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
@@ -97,7 +102,12 @@ impl CrossoverOperator<JsspIndividual> for NoopCrossover {
         (parent_1.clone(), parent_2.clone())
     }
 
-    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual], output: &mut Vec<JsspIndividual>) {
+    fn apply(
+        &mut self,
+        metadata: &GAMetadata,
+        selected: &[&JsspIndividual],
+        output: &mut Vec<JsspIndividual>,
+    ) {
         assert!(selected.len() & 1 == 0);
         for parents in selected.chunks(2) {
             let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
@@ -146,7 +156,12 @@ impl CrossoverOperator<JsspIndividual> for MidPoint {
         (child_1, child_2)
     }
 
-    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual], output: &mut Vec<JsspIndividual>) {
+    fn apply(
+        &mut self,
+        metadata: &GAMetadata,
+        selected: &[&JsspIndividual],
+        output: &mut Vec<JsspIndividual>,
+    ) {
         assert!(selected.len() & 1 == 0);
         for parents in selected.chunks(2) {
             let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
@@ -224,7 +239,12 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
         (child_1, child_2)
     }
 
-    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual], output: &mut Vec<JsspIndividual>) {
+    fn apply(
+        &mut self,
+        metadata: &GAMetadata,
+        selected: &[&JsspIndividual],
+        output: &mut Vec<JsspIndividual>,
+    ) {
         assert!(selected.len() & 1 == 0);
         for parents in selected.chunks(2) {
             let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
