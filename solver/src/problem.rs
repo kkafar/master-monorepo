@@ -2,7 +2,6 @@ use std::ops::Range;
 
 use itertools::Itertools;
 
-
 pub mod crossover;
 pub mod fitness;
 pub mod individual;

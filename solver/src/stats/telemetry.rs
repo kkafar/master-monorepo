@@ -1,9 +1,5 @@
 use std::{cell::RefCell, rc::Rc};
 
-
-
-
-
 #[derive(Debug, Clone, Copy)]
 struct Inner {
     /// Generation in which this individual was created
