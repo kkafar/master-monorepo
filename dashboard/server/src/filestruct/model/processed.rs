@@ -203,7 +203,7 @@ impl ExperimentPlotDir {
         })
     }
 
-    fn experiment_name<'a>(dir: &'a Path) -> &'a str {
+    fn experiment_name(dir: &Path) -> &str {
         dir.file_name().unwrap().to_str().unwrap()
     }
 }

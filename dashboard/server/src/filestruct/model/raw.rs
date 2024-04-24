@@ -1,5 +1,5 @@
-use crate::data::model::batch::BatchConfigModel;
-use std::{io::BufReader, path::PathBuf};
+
+use std::{path::PathBuf};
 
 pub struct SeriesDir {
     pub path: PathBuf,
@@ -117,7 +117,7 @@ impl ExperimentDir {
 }
 
 impl SeriesDir {
-    pub fn try_from_dir(dir: impl Into<PathBuf>) -> anyhow::Result<Self> {
+    pub fn try_from_dir(_dir: impl Into<PathBuf>) -> anyhow::Result<Self> {
         todo!()
     }
 }

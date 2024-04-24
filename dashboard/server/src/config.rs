@@ -73,7 +73,7 @@ impl PartialConfig {
                 .compare_output_dir
                 .clone()
                 .or(file_content.compare_output_dir),
-            port: args.port.clone().or(file_content.port),
+            port: args.port.or(file_content.port),
             ecdk_dir: args.ecdk_dir.clone().or(file_content.ecdk_dir),
         }
     }
@@ -99,7 +99,7 @@ impl TryFrom<PartialConfig> for Config {
             return Err(anyhow!("Provided results directory is not a directory!"));
         }
 
-        if !partial_cfg.ecdk_dir.is_some() {
+        if partial_cfg.ecdk_dir.is_none() {
             return Err(anyhow!("Ecdk directory must be provided"));
         }
 
