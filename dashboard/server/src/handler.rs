@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    io::{BufWriter},
-};
+use std::{collections::HashMap, io::BufWriter};
 
 use crate::{
     data::model::{
@@ -86,8 +83,7 @@ pub async fn table(State(state): State<ServerState>, request: Query<TableRequest
                 StatusCode::INTERNAL_SERVER_ERROR,
                 Json(format!(
                     "Failed to load table with name {} with error: {}",
-                    request.table_name,
-                    err
+                    request.table_name, err
                 )),
             )
                 .into_response()

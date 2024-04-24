@@ -8,8 +8,6 @@ use tower_http::cors::{Any, CorsLayer};
 use crate::{handler, ServerState};
 
 pub fn create_router(server_state: ServerState) -> Router {
-    
-
     Router::new()
         .route("/batches", get(handler::batches))
         .route("/table", get(handler::table))

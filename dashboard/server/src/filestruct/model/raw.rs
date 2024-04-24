@@ -1,5 +1,4 @@
-
-use std::{path::PathBuf};
+use std::path::PathBuf;
 
 pub struct SeriesDir {
     pub path: PathBuf,
