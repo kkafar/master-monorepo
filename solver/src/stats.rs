@@ -68,6 +68,6 @@ impl StatsEngine {
 
     #[allow(dead_code)]
     pub fn inner_owned(&self) -> Stats {
-        self.stats.borrow().clone()
+        *self.stats.borrow()
     }
 }

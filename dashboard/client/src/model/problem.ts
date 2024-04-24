@@ -30,7 +30,7 @@ export type SolverConfig = {
   nGen: number,
   popSize?: number,
   delayConstFactor?: number,
-  solverType: string,
+  solverType?: string,
 };
 
 export type BatchConfig = {

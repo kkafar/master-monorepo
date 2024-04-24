@@ -9,7 +9,10 @@ mod util;
 
 use config::Config;
 use solver::registry::SolverRegistry;
-use solver::{Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005MidPoint, RandomSearch, RunConfig};
+use solver::{
+    Goncalves2005, Goncalves2005DoubleMidPoint, Goncalves2005DoubledRank, Goncalves2005MidPoint,
+    RandomSearch, RunConfig,
+};
 
 use crate::problem::JsspInstance;
 use crate::util::dump_solver_description;
@@ -19,6 +22,7 @@ fn register_solvers(registry: &mut SolverRegistry) {
     registry.insert(Box::new(Goncalves2005MidPoint));
     registry.insert(Box::new(Goncalves2005DoubleMidPoint));
     registry.insert(Box::new(RandomSearch));
+    registry.insert(Box::new(Goncalves2005DoubledRank));
 }
 
 fn run() -> anyhow::Result<()> {
@@ -49,7 +53,7 @@ fn run() -> anyhow::Result<()> {
         )
     });
 
-    dump_solver_description(solver.description(run_config.clone()).to_json());
+    dump_solver_description(solver.description(run_config).to_json());
     solver.run(instance, run_config)
 }
 

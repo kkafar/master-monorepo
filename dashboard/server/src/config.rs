@@ -1,10 +1,11 @@
-use std::path::PathBuf;
+use std::{io::BufReader, path::PathBuf};
 
 use anyhow::anyhow;
+use serde::Deserialize;
 
 use crate::cli::Args;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     /// Either directory of experiment batch result or directory containing other directories
     /// with experiment batch results.
@@ -14,8 +15,14 @@ pub struct Config {
     /// If it does not exist, it will be created and new processing results will be stored there.
     pub processed_results_dir: PathBuf,
 
+    /// Directory with results of running compare command
+    pub compare_output_dir: PathBuf,
+
     /// Port for the server to run on. Right now it always runs on local host.
     pub port: usize,
+
+    /// Directory of ecdk project
+    pub ecdk_dir: PathBuf,
 }
 
 impl Config {
@@ -24,18 +31,50 @@ impl Config {
     }
 }
 
+#[derive(serde::Deserialize)]
 pub struct PartialConfig {
     pub results_dir: Option<PathBuf>,
     pub processed_results_dir: Option<PathBuf>,
+    pub compare_output_dir: Option<PathBuf>,
     pub port: Option<usize>,
+    pub ecdk_dir: Option<PathBuf>,
 }
 
 impl PartialConfig {
-    pub fn from_args(args: &Args) -> Self {
+    pub fn empty() -> Self {
         Self {
-            results_dir: Some(args.results_dir.clone()),
-            processed_results_dir: Some(args.processed_results_dir.clone()),
-            port: args.port.clone(),
+            results_dir: None,
+            processed_results_dir: None,
+            compare_output_dir: None,
+            port: None,
+            ecdk_dir: None,
+        }
+    }
+
+    pub fn from_args(args: &Args) -> Self {
+        let file_content: PartialConfig = if let Some(ref cfg_file) = args.config {
+            if let Ok(file) = std::fs::File::open(cfg_file) {
+                let reader = BufReader::new(file);
+                serde_json::from_reader(reader).unwrap_or(Self::empty())
+            } else {
+                Self::empty()
+            }
+        } else {
+            Self::empty()
+        };
+
+        Self {
+            results_dir: args.results_dir.clone().or(file_content.results_dir),
+            processed_results_dir: args
+                .processed_results_dir
+                .clone()
+                .or(file_content.processed_results_dir),
+            compare_output_dir: args
+                .compare_output_dir
+                .clone()
+                .or(file_content.compare_output_dir),
+            port: args.port.or(file_content.port),
+            ecdk_dir: args.ecdk_dir.clone().or(file_content.ecdk_dir),
         }
     }
 }
@@ -52,14 +91,31 @@ impl TryFrom<PartialConfig> for Config {
             return Err(anyhow!("Processed results dir must be provided"));
         };
 
+        let Some(compare_output_dir) = partial_cfg.compare_output_dir else {
+            anyhow::bail!("Compare command output dif must be provided");
+        };
+
         if !results_dir.is_dir() {
             return Err(anyhow!("Provided results directory is not a directory!"));
+        }
+
+        if partial_cfg.ecdk_dir.is_none() {
+            return Err(anyhow!("Ecdk directory must be provided"));
+        }
+
+        if !compare_output_dir.is_dir() {
+            anyhow::bail!(
+                "Provided compare output directory: {:?} is to a directory",
+                compare_output_dir
+            );
         }
 
         Ok(Config {
             results_dir,
             processed_results_dir,
+            compare_output_dir,
             port: partial_cfg.port.unwrap_or(8088),
+            ecdk_dir: partial_cfg.ecdk_dir.unwrap(),
         })
     }
 }

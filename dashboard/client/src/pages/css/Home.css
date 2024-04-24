@@ -1,0 +1,10 @@
+.batch-list-container:nth-child(even) {
+}
+
+.padded-left {
+  padding-left: 1rem;
+}
+
+.top-title {
+  font-weight: 600;
+}

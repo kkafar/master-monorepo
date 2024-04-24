@@ -25,6 +25,10 @@ from problem import (
 )
 
 
+DiffTableDesc = tuple[str, pl.DataFrame]
+FLOAT_PRECISION = 3
+
+
 def validate_experiment_data(exp: Experiment, data: JoinedExperimentData) -> ExperimentValidationResult:
     """ Validates data of single experiment.
 
@@ -108,7 +112,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
 
     for result in filter(lambda res: not res.ok, validation_results):
         print(f"[ERROR] Experiment: {result.expname} has {len(result.corrupted_series)} corrupted series")
-        pprint(list(map(lambda sid: (sid, result.reconstructed_schedules[sid]))))
+        # pprint(list(map(lambda sid: (sid, result.reconstructed_schedules[sid]), result.corrupted_series)))
         has_corrupted_data = True
 
     # As there are not mechanisms for handling (skipping during processing) corrupted data
@@ -147,7 +151,7 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
         conv_df.write_csv(
             tabledir.joinpath('convergence_info.csv'),
             has_header=True,
-            float_precision=2
+            float_precision=FLOAT_PRECISION
         )
 
         if res_sum_df:
@@ -155,12 +159,12 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
             run_sum_df.write_csv(
                 tabledir / 'run_summary_stats.csv',
                 has_header=True,
-                float_precision=2
+                float_precision=FLOAT_PRECISION
             )
             sols_df.write_csv(
                 tabledir / 'solutions.csv',
                 has_header=True,
-                float_precision=2
+                float_precision=FLOAT_PRECISION
             )
 
     if outdir and solver_desc_res:
@@ -175,22 +179,19 @@ def compare_exp_batch_outputs(basedir: Path, benchdir: Path):
     plot_perf_cmp(df_base, df_bench)
 
 
-def compare_processed_exps(exp_dirs: list[Path], outdir: Optional[Path]):
-    exps_conv_info_df = [pl.read_csv(get_main_tabledir(exp_dir).joinpath('convergence_info.csv'), has_header=True)
-                         for exp_dir in exp_dirs]
-
-    for (exp_dir_1, exp_conv_df_1), (exp_dir_2, exp_conv_df_2) in it.combinations(zip(exp_dirs, exps_conv_info_df), 2):
+def diff_numeric_columns(exp_dirs: list[Path], exp_dfs: list[pl.DataFrame]) -> Generator[DiffTableDesc, None, None]:
+    for (exp_dir_1, exp_df_1), (exp_dir_2, exp_df_2) in it.combinations(zip(exp_dirs, exp_dfs), 2):
         if exp_dir_1 == exp_dir_2:
             continue
 
         print(exp_dir_1, exp_dir_2)
 
-        exp_conv_df_1 = exp_conv_df_1.with_columns(pl.lit(pl.Series('batchname', [exp_dir_1.stem])))
-        exp_conv_df_2 = exp_conv_df_2.with_columns(pl.lit(pl.Series('batchname', [exp_dir_2.stem])))
+        exp_df_1 = exp_df_1.with_columns(pl.lit(pl.Series('batchname', [exp_dir_1.stem])))
+        exp_df_2 = exp_df_2.with_columns(pl.lit(pl.Series('batchname', [exp_dir_2.stem])))
 
-        numeric_cols = exp_conv_df_1.select(cs.numeric()).columns
+        numeric_cols = exp_df_1.select(cs.numeric()).columns
 
-        joined_df = exp_conv_df_1.join(exp_conv_df_2, on='expname')
+        joined_df = exp_df_1.join(exp_df_2, on='expname')
         stat_df = (joined_df.lazy()
                    .select([
                        pl.col('expname')
@@ -200,6 +201,37 @@ def compare_processed_exps(exp_dirs: list[Path], outdir: Optional[Path]):
                    ])
                    ).collect()
 
-        print(stat_df)
-        print(exp_dir_2.stem, '-', exp_dir_1.stem)
+        # print(stat_df)
+        # print(exp_dir_2.stem, '-', exp_dir_1.stem)
+
+        table_name = f"{exp_dir_2.stem}-X-{exp_dir_1.stem}"
+        yield (table_name, stat_df)
+
+
+def diff_table_in_batch(exp_dirs: list[Path], table_name: str, outdir: Optional[Path] = None):
+    table_name_w_suffix = table_name
+    if not table_name_w_suffix.endswith('.csv'):
+        table_name_w_suffix = table_name + '.csv'
+
+    print(f"Loading {table_name} tables...")
+    exp_dfs = [pl.read_csv(get_main_tabledir(exp_dir).joinpath(table_name_w_suffix), has_header=True)
+               for exp_dir in tqdm(exp_dirs)]
+
+    print(f"Processing {table_name} tables...")
+    for (desc, table) in diff_numeric_columns(exp_dirs, exp_dfs):
+        print(desc)
+        print(table)
+
+        table: pl.DataFrame = table
+
+        if outdir is not None:
+            savefile = f"{desc}-X-{table_name_w_suffix}"
+            print(f"Saving to {savefile}")
+            table.write_csv(outdir / savefile, include_header=True, float_precision=FLOAT_PRECISION)
+
+
+def compare_processed_exps(exp_dirs: list[Path], outdir: Optional[Path] = None):
+    diff_table_in_batch(exp_dirs, 'convergence_info', outdir)
+    diff_table_in_batch(exp_dirs, 'summary_by_exp', outdir)
+    # diff_table_in_batch(exp_dirs, 'summary_total', outdir)
 

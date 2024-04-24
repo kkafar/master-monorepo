@@ -40,7 +40,7 @@ def validate_run_cmd_args(args: RunCmdArgs):
 
 
 def validate_analyze_cmd_args(args: AnalyzeCmdArgs):
-    assert args.input_dir.is_dir(), f'{args.dir} is not a directory'
+    assert args.input_dir.is_dir(), f'{args.input_dir} is not a directory'
     if args.procs is not None:
         assert args.procs > 0, f'Number of processes must be > 0. Received {args.procs}'
 

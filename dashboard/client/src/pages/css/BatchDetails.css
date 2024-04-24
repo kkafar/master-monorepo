@@ -1,0 +1,47 @@
+.padded-left {
+  padding-left: 1rem;
+}
+
+.top-title {
+  font-weight: 600;
+}
+
+tr:nth-child(even) {
+  background-color: whitesmoke;
+}
+
+.flexed {
+  display: flex;
+}
+
+.topnav {
+  flex: 1;
+  overflow: hidden;
+  background: #C8E6C9;
+}
+
+.topnav > div {
+  text-align: center;
+  text-decoration: none;
+  font-size: 24px;
+}
+
+.topnav > div:hover {
+  background: #81C784;
+}
+
+.topnav > div.active {
+  background: #66BB6A;
+}
+
+.tab-button {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* .topnav { */
+/*   float: left; */
+/*   color: tomato; */
+/*    */
+/* } */
+

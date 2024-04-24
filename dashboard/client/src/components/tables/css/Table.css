@@ -1,0 +1,8 @@
+.bold-row {
+  font-weight: 800;
+}
+
+td {
+  text-align: end;
+  padding-left: 1rem;
+}

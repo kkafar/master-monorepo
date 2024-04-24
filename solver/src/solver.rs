@@ -13,7 +13,8 @@ use log::info;
 
 use crate::{
     config::{
-        SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER, SOLVER_TYPE_MIDPOINT, SOLVER_TYPE_RANDOMSEARCH,
+        SOLVER_TYPE_DEFAULT, SOLVER_TYPE_DOUBLED_CROSSOVER, SOLVER_TYPE_DOUBLED_RANK, SOLVER_TYPE_MIDPOINT,
+        SOLVER_TYPE_RANDOMSEARCH,
     },
     problem::{
         crossover::{DoubledCrossover, JsspCrossover, MidPoint, NoopCrossover},
@@ -202,5 +203,47 @@ impl Solver for Goncalves2005DoubleMidPoint {
 
     fn codename(&self) -> String {
         SOLVER_TYPE_DOUBLED_CROSSOVER.into()
+    }
+}
+
+pub struct Goncalves2005DoubledRank;
+
+impl Solver for Goncalves2005DoubledRank {
+    fn run(&mut self, instance: JsspInstance, cfg: RunConfig) -> anyhow::Result<()> {
+        info!("Running {} solver", self.describe());
+
+        let stats_engine = StatsEngine::new();
+        let replacement_op = JsspReplacement::new(
+            JsspPopProvider::new(instance.clone()),
+            cfg.elitism_rate,
+            cfg.sampling_rate,
+            &stats_engine,
+        );
+
+        ga::Builder::new()
+            .set_selection_operator(selection::Rank::new())
+            .set_crossover_operator(DoubledCrossover::new(instance.cfg.n_ops * 2))
+            .set_mutation_operator(mutation::Identity::new())
+            .set_population_generator(JsspPopProvider::new(instance))
+            .set_replacement_operator(replacement_op)
+            .set_fitness(JsspFitness::new(cfg.delay_const_factor, cfg.local_search_enabled))
+            .set_probe(JsspProbe::new(&stats_engine))
+            // .set_max_duration(std::time::Duration::from_secs(30))
+            .set_max_generation_count(cfg.n_gen)
+            .set_population_size(cfg.pop_size)
+            .build()
+            .run();
+
+        anyhow::Ok(())
+    }
+
+    fn describe(&self) -> String {
+        "Goncalves2005 with Doubled crossover operator (singlepoint on both halves of chromosome);
+        **rank** selection; no mutation; default population provider (uniform points); default replacement with elitism and sampling rate;
+        default fitness with local search operator".to_string()
+    }
+
+    fn codename(&self) -> String {
+        SOLVER_TYPE_DOUBLED_RANK.into()
     }
 }

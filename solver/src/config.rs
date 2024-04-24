@@ -8,6 +8,7 @@ pub const SOLVER_TYPE_DEFAULT: &str = "default";
 pub const SOLVER_TYPE_RANDOMSEARCH: &str = "randomsearch";
 pub const SOLVER_TYPE_MIDPOINT: &str = "midpoint";
 pub const SOLVER_TYPE_DOUBLED_CROSSOVER: &str = "double_singlepoint";
+pub const SOLVER_TYPE_DOUBLED_RANK: &str = "double_rank";
 
 /// This struct is mirrored inside ecdk's code by
 /// `SolverConfigFileContents` method. Update it accordingly.

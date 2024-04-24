@@ -1,6 +1,4 @@
-use std::{io::BufReader, path::PathBuf};
-
-use super::model::batch::BatchConfigModel;
+use std::path::PathBuf;
 
 pub struct SeriesDir {
     pub path: PathBuf,
@@ -33,26 +31,6 @@ pub struct BatchCollectionDir {
     pub batch_dirs: Vec<BatchDir>,
 }
 
-pub enum ConcreteDir {
-    BatchCollectionDir,
-    BatchDir,
-    ExperimentDir,
-    SeriesDir,
-}
-
-pub enum ConcreteFile {
-    BatchConfigFile,
-    ExperimentConfigFile,
-    EventDataFile,
-    RunMetadataFile,
-    SolverStdoutFile,
-}
-
-pub enum GeneralFileKind {
-    Dir(ConcreteDir),
-    File(ConcreteFile),
-}
-
 impl BatchCollectionDir {
     pub fn try_from_dir(dir: impl Into<PathBuf>) -> anyhow::Result<Self> {
         let dir: PathBuf = dir.into();
@@ -67,7 +45,7 @@ impl BatchCollectionDir {
             .filter_map(|entry| BatchDir::try_from_dir(entry.path()).ok())
             .collect::<Vec<BatchDir>>();
 
-        Ok(BatchCollectionDir {
+        Ok(Self {
             path: dir,
             batch_dirs,
         })
@@ -75,6 +53,10 @@ impl BatchCollectionDir {
 }
 
 impl BatchDir {
+    pub fn batch_name(&self) -> &str {
+        return self.path.file_stem().unwrap().to_str().unwrap();
+    }
+
     pub fn try_from_dir(dir: impl Into<PathBuf>) -> anyhow::Result<Self> {
         let dir: PathBuf = dir.into();
 
@@ -114,21 +96,7 @@ impl BatchConfigFile {
             anyhow::bail!("Provided path: {:?} is not a file", file);
         }
 
-        Ok(BatchConfigFile { path: file })
-    }
-
-    pub fn load_data(&self) -> anyhow::Result<BatchConfigModel> {
-        println!("Loaded model from path: {:?}", &self.path);
-        let file = std::fs::OpenOptions::new()
-            .read(true)
-            .write(false)
-            .open(&self.path)?;
-        let model = serde_json::from_reader(BufReader::new(file))?;
-
-        println!("Loaded model: {:?}", model);
-
-        Ok(model)
-        // Ok(serde_json::from_reader(BufReader::new(file))?)
+        Ok(Self { path: file })
     }
 }
 
@@ -140,7 +108,7 @@ impl ExperimentDir {
             anyhow::bail!("Provided path: {:?} is not a directory", dir);
         }
 
-        Ok(ExperimentDir {
+        Ok(Self {
             path: dir,
             series_dirs: Vec::new(),
         })
@@ -148,7 +116,7 @@ impl ExperimentDir {
 }
 
 impl SeriesDir {
-    pub fn try_from_dir(dir: impl Into<PathBuf>) -> anyhow::Result<Self> {
+    pub fn try_from_dir(_dir: impl Into<PathBuf>) -> anyhow::Result<Self> {
         todo!()
     }
 }

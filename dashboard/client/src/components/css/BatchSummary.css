@@ -1,0 +1,20 @@
+.batch-info-container {
+  margin-top: 32px
+}
+
+.batch-info-container:hover {
+  background-color: darkgray;
+}
+
+.processed-yes {
+  color: seagreen;
+}
+
+.processed-no {
+  color: indianred;
+}
+
+.processed-unknown {
+  color: darkorange;
+}
+

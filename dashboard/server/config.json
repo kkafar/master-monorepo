@@ -1,0 +1,6 @@
+{
+  "results_dir": "../../ecdk/raw.out/",
+  "processed_results_dir": "../../ecdk/processed.out/",
+  "port": 8088,
+  "ecdk_dir": "../../ecdk/"
+}

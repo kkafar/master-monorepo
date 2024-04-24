@@ -42,7 +42,7 @@ def build_cli() -> argparse.ArgumentParser:
 
     analyze_parser = subparsers.add_parser(name="analyze", help="Analyze experiment(s) result(s)")
     analyze_parser.add_argument('-i', '--input-dir', help='Directory with the result files', type=Path, required=True)
-    analyze_parser.add_argument('-m', '--metadata-file', type=Path, required=True, help='Path to file with instance metadata', dest='metadata_file')
+    analyze_parser.add_argument('-m', '--metadata-file', type=Path, required=False, help='Path to file with instance metadata', dest='metadata_file')
     analyze_parser.add_argument('-o', '--output-dir', type=Path, required=False, help='Ouput directory for analysis result. If not specified, no results are saved')
     analyze_parser.add_argument('-p', '--procs', type=int, required=False, help='Number of processes to run in parallel', default=1)
     analyze_parser.add_argument('--plot', type=bool, action=argparse.BooleanOptionalAction, required=False, default=True, dest='plot', help='Whether the plots should be created')

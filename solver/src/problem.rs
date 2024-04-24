@@ -1,7 +1,6 @@
 use std::ops::Range;
 
 use itertools::Itertools;
-use log::warn;
 
 pub mod crossover;
 pub mod fitness;
