@@ -53,7 +53,7 @@ fn run() -> anyhow::Result<()> {
         )
     });
 
-    dump_solver_description(solver.description(run_config.clone()).to_json());
+    dump_solver_description(solver.description(run_config).to_json());
     solver.run(instance, run_config)
 }
 

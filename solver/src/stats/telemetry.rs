@@ -1,8 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
-use ecrs::ga::GAMetadata;
 
-use crate::problem::individual::JsspIndividual;
+
+
 
 #[derive(Debug, Clone, Copy)]
 struct Inner {

@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use crate::{problem::Operation, stats::StatsEngine, util::euclidean_distance};
 use ecrs::ga::{individual::IndividualTrait, Probe};
 use itertools::{repeat_n, Itertools};
-use log::{info, trace, warn};
+use log::{info, trace};
 use md5;
 use time::OffsetDateTime;
 
@@ -317,7 +317,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         let start_timestamp: OffsetDateTime = stats.start_timestamp.into();
         let end_timestamp: OffsetDateTime = stats.end_timestamp.into();
 
-        let time_format = time::format_description::parse(TIME_FORMAT_STRING).unwrap_or(Vec::new());
+        let time_format = time::format_description::parse(TIME_FORMAT_STRING).unwrap_or_default();
 
         let outdata = OutputData {
             solution_string,
