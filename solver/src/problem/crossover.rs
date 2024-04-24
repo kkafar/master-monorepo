@@ -20,10 +20,8 @@ impl JsspCrossover {
             distr: rand::distributions::Uniform::new(0.0, 1.0),
         }
     }
-}
 
-impl CrossoverOperator<JsspIndividual> for JsspCrossover {
-    fn apply_legacy(
+    fn apply_single(
         &mut self,
         metadata: &GAMetadata,
         parent_1: &JsspIndividual,
@@ -66,19 +64,21 @@ impl CrossoverOperator<JsspIndividual> for JsspCrossover {
 
         (child_1, child_2)
     }
+}
 
-    fn apply(
-        &mut self,
-        metadata: &GAMetadata,
-        selected: &[&JsspIndividual],
-        output: &mut Vec<JsspIndividual>,
-    ) {
+impl CrossoverOperator<JsspIndividual> for JsspCrossover {
+    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual]) -> Vec<JsspIndividual> {
         assert!(selected.len() & 1 == 0);
+
+        let mut output = Vec::with_capacity(selected.len());
+
         for parents in selected.chunks(2) {
-            let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
+            let (child_1, child_2) = self.apply_single(metadata, parents[0], parents[1]);
             output.push(child_1);
             output.push(child_2);
         }
+
+        output
     }
 }
 
@@ -88,10 +88,8 @@ impl NoopCrossover {
     pub fn new() -> Self {
         Self
     }
-}
 
-impl CrossoverOperator<JsspIndividual> for NoopCrossover {
-    fn apply_legacy(
+    fn apply_single(
         &mut self,
         _metadata: &GAMetadata,
         parent_1: &JsspIndividual,
@@ -101,19 +99,21 @@ impl CrossoverOperator<JsspIndividual> for NoopCrossover {
         parent_2.telemetry.on_crossover();
         (parent_1.clone(), parent_2.clone())
     }
+}
 
-    fn apply(
-        &mut self,
-        metadata: &GAMetadata,
-        selected: &[&JsspIndividual],
-        output: &mut Vec<JsspIndividual>,
-    ) {
+impl CrossoverOperator<JsspIndividual> for NoopCrossover {
+    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual]) -> Vec<JsspIndividual> {
         assert!(selected.len() & 1 == 0);
+
+        let mut output = Vec::with_capacity(selected.len());
+
         for parents in selected.chunks(2) {
-            let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
+            let (child_1, child_2) = self.apply_single(metadata, parents[0], parents[1]);
             output.push(child_1);
             output.push(child_2);
         }
+
+        output
     }
 }
 
@@ -123,10 +123,8 @@ impl MidPoint {
     pub fn new() -> Self {
         Self
     }
-}
 
-impl CrossoverOperator<JsspIndividual> for MidPoint {
-    fn apply_legacy(
+    fn apply_single(
         &mut self,
         metadata: &GAMetadata,
         parent_1: &JsspIndividual,
@@ -155,19 +153,21 @@ impl CrossoverOperator<JsspIndividual> for MidPoint {
 
         (child_1, child_2)
     }
+}
 
-    fn apply(
-        &mut self,
-        metadata: &GAMetadata,
-        selected: &[&JsspIndividual],
-        output: &mut Vec<JsspIndividual>,
-    ) {
+impl CrossoverOperator<JsspIndividual> for MidPoint {
+    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual]) -> Vec<JsspIndividual> {
         assert!(selected.len() & 1 == 0);
+
+        let mut output = Vec::with_capacity(selected.len());
+
         for parents in selected.chunks(2) {
-            let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
+            let (child_1, child_2) = self.apply_single(metadata, parents[0], parents[1]);
             output.push(child_1);
             output.push(child_2);
         }
+
+        output
     }
 }
 
@@ -191,10 +191,8 @@ impl DoubledCrossover {
             right_dist: rand::distributions::Uniform::new(midpoint, chromosome_len),
         }
     }
-}
 
-impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
-    fn apply_legacy(
+    fn apply_single(
         &mut self,
         metadata: &GAMetadata,
         parent_1: &JsspIndividual,
@@ -238,19 +236,21 @@ impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
 
         (child_1, child_2)
     }
+}
 
-    fn apply(
-        &mut self,
-        metadata: &GAMetadata,
-        selected: &[&JsspIndividual],
-        output: &mut Vec<JsspIndividual>,
-    ) {
+impl CrossoverOperator<JsspIndividual> for DoubledCrossover {
+    fn apply(&mut self, metadata: &GAMetadata, selected: &[&JsspIndividual]) -> Vec<JsspIndividual> {
         assert!(selected.len() & 1 == 0);
+
+        let mut output = Vec::with_capacity(selected.len());
+
         for parents in selected.chunks(2) {
-            let (child_1, child_2) = self.apply_legacy(metadata, parents[0], parents[1]);
+            let (child_1, child_2) = self.apply_single(metadata, parents[0], parents[1]);
             output.push(child_1);
             output.push(child_2);
         }
+
+        output
     }
 }
 
@@ -275,7 +275,12 @@ mod test {
         let p1 = JsspIndividual::from(parent_1_chromosome.clone());
         let p2 = JsspIndividual::from(parent_2_chromosome.clone());
 
-        let (child_1, child_2) = op.apply_legacy(&GAMetadata::default(), &p1, &p2);
+        let children = op.apply(&GAMetadata::default(), &[&p1, &p2]);
+
+        assert_eq!(children.len(), 2);
+
+        let child_1 = &children[0];
+        let child_2 = &children[1];
 
         let child_1_expected_chromosome = vec![8.0, 4.0, 7.0, 3.0, 6.0, 5.0, 6.0, 7.0, 8.0, 9.0];
         let child_2_expected_chromosome = vec![0.0, 1.0, 2.0, 3.0, 4.0, 2.0, 5.0, 1.0, 9.0, 0.0];
@@ -296,7 +301,13 @@ mod test {
         let p1 = JsspIndividual::from(parent_1_chromosome.clone());
         let p2 = JsspIndividual::from(parent_2_chromosome.clone());
 
-        let (child_1, child_2) = op.apply_legacy(&GAMetadata::default(), &p1, &p2);
+        let children = op.apply(&GAMetadata::default(), &[&p1, &p2]);
+
+        assert_eq!(children.len(), 2);
+
+        let child_1 = &children[0];
+        let child_2 = &children[1];
+
         println!(
             "{parent_1_chromosome:?}\n{parent_2_chromosome:?}\n{:?}\n{:?}",
             &child_1.chromosome, &child_2.chromosome
