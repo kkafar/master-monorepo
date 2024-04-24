@@ -1,8 +1,7 @@
-///! Definitions of series level structures
-
-use std::collections::HashMap;
-use serde::Serialize;
 use polars::prelude::*;
+use serde::Serialize;
+///! Definitions of series level structures
+use std::collections::HashMap;
 
 #[derive(Serialize, Debug, Clone)]
 pub struct RunMetadataFileModel {
@@ -22,9 +21,7 @@ pub struct RunMetadataFileModel {
     pub end_timestamp: String,
 }
 
-
-pub struct LazyDataFrameStore {
-}
+pub struct LazyDataFrameStore {}
 
 pub struct SeriesDataModel {
     pub run_metadata: RunMetadataFileModel,

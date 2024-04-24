@@ -52,8 +52,7 @@ impl PartialConfig {
     }
 
     pub fn from_args(args: &Args) -> Self {
-        let file_content: PartialConfig =
-        if let Some(ref cfg_file) = args.config {
+        let file_content: PartialConfig = if let Some(ref cfg_file) = args.config {
             if let Ok(file) = std::fs::File::open(cfg_file) {
                 let reader = BufReader::new(file);
                 serde_json::from_reader(reader).unwrap_or(Self::empty())
@@ -66,8 +65,14 @@ impl PartialConfig {
 
         Self {
             results_dir: args.results_dir.clone().or(file_content.results_dir),
-            processed_results_dir: args.processed_results_dir.clone().or(file_content.processed_results_dir),
-            compare_output_dir: args.compare_output_dir.clone().or(file_content.compare_output_dir),
+            processed_results_dir: args
+                .processed_results_dir
+                .clone()
+                .or(file_content.processed_results_dir),
+            compare_output_dir: args
+                .compare_output_dir
+                .clone()
+                .or(file_content.compare_output_dir),
             port: args.port.clone().or(file_content.port),
             ecdk_dir: args.ecdk_dir.clone().or(file_content.ecdk_dir),
         }
@@ -99,7 +104,10 @@ impl TryFrom<PartialConfig> for Config {
         }
 
         if !compare_output_dir.is_dir() {
-            anyhow::bail!("Provided compare output directory: {:?} is to a directory", compare_output_dir);
+            anyhow::bail!(
+                "Provided compare output directory: {:?} is to a directory",
+                compare_output_dir
+            );
         }
 
         Ok(Config {

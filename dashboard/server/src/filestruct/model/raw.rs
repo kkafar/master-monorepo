@@ -1,5 +1,5 @@
-use std::{io::BufReader, path::PathBuf};
 use crate::data::model::batch::BatchConfigModel;
+use std::{io::BufReader, path::PathBuf};
 
 pub struct SeriesDir {
     pub path: PathBuf,
@@ -32,7 +32,6 @@ pub struct BatchCollectionDir {
     pub batch_dirs: Vec<BatchDir>,
 }
 
-
 impl BatchCollectionDir {
     pub fn try_from_dir(dir: impl Into<PathBuf>) -> anyhow::Result<Self> {
         let dir: PathBuf = dir.into();
@@ -56,7 +55,7 @@ impl BatchCollectionDir {
 
 impl BatchDir {
     pub fn batch_name(&self) -> &str {
-        return self.path.file_stem().unwrap().to_str().unwrap()
+        return self.path.file_stem().unwrap().to_str().unwrap();
     }
 
     pub fn try_from_dir(dir: impl Into<PathBuf>) -> anyhow::Result<Self> {

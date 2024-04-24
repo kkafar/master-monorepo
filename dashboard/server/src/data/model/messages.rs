@@ -12,7 +12,7 @@ pub struct BatchInfo {
     pub config: BatchConfigModel,
 
     #[serde(rename(serialize = "isProcessed"))]
-    pub is_processed: Option<bool>
+    pub is_processed: Option<bool>,
 }
 
 #[derive(serde::Serialize)]
@@ -31,35 +31,30 @@ pub struct TableRequest {
 }
 
 #[derive(serde::Serialize)]
-pub struct TableResponse {
-
-}
+pub struct TableResponse {}
 
 #[derive(serde::Deserialize)]
 pub struct ProcessRequest {
     #[serde(rename(deserialize = "batchName"))]
     pub batch_name: String,
-    
+
     #[serde(rename(deserialize = "maxCpus"))]
     pub max_cpus: Option<usize>,
 }
 
 #[derive(serde::Serialize)]
 pub struct ProcessResponse {
-    pub error: Option<String>
+    pub error: Option<String>,
 }
 
 impl ProcessResponse {
     pub fn new_err(message: String) -> Self {
         Self {
-            error: Some(message)
+            error: Some(message),
         }
     }
 
     pub fn new_ok() -> Self {
-        Self {
-            error: None,
-        }
+        Self { error: None }
     }
 }
-
