@@ -40,5 +40,5 @@ jobs:
       - name: Test run on mock instances
         working-directory: ${{ env.ECDK_DIR }}
         run: |
-          source .envrc && python src/ecdk/main.py run -i data/instances-mock/test_instances -o raw.out/test_instances -m data/metadata-mock/metadata.txt -p 1 -n 1 ../solver/target/release/solver
+          source .envrc.ci && python src/ecdk/main.py run -i data/instances-mock/test_instances -o raw.out/test_instances -m data/metadata-mock/metadata.txt -p 1 -n 1 ../solver/target/release/solver
 
