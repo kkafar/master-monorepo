@@ -13,6 +13,8 @@ export MY_INSTANCES_DIR="$MY_ECDK/data/instances"
 # 0 means true!
 export MY_IS_ARES=1
 
+# CI spec
+
 export MY_PARTITION="plgrid"
 
 export MY_GRANT_LSC="plglscclass23"
