@@ -14,6 +14,7 @@ use crate::{
     },
 };
 
+use anyhow::anyhow;
 use axum::{
     extract::{Query, State},
     http::StatusCode,
@@ -27,10 +28,11 @@ use polars::{
 };
 
 
-fn path_to_url(path: &PathBuf) -> anyhow::Result<url::Url> {
-    let path = path.canonicalize()?;
+fn path_to_url(path: &PathBuf, port: usize) -> anyhow::Result<url::Url> {
+    // let path = path.canonicalize()?;
     let mut url = url::Url::parse("http://localhost")?;
-    url.set_path(path.to_str().unwrap());
+    url.set_path(path.to_str().ok_or(anyhow!("Failed to convert path to str"))?);
+    let _ = url.set_port(Some(port as u16));
     Ok(url)
 }
 
@@ -44,7 +46,8 @@ pub async fn plots(
     let batch_coll_dir = match PBatchCollectionDir::try_from_dir(state.cfg.processed_results_dir) {
         Ok(dir) => dir,
         Err(err) => {
-            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response()
+            println!("Returning error {err}");
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response();
         }
     };
 
@@ -55,11 +58,12 @@ pub async fn plots(
     {
         Some(batch_dir) => batch_dir,
         _ => {
+            println!("Returning error Unable to find dir");
             return (
                 StatusCode::BAD_REQUEST,
                 Json("Unable to find directory for requested batch"),
             )
-                .into_response()
+                .into_response();
         }
     };
 
@@ -68,16 +72,17 @@ pub async fn plots(
         .experiments_plot_dirs
         .iter()
         .map(|plot_dir| {
-            let best_run_fit_plot = path_to_url(&plot_dir.best_run_fit_plot).unwrap();
+            let port = state.cfg.port;
+            let best_run_fit_plot = path_to_url(&plot_dir.best_run_fit_plot, port).unwrap();
             let best_run_fit_avg_compound_plot = if plot_dir.best_run_fit_avg_compound_plot.is_some() {
-                Some(path_to_url(&plot_dir.best_run_fit_avg_compound_plot.clone().unwrap()).unwrap())
+                Some(path_to_url(&plot_dir.best_run_fit_avg_compound_plot.clone().unwrap(), port).unwrap())
             } else {
                 None
             };
-            let fitness_avg_plot = path_to_url(&plot_dir.fitness_avg_plot).unwrap();
-            let pop_met_plot = path_to_url(&plot_dir.pop_met_plot).unwrap();
+            let fitness_avg_plot = path_to_url(&plot_dir.fitness_avg_plot, port).unwrap();
+            let pop_met_plot = path_to_url(&plot_dir.pop_met_plot, port).unwrap();
             let best_solution_plot = if plot_dir.best_solution_plot.is_some() {
-                Some(path_to_url(&plot_dir.best_solution_plot.clone().unwrap()).unwrap())
+                Some(path_to_url(&plot_dir.best_solution_plot.clone().unwrap(), port).unwrap())
             } else {
                 None
             };
@@ -93,6 +98,7 @@ pub async fn plots(
         })
         .collect();
 
+    println!("Success");
     (StatusCode::OK, Json(BatchPlotsResponse { exp_plots: results })).into_response()
 }
 
@@ -119,7 +125,7 @@ pub async fn table(State(state): State<ServerState>, request: Query<TableRequest
     let batch_coll_dir = match PBatchCollectionDir::try_from_dir(state.cfg.processed_results_dir) {
         Ok(dir) => dir,
         Err(err) => {
-            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response()
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response();
         }
     };
 
@@ -137,7 +143,7 @@ pub async fn table(State(state): State<ServerState>, request: Query<TableRequest
                     request.batch_name
                 )),
             )
-                .into_response()
+                .into_response();
         }
     };
 
@@ -151,7 +157,7 @@ pub async fn table(State(state): State<ServerState>, request: Query<TableRequest
                     request.table_name, err
                 )),
             )
-                .into_response()
+                .into_response();
         }
     };
 
@@ -173,7 +179,7 @@ pub async fn batches(State(state): State<ServerState>) -> Response {
     let batch_coll_dir = match BatchCollectionDir::try_from_dir(state.cfg.results_dir) {
         Ok(dir) => dir,
         Err(err) => {
-            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response()
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response();
         }
     };
 
@@ -181,7 +187,7 @@ pub async fn batches(State(state): State<ServerState>) -> Response {
         match PBatchCollectionDir::try_from_dir(state.cfg.processed_results_dir) {
             Ok(dir) => dir,
             Err(err) => {
-                return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response()
+                return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response();
             }
         };
 

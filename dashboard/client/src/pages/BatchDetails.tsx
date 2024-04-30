@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SetURLSearchParams, useParams, useSearchParams } from "react-router-dom";
 import Server, { BatchPlotsResponse, ExperimentPlots, TableRequest } from "../api/server";
 import SummaryByExpTable, { SummaryByExpTableData } from "../components/tables/SummaryByExpTable";
@@ -148,7 +148,7 @@ function BatchDetailsTablesTab({ batchName }: BatchDetailsTablesTabProps): React
   );
 }
 
-type BatchDetailsPlotsTab = {
+type BatchDetailsPlotsTabProps = {
   batchName: string
 };
 
@@ -157,22 +157,48 @@ type ExperimentPlotsDetailsProps = {
 };
 
 function ExpPlotsDetails({ expPlots }: ExperimentPlotsDetailsProps): React.JSX.Element {
+  const imgSrcFactory = useCallback((base: string) => {
+    let plotUrl = new URL(base);
+    plotUrl.pathname = "assets" + plotUrl.pathname;
+    return plotUrl.toString();
+  }, []);
+
+  // console.log(fitAvg.toString());
+
+
   return (
     <div>
       <details>
-        <summary>{expPlots.expName}</summary>
-        <div>
-          <img src={expPlots.bestRun} />
-        </div>
-        <div>
-          {expPlots.fitAvg}
+        <summary style={{ fontSize: '1.5rem' }}>{expPlots.expName}</summary>
+        <div style={{ display: 'flex' }}>
+          <div>
+            <img src={imgSrcFactory(expPlots.fitAvg)} alt="Alt" />
+          </div>
+          <div>
+            <img src={imgSrcFactory(expPlots.bestRun)} alt="Alt" />
+          </div>
+          {expPlots.bestRunFitAvg && (
+            <div>
+              <img src={imgSrcFactory(expPlots.bestRunFitAvg)} alt="Alt" />
+            </div>
+          )}
+          {expPlots.popMet && (
+            <div>
+              <img src={imgSrcFactory(expPlots.popMet)} alt="Alt" />
+            </div>
+          )}
+          {expPlots.solution && (
+            <div>
+              <img src={imgSrcFactory(expPlots.solution)} alt="Alt" />
+            </div>
+          )}
         </div>
       </details>
     </div>
   );
 }
 
-function BatchDetailsPlotsTab({ batchName }: BatchDetailsPlotsTab): React.JSX.Element {
+function BatchDetailsPlotsTab({ batchName }: BatchDetailsPlotsTabProps): React.JSX.Element {
   const server = useServer();
   const [plotUrls, setPlotUrls] = useState<BatchPlotsResponse | null>(null);
 
