@@ -290,15 +290,19 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         // We want to remove source & sink operatios, as we do not want to report them
         // in solution strings and only disturb in processing.
         let prev_size = ops.len();
-        ops = ops.into_iter().filter(|op| op.id != 0 && op.id != n + 1).collect();
-        assert_eq!(ops.len() + 2, prev_size, "Only two operations: source and sink should have been removed");
+        ops = ops
+            .into_iter()
+            .filter(|op| op.id != 0 && op.id != n + 1)
+            .collect();
+        assert_eq!(
+            ops.len() + 2,
+            prev_size,
+            "Only two operations: source and sink should have been removed"
+        );
 
         ops.sort_unstable_by(operation_cmp);
 
-        let solution_string = ops
-            .into_iter()
-            .map(|op| op.id.to_string())
-            .join("_");
+        let solution_string = ops.into_iter().map(|op| op.id.to_string()).join("_");
 
         let hash = md5::compute(solution_string.clone());
 
@@ -342,4 +346,3 @@ fn operation_cmp(a: &Operation, b: &Operation) -> Ordering {
         Ordering::Greater
     }
 }
-
