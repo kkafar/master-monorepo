@@ -212,6 +212,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         let mut topo_order = Vec::<&Operation>::with_capacity(n + 2);
 
         stack.push(&ops[0]);
+
         visited[0] = State::Discovered;
 
         while !stack.is_empty() {
@@ -286,29 +287,22 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         );
         info!("Best fitness found: {}", best_individual.fitness);
 
-        #[allow(clippy::if_same_then_else)]
-        ops.sort_unstable_by(|a, b| {
-            if a.id == n + 1 {
-                Ordering::Greater
-            } else if b.id == n + 1 {
-                Ordering::Less
-            } else if a.finish_time.unwrap() < b.finish_time.unwrap() {
-                Ordering::Less
-            } else if a.finish_time.unwrap() > b.finish_time.unwrap() {
-                Ordering::Greater
-            } else if a.duration != 0 && b.duration != 0 {
-                a.machine.cmp(&b.machine)
-            } else if a.duration != 0 && b.duration == 0 {
-                Ordering::Less
-            } else {
-                Ordering::Greater
-            }
-        });
-        let solution_string = ops
+        // We want to remove source & sink operatios, as we do not want to report them
+        // in solution strings and only disturb in processing.
+        let prev_size = ops.len();
+        ops = ops
             .into_iter()
             .filter(|op| op.id != 0 && op.id != n + 1)
-            .map(|op| op.id.to_string())
-            .join("_");
+            .collect();
+        assert_eq!(
+            ops.len() + 2,
+            prev_size,
+            "Only two operations: source and sink should have been removed"
+        );
+
+        ops.sort_unstable_by(operation_cmp);
+
+        let solution_string = ops.into_iter().map(|op| op.id.to_string()).join("_");
 
         let hash = md5::compute(solution_string.clone());
 
@@ -336,5 +330,19 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         };
         let serialized_object = serde_json::to_string_pretty(&outdata).unwrap();
         info!(target: "metadata", "{serialized_object}");
+    }
+}
+
+fn operation_cmp(a: &Operation, b: &Operation) -> Ordering {
+    if a.finish_time.unwrap() < b.finish_time.unwrap() {
+        Ordering::Less
+    } else if a.finish_time.unwrap() > b.finish_time.unwrap() {
+        Ordering::Greater
+    } else if a.duration != 0 && b.duration != 0 {
+        a.machine.cmp(&b.machine)
+    } else if a.duration != 0 && b.duration == 0 {
+        Ordering::Less
+    } else {
+        Ordering::Greater
     }
 }
