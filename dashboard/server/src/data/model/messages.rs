@@ -60,7 +60,6 @@ impl ProcessResponse {
     }
 }
 
-
 #[derive(serde::Deserialize)]
 pub struct BatchPlotsRequest {
     #[serde(rename(deserialize = "batchName"))]
@@ -100,4 +99,3 @@ pub struct BatchPlotsResponse {
     #[serde(rename(serialize = "expPlots"))]
     pub exp_plots: Vec<ExperimentPlotsPaths>,
 }
-

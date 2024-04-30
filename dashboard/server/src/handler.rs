@@ -27,15 +27,16 @@ use polars::{
     io::{json::JsonWriter, SerWriter},
 };
 
-
 fn path_to_url(path: &PathBuf, port: usize) -> anyhow::Result<url::Url> {
     // let path = path.canonicalize()?;
     let mut url = url::Url::parse("http://localhost")?;
-    url.set_path(path.to_str().ok_or(anyhow!("Failed to convert path to str"))?);
+    url.set_path(
+        path.to_str()
+            .ok_or(anyhow!("Failed to convert path to str"))?,
+    );
     let _ = url.set_port(Some(port as u16));
     Ok(url)
 }
-
 
 pub async fn plots(
     State(state): State<ServerState>,
@@ -74,11 +75,18 @@ pub async fn plots(
         .map(|plot_dir| {
             let port = state.cfg.port;
             let best_run_fit_plot = path_to_url(&plot_dir.best_run_fit_plot, port).unwrap();
-            let best_run_fit_avg_compound_plot = if plot_dir.best_run_fit_avg_compound_plot.is_some() {
-                Some(path_to_url(&plot_dir.best_run_fit_avg_compound_plot.clone().unwrap(), port).unwrap())
-            } else {
-                None
-            };
+            let best_run_fit_avg_compound_plot =
+                if plot_dir.best_run_fit_avg_compound_plot.is_some() {
+                    Some(
+                        path_to_url(
+                            &plot_dir.best_run_fit_avg_compound_plot.clone().unwrap(),
+                            port,
+                        )
+                        .unwrap(),
+                    )
+                } else {
+                    None
+                };
             let fitness_avg_plot = path_to_url(&plot_dir.fitness_avg_plot, port).unwrap();
             let pop_met_plot = path_to_url(&plot_dir.pop_met_plot, port).unwrap();
             let best_solution_plot = if plot_dir.best_solution_plot.is_some() {
@@ -99,7 +107,11 @@ pub async fn plots(
         .collect();
 
     println!("Success");
-    (StatusCode::OK, Json(BatchPlotsResponse { exp_plots: results })).into_response()
+    (
+        StatusCode::OK,
+        Json(BatchPlotsResponse { exp_plots: results }),
+    )
+        .into_response()
 }
 
 pub async fn process_batch(
