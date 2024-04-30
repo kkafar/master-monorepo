@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 pub struct ExperimentPlotDir {
+    pub path: PathBuf,
     pub best_run_fit_plot: PathBuf,
     pub best_run_fit_avg_compound_plot: Option<PathBuf>,
     pub fitness_avg_plot: PathBuf,
@@ -195,6 +196,7 @@ impl ExperimentPlotDir {
         };
 
         Ok(Self {
+            path: dir,
             best_run_fit_plot,
             best_run_fit_avg_compound_plot,
             fitness_avg_plot,
@@ -203,7 +205,7 @@ impl ExperimentPlotDir {
         })
     }
 
-    fn experiment_name(dir: &Path) -> &str {
+    pub fn experiment_name(dir: &Path) -> &str {
         dir.file_name().unwrap().to_str().unwrap()
     }
 }

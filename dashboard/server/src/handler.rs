@@ -1,11 +1,17 @@
-use std::{collections::HashMap, io::BufWriter};
+use std::{collections::HashMap, io::BufWriter, path::PathBuf};
 
 use crate::{
     data::model::{
-        messages::{BatchInfo, BatchesResponse, ProcessRequest, ProcessResponse, TableRequest},
+        messages::{
+            BatchInfo, BatchPlotsRequest, BatchPlotsResponse, BatchesResponse,
+            ExperimentPlotsPaths, ProcessRequest, ProcessResponse, TableRequest,
+        },
         ServerState,
     },
-    filestruct::model::{processed::PBatchCollectionDir, raw::BatchCollectionDir},
+    filestruct::model::{
+        processed::{ExperimentPlotDir, PBatchCollectionDir},
+        raw::BatchCollectionDir,
+    },
 };
 
 use axum::{
@@ -19,6 +25,76 @@ use polars::{
     frame::DataFrame,
     io::{json::JsonWriter, SerWriter},
 };
+
+
+fn path_to_url(path: &PathBuf) -> anyhow::Result<url::Url> {
+    let path = path.canonicalize()?;
+    let mut url = url::Url::parse("http://localhost")?;
+    url.set_path(path.to_str().unwrap());
+    Ok(url)
+}
+
+
+pub async fn plots(
+    State(state): State<ServerState>,
+    request: Query<BatchPlotsRequest>,
+) -> Response {
+    println!("Process plots request");
+
+    let batch_coll_dir = match PBatchCollectionDir::try_from_dir(state.cfg.processed_results_dir) {
+        Ok(dir) => dir,
+        Err(err) => {
+            return (StatusCode::INTERNAL_SERVER_ERROR, Json(err.to_string())).into_response()
+        }
+    };
+
+    let batch_dir = match batch_coll_dir
+        .batch_dirs
+        .iter()
+        .find(|&batch_dir| batch_dir.batch_name() == request.batch_name)
+    {
+        Some(batch_dir) => batch_dir,
+        _ => {
+            return (
+                StatusCode::BAD_REQUEST,
+                Json("Unable to find directory for requested batch"),
+            )
+                .into_response()
+        }
+    };
+
+    let results = batch_dir
+        .plots_dir
+        .experiments_plot_dirs
+        .iter()
+        .map(|plot_dir| {
+            let best_run_fit_plot = path_to_url(&plot_dir.best_run_fit_plot).unwrap();
+            let best_run_fit_avg_compound_plot = if plot_dir.best_run_fit_avg_compound_plot.is_some() {
+                Some(path_to_url(&plot_dir.best_run_fit_avg_compound_plot.clone().unwrap()).unwrap())
+            } else {
+                None
+            };
+            let fitness_avg_plot = path_to_url(&plot_dir.fitness_avg_plot).unwrap();
+            let pop_met_plot = path_to_url(&plot_dir.pop_met_plot).unwrap();
+            let best_solution_plot = if plot_dir.best_solution_plot.is_some() {
+                Some(path_to_url(&plot_dir.best_solution_plot.clone().unwrap()).unwrap())
+            } else {
+                None
+            };
+
+            ExperimentPlotsPaths {
+                exp_name: ExperimentPlotDir::experiment_name(&plot_dir.path).into(),
+                best_run_fit_plot,
+                best_run_fit_avg_compound_plot,
+                fitness_avg_plot,
+                pop_met_plot,
+                best_solution_plot,
+            }
+        })
+        .collect();
+
+    (StatusCode::OK, Json(BatchPlotsResponse { exp_plots: results })).into_response()
+}
 
 pub async fn process_batch(
     State(state): State<ServerState>,
@@ -40,17 +116,6 @@ pub async fn process_batch(
 }
 
 pub async fn table(State(state): State<ServerState>, request: Query<TableRequest>) -> Response {
-    // let request: TableRequest = match serde_json::from_value(payload) {
-    //     Ok(body) => body,
-    //     Err(err) => {
-    //         return (
-    //             StatusCode::BAD_REQUEST,
-    //             format!("Failed to parse request body with error: {:?}", err),
-    //         )
-    //             .into_response()
-    //     }
-    // };
-
     let batch_coll_dir = match PBatchCollectionDir::try_from_dir(state.cfg.processed_results_dir) {
         Ok(dir) => dir,
         Err(err) => {
