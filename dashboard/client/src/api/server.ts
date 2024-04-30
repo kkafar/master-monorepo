@@ -1,5 +1,6 @@
 import { BatchConfig } from "../model/problem";
 import serverConfig from "../config/serverConfig.json"
+import { Url } from "url";
 
 export type BatchInfo = {
   name: string;
@@ -30,12 +31,30 @@ export type ProcessResponse = {
   error?: string;
 }
 
+export type BatchPlotsRequest = {
+  batchName: string,
+};
+
+export type ExperimentPlots = {
+  expName: string,
+  bestRun: string,
+  bestRunFitAvg?: string,
+  fitAvg: string,
+  popMet?: string,
+  solution?: string,
+}
+
+export type BatchPlotsResponse = {
+  expPlots: ExperimentPlots[],
+};
+
 class Server {
   baseUrl: string;
   endpoints: {
     batches: string,
     table: string,
     process: string,
+    plots: string,
   }
 
   constructor() {
@@ -43,7 +62,8 @@ class Server {
     this.endpoints = {
       batches: this.baseUrl + '/batches',
       table: this.baseUrl + '/table',
-      process: this.baseUrl + '/process'
+      process: this.baseUrl + '/process',
+      plots: this.baseUrl + '/plots',
     };
   }
 
@@ -100,6 +120,24 @@ class Server {
       })
       .catch(err => {
         console.error(`[API] Error while processing batch ${request.batchName}: ${JSON.stringify(err)}`);
+        throw err;
+      })
+  }
+
+  async fetchBatchPlots(request: BatchPlotsRequest, signal?: AbortSignal): Promise<BatchPlotsResponse | null> {
+    const url = new URL(this.endpoints.plots);
+    url.searchParams.set("batchName", request.batchName);
+
+    return fetch(url, { method: 'GET', signal: signal })
+      .then(response => {
+        if (response.status === 200) {
+          return response.json();
+        } else {
+          throw response.json();
+        }
+      })
+      .catch(err => {
+        console.error(`[API] Error while fetching plots ${JSON.stringify(err)}`);
         throw err;
       })
   }

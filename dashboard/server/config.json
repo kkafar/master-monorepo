@@ -1,6 +1,7 @@
 {
   "results_dir": "../../ecdk/raw.out/",
   "processed_results_dir": "../../ecdk/processed.out/",
+  "compare_output_dir": "../../ecdk/compare.out/",
   "port": 8088,
   "ecdk_dir": "../../ecdk/"
 }

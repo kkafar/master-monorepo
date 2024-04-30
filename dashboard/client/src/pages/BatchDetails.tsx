@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SetURLSearchParams, useParams, useSearchParams } from "react-router-dom";
-import Server, { TableRequest } from "../api/server";
+import Server, { BatchPlotsResponse, ExperimentPlots, TableRequest } from "../api/server";
 import SummaryByExpTable, { SummaryByExpTableData } from "../components/tables/SummaryByExpTable";
 import SummaryTotalTable, { SummaryTotalTableData } from "../components/tables/SummaryTotalTable";
 import { useServer } from "../hooks/useServer";
@@ -9,6 +9,7 @@ import ConvergenceInfoTable, { ConvergenceInfoTableRowData } from "../components
 import RunSummaryStatsTable, { RunInfoTableRowData as RunSummaryStatsTableRowData } from "../components/tables/RunSummaryStatsTable";
 import TitledTable from "../components/TitledTable";
 import { table } from "console";
+import { Url } from "url";
 
 function createTableRequest(tableName: string, batchName: string): TableRequest {
   return {
@@ -37,7 +38,7 @@ function tableRequester<ResponseT>(request: TableRequest, signal: AbortSignal, s
 }
 
 function tableRequesterFactory(signal: AbortSignal, serverApi?: Server) {
-  return <ResponseT, > (request: TableRequest, stateSetter: (res: ResponseT | null) => void) => {
+  return <ResponseT,>(request: TableRequest, stateSetter: (res: ResponseT | null) => void) => {
     return tableRequester<ResponseT>(request, signal, stateSetter, serverApi);
   }
 }
@@ -50,7 +51,7 @@ function BatchHeader(props: BatchHeaderProps): React.JSX.Element {
   const { batchName } = props;
 
   return (
-      <h1 className="top-title">{batchName}</h1>
+    <h1 className="top-title">{batchName}</h1>
   );
 }
 
@@ -147,20 +148,101 @@ function BatchDetailsTablesTab({ batchName }: BatchDetailsTablesTabProps): React
   );
 }
 
-type BatchDetailsPlotsTab = {
+type BatchDetailsPlotsTabProps = {
   batchName: string
 };
 
-function BatchDetailsPlotsTab({ batchName }: BatchDetailsPlotsTab): React.JSX.Element {
+type ExperimentPlotsDetailsProps = {
+  expPlots: ExperimentPlots,
+};
+
+function ExpPlotsDetails({ expPlots }: ExperimentPlotsDetailsProps): React.JSX.Element {
+  const imgSrcFactory = useCallback((base: string) => {
+    let plotUrl = new URL(base);
+    plotUrl.pathname = "assets" + plotUrl.pathname;
+    return plotUrl.toString();
+  }, []);
+
+  // console.log(fitAvg.toString());
+
+
   return (
     <div>
-      Some details
+      <details>
+        <summary style={{ fontSize: '1.5rem' }}>{expPlots.expName}</summary>
+        <div style={{ display: 'flex' }}>
+          <div>
+            <img src={imgSrcFactory(expPlots.fitAvg)} alt="Alt" />
+          </div>
+          <div>
+            <img src={imgSrcFactory(expPlots.bestRun)} alt="Alt" />
+          </div>
+          {expPlots.bestRunFitAvg && (
+            <div>
+              <img src={imgSrcFactory(expPlots.bestRunFitAvg)} alt="Alt" />
+            </div>
+          )}
+          {expPlots.popMet && (
+            <div>
+              <img src={imgSrcFactory(expPlots.popMet)} alt="Alt" />
+            </div>
+          )}
+          {expPlots.solution && (
+            <div>
+              <img src={imgSrcFactory(expPlots.solution)} alt="Alt" />
+            </div>
+          )}
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function BatchDetailsPlotsTab({ batchName }: BatchDetailsPlotsTabProps): React.JSX.Element {
+  const server = useServer();
+  const [plotUrls, setPlotUrls] = useState<BatchPlotsResponse | null>(null);
+
+
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    async function fetchPlotUrls() {
+      server?.fetchBatchPlots({ batchName: batchName }, abortController.signal)
+        .then(result => {
+          if (result !== undefined) {
+            setPlotUrls(result as BatchPlotsResponse);
+          } else {
+            console.error("Received null response from server");
+          }
+        })
+        .catch(err => {
+          console.error(`Received error: ${err}`);
+          setPlotUrls(null);
+        })
+    }
+
+    fetchPlotUrls()
+
+    return () => {
+      abortController.abort();
+    }
+  }, [batchName, server]);
+
+
+  return (
+    <div>
+      <h1>Plots</h1>
+      <div>
+        {plotUrls && (
+          plotUrls.expPlots.sort((a, b) => a.expName < b.expName ? -1 : 1).map((plots, i) => <ExpPlotsDetails key={i.toString()} expPlots={plots} />)
+        )}
+      </div>
     </div>
   );
 }
 
 function BatchDetailsRoute(): React.JSX.Element {
-  const  { batchName = "Unknown" } = useParams();
+  const { batchName = "Unknown" } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("activeTab") ?? "tables";
 
