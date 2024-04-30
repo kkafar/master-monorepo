@@ -1,0 +1,7 @@
+{
+  "results_dir": "raw.out/",
+  "processed_results_dir": "processed.out/",
+  "compare_output_dir": "compare.out/",
+  "port": 8088,
+  "ecdk_dir": "."
+}
