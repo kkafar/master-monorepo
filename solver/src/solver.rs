@@ -17,7 +17,7 @@ use crate::{
         SOLVER_TYPE_RANDOMSEARCH,
     },
     problem::{
-        crossover::{Goncalves2005Crossover, DoubledCrossover, JsspCrossover, MidPoint, NoopCrossover},
+        crossover::{DoubledCrossover, Goncalves2005Crossover, JsspCrossover, MidPoint, NoopCrossover},
         fitness::JsspFitness,
         population::JsspPopProvider,
         probe::JsspProbe,

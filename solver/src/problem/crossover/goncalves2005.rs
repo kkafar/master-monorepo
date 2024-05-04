@@ -1,4 +1,3 @@
-
 use ecrs::{
     ga::{individual::IndividualTrait, Metrics},
     prelude::crossover::CrossoverOperator,
@@ -6,7 +5,6 @@ use ecrs::{
 use rand::{thread_rng, Rng};
 
 use crate::{problem::individual::JsspIndividual, stats::IndividualTelemetry};
-
 
 pub struct Goncalves2005Crossover {
     distr: rand::distributions::Uniform<f64>,
