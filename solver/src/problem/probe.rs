@@ -107,11 +107,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         self.stats_engine.stats.borrow_mut().start_timestamp = std::time::SystemTime::now();
     }
 
-    fn on_initial_population_created(
-        &mut self,
-        metrics: &ecrs::ga::Metrics,
-        population: &[JsspIndividual],
-    ) {
+    fn on_initial_population_created(&mut self, metrics: &ecrs::ga::Metrics, population: &[JsspIndividual]) {
         // debug_assert_eq!(self.repeated.len(), 0);
         // self.repeated.resize(population.len(), false);
 
