@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use ecrs::{
-    ga::GAMetadata,
+    ga::Metrics,
     prelude::population::{self, PopulationGenerator},
 };
 use itertools::Itertools;
@@ -57,7 +57,7 @@ impl JsspPopProvider {
         Self { instance, operations }
     }
 
-    pub fn generate_with_metadata(&mut self, metadata: &GAMetadata, count: usize) -> Vec<JsspIndividual> {
+    pub fn generate_with_metadata(&mut self, metrics: &Metrics, count: usize) -> Vec<JsspIndividual> {
         population::tools::PointGenerator::new()
             .generate_with_single_constraint(2 * (self.operations.len() - 2), count, 0.0..1.0)
             .into_iter()
@@ -68,7 +68,7 @@ impl JsspPopProvider {
                     Vec::from_iter((0..self.instance.cfg.n_machines).map(Machine::new)),
                     usize::MAX,
                 );
-                indv.telemetry = IndividualTelemetry::new(metadata.generation, 0);
+                indv.telemetry = IndividualTelemetry::new(metrics.generation, 0);
                 indv
             })
             .collect()

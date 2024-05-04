@@ -96,7 +96,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
     // iterinfo,<generation>,<eval_time>,<sel_time>,<cross_time>,<mut_time>,<repl_time>,<iter_time>
 
     #[inline]
-    fn on_start(&mut self, _metadata: &ecrs::ga::GAMetadata) {
+    fn on_start(&mut self, _metrics: &ecrs::ga::Metrics) {
         // Writing csv header to each file
         info!(target: "popmetrics", "event_name,generation,total_duration,population_size,diversity,distance_avg");
         info!(target: "popgentime", "event_name,time");
@@ -107,18 +107,14 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         self.stats_engine.stats.borrow_mut().start_timestamp = std::time::SystemTime::now();
     }
 
-    fn on_initial_population_created(
-        &mut self,
-        metadata: &ecrs::ga::GAMetadata,
-        population: &[JsspIndividual],
-    ) {
+    fn on_initial_population_created(&mut self, metrics: &ecrs::ga::Metrics, population: &[JsspIndividual]) {
         // debug_assert_eq!(self.repeated.len(), 0);
         // self.repeated.resize(population.len(), false);
 
         // We do it here, as population generation does not have
         // access to information on genetic algorithm state (generation etc.)
         for indv in population {
-            indv.telemetry.on_create(metadata.generation);
+            indv.telemetry.on_create(metrics.generation);
         }
 
         // TODO: As this metric is useless right now I'm disabling it temporarily
@@ -126,20 +122,20 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         let diversity = self.estimate_pop_diversity(population);
         let distance_avg = self.estimate_avg_distance(population);
         info!(target: "popmetrics", "diversity,0,0,{},{diversity},{distance_avg}", population.len());
-        info!(target: "popgentime", "popgentime,{}", metadata.pop_gen_dur.unwrap().as_millis());
+        info!(target: "popgentime", "popgentime,{}", metrics.pop_gen_dur.unwrap().as_millis());
     }
 
-    fn on_new_best(&mut self, metadata: &ecrs::ga::GAMetadata, individual: &JsspIndividual) {
+    fn on_new_best(&mut self, metrics: &ecrs::ga::Metrics, individual: &JsspIndividual) {
         info!(
             target: "newbest",
             "newbest,{},{},{}",
-            metadata.generation,
-            metadata.total_dur.unwrap().as_millis(), // `total_dur` is accurate here
+            metrics.generation,
+            metrics.total_dur.unwrap().as_millis(), // `total_dur` is accurate here
             individual.fitness
         );
     }
 
-    fn on_new_generation(&mut self, metadata: &ecrs::ga::GAMetadata, generation: &[JsspIndividual]) {
+    fn on_new_generation(&mut self, metrics: &ecrs::ga::Metrics, generation: &[JsspIndividual]) {
         // TODO: As this metric is useless right now I'm disabling it temporarily
         // let diversity = self.estimate_pop_diversity(generation);
         //
@@ -149,50 +145,50 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         info!(
             target: "popmetrics",
             "diversity,{},{},{},{diversity},{distance_avg}",
-            metadata.generation,
-            metadata.start_time.unwrap().elapsed().as_millis(),
+            metrics.generation,
+            metrics.start_time.unwrap().elapsed().as_millis(),
             generation.len()
         );
     }
 
-    fn on_best_fit_in_generation(&mut self, metadata: &ecrs::ga::GAMetadata, individual: &JsspIndividual) {
+    fn on_best_fit_in_generation(&mut self, metrics: &ecrs::ga::Metrics, individual: &JsspIndividual) {
         info!(
             target: "bestingen",
             "bestingen,{},{},{}",
-            metadata.generation,
-            metadata.start_time.unwrap().elapsed().as_millis(),
+            metrics.generation,
+            metrics.start_time.unwrap().elapsed().as_millis(),
             individual.fitness
         );
     }
 
     #[inline]
-    fn on_iteration_start(&mut self, _metadata: &ecrs::ga::GAMetadata) { /* defaults to noop */
+    fn on_iteration_start(&mut self, _metrics: &ecrs::ga::Metrics) { /* defaults to noop */
     }
 
     #[inline]
-    fn on_iteration_end(&mut self, metadata: &ecrs::ga::GAMetadata) {
+    fn on_iteration_end(&mut self, metrics: &ecrs::ga::Metrics) {
         info!(target: "iterinfo", "iterinfo,{},{},{},{},{},{},{}",
-            metadata.generation,
-            metadata.pop_eval_dur.unwrap().as_millis(),
-            metadata.selection_dur.unwrap().as_millis(),
-            metadata.crossover_dur.unwrap().as_millis(),
-            metadata.mutation_dur.unwrap().as_millis(),
-            metadata.replacement_dur.unwrap().as_millis(),
-            metadata.iteration_dur.unwrap().as_millis()
+            metrics.generation,
+            metrics.pop_eval_dur.unwrap().as_millis(),
+            metrics.selection_dur.unwrap().as_millis(),
+            metrics.crossover_dur.unwrap().as_millis(),
+            metrics.mutation_dur.unwrap().as_millis(),
+            metrics.replacement_dur.unwrap().as_millis(),
+            metrics.iteration_dur.unwrap().as_millis()
         );
     }
 
     #[inline]
     fn on_end(
         &mut self,
-        metadata: &ecrs::ga::GAMetadata,
+        metrics: &ecrs::ga::Metrics,
         population: &[JsspIndividual],
         best_individual: &JsspIndividual,
     ) {
         // Final individuals haven't been included in statistics yet.
         let mut stats = self.stats_engine.stats.borrow_mut();
         for indv in population.iter() {
-            stats.update_stats_from_indvidual(metadata, indv);
+            stats.update_stats_from_indvidual(metrics, indv);
         }
 
         let mut ops = best_individual.operations.clone();
@@ -290,10 +286,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         // We want to remove source & sink operatios, as we do not want to report them
         // in solution strings and only disturb in processing.
         let prev_size = ops.len();
-        ops = ops
-            .into_iter()
-            .filter(|op| op.id != 0 && op.id != n + 1)
-            .collect();
+        ops.retain(|op| op.id != 0 && op.id != n + 1);
         assert_eq!(
             ops.len() + 2,
             prev_size,
@@ -317,8 +310,8 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
             solution_string,
             hash: format!("{:x}", hash),
             fitness: best_individual.fitness,
-            generation_count: metadata.generation,
-            total_time: metadata.total_dur.unwrap().as_millis(),
+            generation_count: metrics.generation,
+            total_time: metrics.total_dur.unwrap().as_millis(),
             chromosome: best_individual.chromosome(),
             age_avg: (stats.age_sum as f64 / stats.individual_count as f64),
             age_max: stats.age_max,
