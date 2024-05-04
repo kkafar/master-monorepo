@@ -286,10 +286,7 @@ impl<'stats> Probe<JsspIndividual> for JsspProbe<'stats> {
         // We want to remove source & sink operatios, as we do not want to report them
         // in solution strings and only disturb in processing.
         let prev_size = ops.len();
-        ops = ops
-            .into_iter()
-            .filter(|op| op.id != 0 && op.id != n + 1)
-            .collect();
+        ops.retain(|op| op.id != 0 && op.id != n + 1);
         assert_eq!(
             ops.len() + 2,
             prev_size,
