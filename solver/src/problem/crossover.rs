@@ -2,6 +2,8 @@
 
 pub mod goncalves2005;
 
+pub use goncalves2005::Goncalves2005Crossover;
+
 use ecrs::{
     ga::{individual::IndividualTrait, Metrics},
     prelude::crossover::CrossoverOperator,
