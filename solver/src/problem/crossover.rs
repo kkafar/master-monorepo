@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+pub mod goncalves2005;
+
 use ecrs::{
     ga::{individual::IndividualTrait, Metrics},
     prelude::crossover::CrossoverOperator,

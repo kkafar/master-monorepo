@@ -17,7 +17,7 @@ use crate::{
         SOLVER_TYPE_RANDOMSEARCH,
     },
     problem::{
-        crossover::{DoubledCrossover, JsspCrossover, MidPoint, NoopCrossover},
+        crossover::{goncalves2005::Goncalves2005Crossover, DoubledCrossover, JsspCrossover, MidPoint, NoopCrossover},
         fitness::JsspFitness,
         population::JsspPopProvider,
         probe::JsspProbe,
@@ -60,8 +60,8 @@ impl Solver for Goncalves2005 {
         );
 
         ga::Builder::new()
-            .set_selection_operator(selection::Random::new(cfg.pop_size))
-            .set_crossover_operator(JsspCrossover::new())
+            .set_selection_operator(selection::Random::new(cfg.pop_size * 2))
+            .set_crossover_operator(Goncalves2005Crossover::new())
             .set_mutation_operator(mutation::Identity::new())
             .set_population_generator(JsspPopProvider::new(instance))
             .set_replacement_operator(replacement_op)
