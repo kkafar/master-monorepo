@@ -1,6 +1,6 @@
 pub mod telemetry;
 
-use ecrs::ga::GAMetadata;
+use ecrs::ga::Metrics;
 pub use telemetry::IndividualTelemetry;
 
 use std::{cell::RefCell, rc::Rc};
@@ -31,7 +31,7 @@ impl Stats {
         }
     }
 
-    pub fn update_stats_from_indvidual(&mut self, md: &GAMetadata, indv: &JsspIndividual) {
+    pub fn update_stats_from_indvidual(&mut self, md: &Metrics, indv: &JsspIndividual) {
         let indv_age = md.generation - indv.telemetry.birth_generation();
         // assert!(
         //     indv_age > 0,

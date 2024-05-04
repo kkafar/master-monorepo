@@ -1,5 +1,5 @@
 use ecrs::{
-    ga::GAMetadata,
+    ga::Metrics,
     prelude::{population::PopulationGenerator, replacement::ReplacementOperator},
 };
 
@@ -33,7 +33,7 @@ impl<'stats> JsspReplacement<'stats> {
 impl<'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
     fn apply(
         &mut self,
-        metadata: &GAMetadata,
+        metrics: &Metrics,
         mut population: Vec<JsspIndividual>,
         mut children: Vec<JsspIndividual>,
     ) -> Vec<JsspIndividual> {
@@ -60,7 +60,7 @@ impl<'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
         //
         // Selection of parents is also done differently to the paper.
         for i in elite_size..(elite_size + crossover_size) {
-            stats.update_stats_from_indvidual(metadata, &population[i]);
+            stats.update_stats_from_indvidual(metrics, &population[i]);
             std::mem::swap(&mut population[i], &mut children[i - elite_size]);
         }
 
@@ -68,9 +68,9 @@ impl<'stats> ReplacementOperator<JsspIndividual> for JsspReplacement<'stats> {
             population
                 .splice(
                     (elite_size + crossover_size)..population.len(),
-                    self.pop_gen.generate_with_metadata(metadata, sample_size),
+                    self.pop_gen.generate_with_metadata(metrics, sample_size),
                 )
-                .for_each(|indv| stats.update_stats_from_indvidual(metadata, &indv))
+                .for_each(|indv| stats.update_stats_from_indvidual(metrics, &indv))
         }
 
         population
@@ -98,7 +98,7 @@ impl<'stats> ReplaceWithRandomPopulation<'stats> {
 impl<'stats> ReplacementOperator<JsspIndividual> for ReplaceWithRandomPopulation<'stats> {
     fn apply(
         &mut self,
-        _metadata: &GAMetadata,
+        _metrics: &Metrics,
         population: Vec<JsspIndividual>,
         _children: Vec<JsspIndividual>,
     ) -> Vec<JsspIndividual> {
