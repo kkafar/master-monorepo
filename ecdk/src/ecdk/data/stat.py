@@ -93,7 +93,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             .group_by(pl.col(Col.SID))
             .agg(pl.col(Col.FITNESS).min().alias(KEY_FITNESS_BEST))
             .filter(pl.col(KEY_FITNESS_BEST) == exp.instance.best_solution)
-            .select((pl.col(KEY_FITNESS_BEST).count() / exp.config.n_series).alias('bks_hitratio'))
+            .select((pl.col(KEY_FITNESS_BEST).count() * 100 / exp.config.n_series).alias('bks_hitratio'))
             .collect()
         )
         dfres = (
