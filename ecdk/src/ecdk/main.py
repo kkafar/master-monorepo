@@ -17,13 +17,14 @@ import matplotlib.pyplot as plt
 import cli
 import logging
 from context import Context
+from data.constants import FLOAT_PRECISION
 
 
 def configure_env():
     pl.Config.set_tbl_rows(50)
     pl.Config.set_tbl_cols(20)
     pl.Config.set_fmt_float('mixed')
-    pl.Config.set_float_precision(2)
+    pl.Config.set_float_precision(FLOAT_PRECISION)
     plt.rcParams['figure.figsize'] = (16, 9)
     logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
 

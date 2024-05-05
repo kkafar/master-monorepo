@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional
 from experiment.model import Experiment
 from .model import JoinedExperimentData, Col
+from .constants import FLOAT_PRECISION
 
 KEY_EXPNAME = 'expname'
 KEY_FITNESS_AVG = 'fitness_avg'
@@ -46,10 +47,10 @@ def compute_per_exp_stats(exp: Experiment, data: JoinedExperimentData, outdir: O
 
 def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimentData], outdir: Optional[Path]):
     fitness_avg_to_bks_dev_expr = (
-        (pl.col(KEY_FITNESS_AVG) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
+        (pl.col(KEY_FITNESS_AVG) - pl.col(KEY_BKS)) / pl.col(KEY_BKS) * 100
     )
     fitness_best_to_bks_dev_expr = (
-        (pl.col(KEY_FITNESS_BEST) - pl.col(KEY_BKS)) / pl.col(KEY_BKS)
+        (pl.col(KEY_FITNESS_BEST) - pl.col(KEY_BKS)) / pl.col(KEY_BKS) * 100
     )
 
     dfmain = pl.DataFrame()
@@ -93,7 +94,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
             .group_by(pl.col(Col.SID))
             .agg(pl.col(Col.FITNESS).min().alias(KEY_FITNESS_BEST))
             .filter(pl.col(KEY_FITNESS_BEST) == exp.instance.best_solution)
-            .select((pl.col(KEY_FITNESS_BEST).count() / exp.config.n_series).alias('bks_hitratio'))
+            .select((pl.col(KEY_FITNESS_BEST).count() * 100 / exp.config.n_series).alias('bks_hitratio'))
             .collect()
         )
         dfres = (
@@ -147,16 +148,16 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
         .collect()
         .to_series()
         .item()
-    )
+    )  # We do not multiply by 100 here, as the values are already in percents.
 
     print(f'BKS found in {bks_hit_in} of {dfmain.height} cases ({(bks_hit_in * 100 / dfmain.height):.2f}%)')
-    print(f'Avg. deviation to BKS {(avg_dev_to_bks * 100):.2f}%')
+    print(f'Avg. deviation to BKS {avg_dev_to_bks:.2f}%')
 
     if outdir is not None:
         dfmain.write_csv(
             outdir.joinpath('summary_by_exp.csv'),
             has_header=True,
-            float_precision=2
+            float_precision=FLOAT_PRECISION
         )
 
         pl.DataFrame({
@@ -166,7 +167,7 @@ def compute_global_exp_stats(batch: list[Experiment], data: list[JoinedExperimen
         }).write_csv(
             outdir.joinpath('summary_total.csv'),
             has_header=True,
-            float_precision=2
+            float_precision=FLOAT_PRECISION
         )
 
     return dfmain

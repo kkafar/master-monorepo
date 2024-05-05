@@ -23,10 +23,10 @@ from problem import (
     JsspInstance,
     ScheduleReconstructionResult,
 )
+from .constants import FLOAT_PRECISION
 
 
 DiffTableDesc = tuple[str, pl.DataFrame]
-FLOAT_PRECISION = 3
 
 
 def validate_experiment_data(exp: Experiment, data: JoinedExperimentData) -> ExperimentValidationResult:
