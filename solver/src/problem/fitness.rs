@@ -31,10 +31,10 @@ pub struct JsspFitness {
 }
 
 impl JsspFitness {
-    pub fn new(delay_constant: f64, local_search_enabled: bool) -> Self {
+    pub fn new(delay_const: f64, local_search_enabled: bool) -> Self {
         Self {
             delay_feasibles: Vec::new(),
-            delay_const: delay_constant,
+            delay_const,
             local_search_enabled,
         }
     }
