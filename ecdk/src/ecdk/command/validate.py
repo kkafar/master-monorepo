@@ -6,6 +6,7 @@ from problem import JsspInstance
 
 
 def assert_each_machine_has_exact_op_count(instance: JsspInstance, expected_op_count: int):
+    # print(f"All machines have exactly {expected_op_count} operations assigned...")
     assert instance.n_machines > 0, "Number of machines must be positive"
     machine_ops_count = [0 for _ in range(instance.n_machines)]
     for job in instance.jobs:
@@ -16,11 +17,11 @@ def assert_each_machine_has_exact_op_count(instance: JsspInstance, expected_op_c
         assert count == expected_op_count, f"Expected {expected_op_count} operations on machine {m_id}, got: {count}"
 
 
-def assert_each_job_has_equal_op_count(instance: JsspInstance):
-    assert instance.n_jobs > 0, "Number of jobs must be positive"
-    job_count = len(instance.jobs[0].ops)
+def assert_each_job_has_exact_op_count(instance: JsspInstance, expected_op_count: int):
+    # print(f"Each job consists of exactly {expected_op_count} operations...")
+    assert instance.n_jobs > 0, "Number of jobs must be positivie"
     for job in instance.jobs:
-        assert len(job.ops) == job_count, f"Not all jobs have the same number of operations. Got: {len(job.ops)}, expected: {job_count}"
+        assert len(job.ops) == expected_op_count, f"Expected: {expected_op_count} operations in every job, got: {len(job.ops)}"
 
 
 def validate_instance_spec(ctx: Context, args: ValidateInstanceSpecArgs):
@@ -32,7 +33,7 @@ def validate_instance_spec(ctx: Context, args: ValidateInstanceSpecArgs):
     for file in tqdm(input_files):
         instance = JsspInstance.from_instance_file(file)
         assert_each_machine_has_exact_op_count(instance, instance.n_jobs)
-        assert_each_job_has_equal_op_count(instance)
+        assert_each_job_has_exact_op_count(instance, instance.n_machines)
 
     print("All assertions passed: OK")
 
