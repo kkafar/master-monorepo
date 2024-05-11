@@ -29,6 +29,8 @@ and assigned to any machine)*
 **Note 4**: *The order of operation execution (precedence) is such, that for any given operation 
 op_i all operations op_k (k < i && op_k in the same job as op_i) must be completed)*
 
+Note 5: Operations numbering is dependent on the implementation. However in result string operations are numbered from 1.
+
 
 ## Taillard specification
 
