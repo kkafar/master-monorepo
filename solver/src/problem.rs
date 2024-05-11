@@ -270,6 +270,8 @@ pub struct JsspInstanceMetadata {
 /// and each operation is assigned to a particular machine.
 #[derive(Debug, Clone)]
 pub struct JsspInstance {
+    /// Jobs are numerated with ids from 0 upwards.
+    /// Operations are assigned ids from 0 upwards, in order.
     pub jobs: Vec<Vec<Operation>>,
     pub cfg: JsspConfig,
     // TODO: I should merge Instance metadata with config
