@@ -43,3 +43,9 @@ class PerfcmpCmdArgs(Args):
 class CompareCmdArgs(Args):
     exp_dirs: list[Path]
     output_dir: Optional[Path]
+
+
+@dataclass
+class ValidateInstanceSpecArgs(Args):
+    input_files: Optional[list[Path]]
+

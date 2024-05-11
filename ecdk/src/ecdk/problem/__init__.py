@@ -9,7 +9,10 @@ from copy import copy, deepcopy
 class IdSpan:
     """ Represents range of operation ids that given job is comprised of. """
 
+    # Inclusive
     start: int
+
+    # Inclusive
     end: int
 
     def __contains__(self, item: int) -> bool:
@@ -27,8 +30,14 @@ class Operation:
 
 @dataclass
 class Job:
-    ops: list[Operation]  # ops[0] = None, ops are numbered from 1
+
+    # Operations have id numbered from 1 upwards, hence ops[0].id = 1, etc.
+    ops: list[Operation]
     span: IdSpan
+
+    @property
+    def ops_count(self) -> int:
+        return len(self.ops)
 
 
 @dataclass
@@ -36,15 +45,24 @@ class JsspInstance:
     """ I do not care about complexity in this class. At least for now.
     Future me will hate this. """
 
+    # Jobs are numbered from 1 upwards
     inner_jobs: list[Job]
+
+    # Machines are numbered from 0 upwards
     n_machines: int
 
     @property
     def jobs(self) -> list[Job]:
+        """ I'm numbering jobs from 1 upwards, as this is how they are
+        numbered in solution string.
+        """
         return self.inner_jobs[1:]
 
     @property
     def n_jobs(self):
+        """ I'm numbering jobs from 1 upwards, as this is how they are
+        numbered in solution string.
+        """
         return len(self.inner_jobs) - 1
 
     def job_for_op_with_id(self, opid: int) -> Optional[Job]:
@@ -98,6 +116,7 @@ class JsspInstance:
 
         n_jobs, n_machines = int(first_line[0]), int(first_line[1])
 
+        # Single line for each job + header
         assert len(spec) == n_jobs + 1, "It looks like there are more jobs spec than expected"
 
         # I want to have jobs numbered from 1, as it is done in the solution string

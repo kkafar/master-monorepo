@@ -5,12 +5,14 @@ from .args import (
     RunCmdArgs,
     AnalyzeCmdArgs,
     PerfcmpCmdArgs,
-    CompareCmdArgs
+    CompareCmdArgs,
+    ValidateInstanceSpecArgs,
 )
 
 
 def validate_base_args(args: Args):
-    assert args.cmd_name in ['run', 'analyze', 'perfcmp', 'compare'], "Unrecognized command name"
+    pass
+    # assert args.cmd_name in ['run', 'analyze', 'perfcmp', 'compare'], "Unrecognized command name"
 
 
 def validate_run_cmd_args(args: RunCmdArgs):
@@ -27,7 +29,6 @@ def validate_run_cmd_args(args: RunCmdArgs):
 
             if file.is_dir():
                 assert str(file).endswith('_instances'), f"Data directory name must end with '_instances'. Received {file}"
-
 
     if args.metadata_file is not None:
         assert args.metadata_file.is_file(), f"Metadata file {args.metadata_file} is not a file"
@@ -56,6 +57,10 @@ def validate_compare_cmd_args(args: CompareCmdArgs):
         assert args.output_dir.is_dir()
 
 
+def validate_validate_instance_spec_cmd_args(args: ValidateInstanceSpecArgs):
+    pass
+
+
 def validate_cli_args(args: Args):
     validate_base_args(args)
     match args.cmd_name:
@@ -67,5 +72,7 @@ def validate_cli_args(args: Args):
             validate_perfcmp_cmd_args(args)
         case 'compare':
             validate_compare_cmd_args(args)
+        case 'validate-instance-spec':
+            validate_validate_instance_spec_cmd_args(args)
         case _:
             assert False, "Unrecognized command type"
