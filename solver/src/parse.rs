@@ -84,6 +84,7 @@ impl TryFrom<&PathBuf> for JsspInstance {
                     .for_each(|(op_id_in_job, op_def)| {
                         let machine_id = op_def[0].parse().unwrap();
                         let duration = op_def[1].parse().unwrap();
+                        // We add 1 because ops are 1-base indexed & enumerator starts from 0.
                         let op_id = JsspInstance::id_of_kth_op_of_job_j(op_id_in_job + 1, job_id, n_jobs);
                         job_container.push(Operation::new(
                             op_id,
@@ -117,7 +118,50 @@ impl TryFrom<&PathBuf> for JsspInstance {
 
 #[cfg(test)]
 mod test {
+    use std::{path::PathBuf, str::FromStr};
+
+    use crate::problem::JsspInstance;
 
     #[test]
-    fn test1() {}
+    fn instance_loads_correctly_test01() {
+        let path = PathBuf::from_str("data/instances/mock_instances/test01.txt").unwrap();
+        let instance_loading_result = JsspInstance::try_from(&path);
+        assert!(instance_loading_result.is_ok());
+        let instance = instance_loading_result.unwrap();
+
+        assert_eq!(instance.cfg.n_jobs, 2);
+        assert_eq!(instance.cfg.n_machines, 2);
+        assert_eq!(instance.cfg.n_ops, 4);
+        assert_eq!(instance.jobs.len(), 2);
+
+        {
+            let job_0 = &instance.jobs[0];
+            assert_eq!(job_0.len(), 2);
+
+            let op_1 = &job_0[0];
+            assert_eq!(op_1.id(), 1);
+            assert_eq!(op_1.machine_id(), 1);
+            assert_eq!(op_1.duration(), 4);
+
+            let op_2 = &job_0[1];
+            assert_eq!(op_2.id(), 3);
+            assert_eq!(op_2.machine_id(), 0);
+            assert_eq!(op_2.duration(), 2);
+        }
+
+        {
+            let job_1 = &instance.jobs[1];
+            assert_eq!(job_1.len(), 2);
+
+            let op_1 = &job_1[0];
+            assert_eq!(op_1.id(), 2);
+            assert_eq!(op_1.machine_id(), 0);
+            assert_eq!(op_1.duration(), 1);
+
+            let op_2 = &job_1[1];
+            assert_eq!(op_2.id(), 4);
+            assert_eq!(op_2.machine_id(), 1);
+            assert_eq!(op_2.duration(), 3);
+        }
+    }
 }

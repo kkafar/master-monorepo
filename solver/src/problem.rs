@@ -124,6 +124,21 @@ impl Operation {
         // TODO: Should we zero `critical_path_edge` and `critical_distance` here?
         // Why is it not done?
     }
+
+    #[cfg(test)]
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
+    #[cfg(test)]
+    pub fn duration(&self) -> usize {
+        self.duration
+    }
+
+    #[cfg(test)]
+    pub fn machine_id(&self) -> usize {
+        self.machine
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -298,7 +313,7 @@ impl JsspInstance {
     #[inline]
     pub fn id_of_kth_op_of_job_j(k: usize, j: usize, n_jobs: usize) -> usize {
         assert!(k >= 1);
-        (k - 1) * n_jobs + j
+        (k - 1) * n_jobs + j + 1
     }
 
     /// Returns 0-based job id for operation with given id.
@@ -359,4 +374,9 @@ impl JsspInstance {
         // p + 1 can be derived from pth id by adding n_jobs.
         Vec::from_iter((1..k).map(|pred_k| JsspInstance::id_of_kth_op_of_job_j(pred_k, j, n_jobs)))
     }
+}
+
+#[cfg(test)]
+mod test {
+
 }
