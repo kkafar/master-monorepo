@@ -70,8 +70,6 @@ impl TryFrom<&PathBuf> for JsspInstance {
         // Processed operations counter
         let mut op_count = 0;
 
-        // let mut op_id: usize = 1;
-
         line_buffer
             .lines()
             .skip(1)
@@ -94,23 +92,22 @@ impl TryFrom<&PathBuf> for JsspInstance {
                             None,
                             JsspInstance::generate_predecessors_of_op_with_id(op_id, n_jobs),
                         ));
+                        op_count += 1;
                     });
             });
 
         // I've verified in https://github.com/kkafar/master-monorepo/pull/276
         // that each job has exacly n_machines operations and each machine has
-        // exacly n_jobs operations.
-
+        // exacly n_jobs operations, thus this assertion should hold.
         assert_eq!(op_count, expected_op_count);
-        let cfg = JsspConfig {
-            n_jobs,
-            n_machines,
-            n_ops: expected_op_count,
-        };
 
         Ok(JsspInstance {
             jobs,
-            cfg,
+            cfg: JsspConfig {
+                n_jobs,
+                n_machines,
+                n_ops: expected_op_count,
+            },
             metadata: JsspInstanceMetadata {
                 name: name.to_owned(),
             },
