@@ -374,9 +374,51 @@ impl JsspInstance {
         // p + 1 can be derived from pth id by adding n_jobs.
         Vec::from_iter((1..k).map(|pred_k| JsspInstance::id_of_kth_op_of_job_j(pred_k, j, n_jobs)))
     }
+
+
+    /// Returns job successor of given operation, or None if there isn't one.
+    ///
+    /// Note that this method does not take into account any source / sink operations,
+    /// as these are solver / implementation dependent.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    pub fn job_succ_of_op(op_id: usize, n_jobs: usize, n_ops: usize) -> Option<usize> {
+        if op_id + n_jobs <= n_ops {
+            Some(op_id + n_jobs)
+        } else {
+            None
+        }
+    }
+
+    /// Returns job predecessor of given operation, or None if there isn't one.
+    ///
+    /// Note that this method does not take into account any source / sink operations,
+    /// as these are solver / implementation dependent.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    #[allow(dead_code)]
+    pub fn job_pred_of_op(op_id: usize, n_jobs: usize) -> Option<usize> {
+        if op_id - n_jobs >= 1 {
+            Some(op_id - n_jobs)
+        } else {
+            None
+        }
+    }
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
 }

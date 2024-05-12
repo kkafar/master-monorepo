@@ -117,7 +117,7 @@ impl TryFrom<&PathBuf> for JsspInstance {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use std::{path::PathBuf, str::FromStr};
 
     use crate::problem::JsspInstance;
