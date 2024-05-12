@@ -277,3 +277,86 @@ pub struct JsspInstance {
     // TODO: I should merge Instance metadata with config
     pub metadata: JsspInstanceMetadata,
 }
+
+impl JsspInstance {
+    //! These methods are implemented according to decisions undertaken
+    //! in https://github.com/kkafar/master-monorepo/discussions/277
+
+    /// Returns "global" id of k'th operation of job j.
+    /// Note that it is assumed that k >= 1.
+    /// This method panics when k < 1.
+    /// It **might** return invalid result for invalid input, e.g.
+    /// when job j does not have kth operation.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    #[inline]
+    pub fn id_of_kth_op_of_job_j(k: usize, j: usize, n_jobs: usize) -> usize {
+        assert!(k >= 1);
+        (k - 1) * n_jobs + j
+    }
+
+    /// Returns 0-based job id for operation with given id.
+    /// This method assumes that input is valid.
+    /// Expect garbage output for garbage input.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    #[inline]
+    pub fn job_id_of_op(op_id: usize, n_jobs: usize) -> usize {
+        op_id % n_jobs
+    }
+
+    /// Returns which operation in turn of its job this operation is.
+    /// Expect garbage output for garbage input.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    #[inline]
+    pub fn op_offset_in_job(op_id: usize, n_jobs: usize) -> usize {
+        op_id.div_ceil(n_jobs)
+    }
+
+    /// Returns **newly allocated** vector of operations ids, that are job predecessors
+    /// of operation with given id. Note that this computation is not cached! Each call
+    /// to this method repeats the computation.
+    ///
+    /// Note also that this method does not include source (0) / sink (nm + 1) operations since these
+    /// are solver specific - not all approaches utilise this.
+    ///
+    /// This method **does** guarantee that the predecessors are in order, i.e.
+    /// for any given indice `i` of output array `result`, for any `0 <= j < i`, operation with id
+    /// `result[j]` a  job predecessor of op with id `result[i]`.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    pub fn generate_predecessors_of_op_with_id(op_id: usize, n_jobs: usize) -> Vec<usize> {
+        // op_id is kth operation of its job, thus there will be (k - 1) elemnts in result vector.
+        let k = JsspInstance::op_offset_in_job(op_id, n_jobs);
+        let j = JsspInstance::job_id_of_op(op_id, n_jobs);
+
+        // TODO(perf): possible optimisation here, we do not need to compute each id individually,
+        // p + 1 can be derived from pth id by adding n_jobs.
+        Vec::from_iter((1..k).map(|pred_k| JsspInstance::id_of_kth_op_of_job_j(pred_k, j, n_jobs)))
+    }
+}
