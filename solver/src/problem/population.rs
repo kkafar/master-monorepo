@@ -195,7 +195,15 @@ mod tests {
                     1
                 );
             });
-            assert_eq!(job.last().unwrap().edges_out.iter().filter(|edge| edge.neigh_id == sink_id && edge.kind == EdgeKind::JobSucc).count(), 1);
+            assert_eq!(
+                job.last()
+                    .unwrap()
+                    .edges_out
+                    .iter()
+                    .filter(|edge| edge.neigh_id == sink_id && edge.kind == EdgeKind::JobSucc)
+                    .count(),
+                1
+            );
         })
     }
 }

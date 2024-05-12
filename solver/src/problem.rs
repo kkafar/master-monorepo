@@ -375,7 +375,6 @@ impl JsspInstance {
         Vec::from_iter((1..k).map(|pred_k| JsspInstance::id_of_kth_op_of_job_j(pred_k, j, n_jobs)))
     }
 
-
     /// Returns job successor of given operation, or None if there isn't one.
     ///
     /// Note that this method does not take into account any source / sink operations,
@@ -419,6 +418,4 @@ impl JsspInstance {
 }
 
 #[cfg(test)]
-mod tests {
-
-}
+mod tests {}
