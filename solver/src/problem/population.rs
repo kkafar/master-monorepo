@@ -145,9 +145,7 @@ mod tests {
     fn source_and_sink_are_on_proper_positions_mini() {
         let instance = get_instance_mini();
         let provider = JsspPopProvider::new(instance);
-
         let instance = provider.instance();
-
         let sink_id = instance.cfg.n_ops + 1;
 
         assert_eq!(provider.operations.first().unwrap().id, 0);
@@ -155,10 +153,74 @@ mod tests {
     }
 
     #[test]
+    fn source_has_edges_to_every_first_op_mini() {
+        let instance = get_instance_mini();
+        let provider = JsspPopProvider::new(instance);
+        let instance = provider.instance();
+
+        assert_eq!(provider.operations.len(), instance.cfg.n_ops + 2);
+
+        let op_source = provider.operations.first().unwrap();
+
+        // There should be edge to first operation of every job
+        assert_eq!(op_source.edges_out.len(), instance.cfg.n_jobs);
+        assert_eq!(
+            op_source
+                .edges_out
+                .iter()
+                .filter(|edge| edge.kind == EdgeKind::JobSucc)
+                .count(),
+            instance.cfg.n_jobs
+        );
+    }
+
+    #[test]
+    fn last_ops_are_connected_to_sink_mini() {
+        let instance = get_instance_mini();
+        let provider = JsspPopProvider::new(instance);
+        let instance = provider.instance();
+
+        let sink_id = instance.cfg.n_ops + 1;
+
+        assert_eq!(provider.operations.first().unwrap().id, 0);
+        assert_eq!(provider.operations.last().unwrap().id, sink_id);
+
+        instance.jobs.iter().for_each(|job| {
+            assert_eq!(
+                job.last()
+                    .unwrap()
+                    .edges_out
+                    .iter()
+                    .filter(|edge| edge.neigh_id == sink_id && edge.kind == EdgeKind::JobSucc)
+                    .count(),
+                1
+            );
+        })
+    }
+
+    #[test]
+    fn forward_job_succ_edges_are_added_properly_mini() {
+        let instance = get_instance_mini();
+        let provider = JsspPopProvider::new(instance);
+        let instance = provider.instance();
+
+        instance.jobs.iter().for_each(|job| {
+            job.iter().tuple_windows().for_each(|(op_a, op_b)| {
+                assert_eq!(
+                    op_a.edges_out
+                        .iter()
+                        .filter(|edge| edge.neigh_id == op_b.id && edge.kind == EdgeKind::JobSucc)
+                        .count(),
+                    1
+                );
+            });
+        })
+    }
+
+    #[test]
     fn source_and_sink_ops_are_added_properly_mini() {
         let instance = get_instance_mini();
         let provider = JsspPopProvider::new(instance);
-
         let instance = provider.instance();
 
         // We want to verify whether source & sink are present & edges are added properly.
