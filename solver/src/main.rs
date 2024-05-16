@@ -16,6 +16,8 @@ use solver::{
 use crate::problem::JsspInstance;
 use crate::util::dump_solver_description;
 
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
 fn register_solvers(registry: &mut SolverRegistry) {
     registry.insert(Box::new(Goncalves2005));
     registry.insert(Box::new(Goncalves2005MidPoint));

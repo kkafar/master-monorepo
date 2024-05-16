@@ -1,3 +1,5 @@
+use crate::VERSION;
+
 use super::RunConfig;
 use serde::Serialize;
 
@@ -6,6 +8,7 @@ pub struct SolverDescription {
     codename: String,
     run_cfg: RunConfig,
     description: String,
+    version: &'static str,
 }
 
 impl SolverDescription {
@@ -14,6 +17,7 @@ impl SolverDescription {
             codename,
             run_cfg,
             description,
+            version: VERSION,
         }
     }
 

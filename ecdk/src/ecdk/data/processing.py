@@ -5,7 +5,7 @@ from tqdm import tqdm
 from pprint import pprint
 from pathlib import Path
 from typing import Optional, Generator
-from experiment.model import Experiment
+from experiment.model import Experiment, Version
 from data.model import JoinedExperimentData, ExperimentValidationResult
 from .tools import experiment_data_from_all_series, extract_solver_desc_from_experiment_batch
 from .plot import create_plots_for_experiment, plot_perf_cmp, visualise_instance_solution
@@ -29,7 +29,7 @@ from .constants import FLOAT_PRECISION
 DiffTableDesc = tuple[str, pl.DataFrame]
 
 
-def validate_experiment_data(exp: Experiment, data: JoinedExperimentData) -> ExperimentValidationResult:
+def validate_experiment_data(exp: Experiment, data: JoinedExperimentData, solver_version: Version) -> ExperimentValidationResult:
     """ Validates data of single experiment.
 
     :param exp: experiment with non-null result
@@ -42,11 +42,15 @@ def validate_experiment_data(exp: Experiment, data: JoinedExperimentData) -> Exp
     sol_reconstruction_results: list[ScheduleReconstructionResult] = []
     invalid_series: list[int] = []
 
+    # TODO extract this to some external logic gates
+    needs_numbering_translation = solver_version.major < 1
+
     for s_id, s_output in enumerate(exp.result.series_outputs):
         md = s_output.data.metadata
         result = validate_solution_string_in_context_of_instance(md.solution_string,
                                                                  instance,
-                                                                 md.fitness)
+                                                                 md.fitness,
+                                                                 compat=needs_numbering_translation)
         sol_reconstruction_results.append(result)
         if not result.ok:
             invalid_series.append(s_id)
@@ -56,16 +60,18 @@ def validate_experiment_data(exp: Experiment, data: JoinedExperimentData) -> Exp
 
 
 def validate_experiment_batch_data_gen(batch: list[Experiment],
-                                       batch_data: list[JoinedExperimentData]) -> Generator[ExperimentValidationResult, None, None]:
-    return (validate_experiment_data(exp, exp_data) for exp, exp_data in zip(batch, batch_data))
+                                       batch_data: list[JoinedExperimentData],
+                                       solver_version: Version) -> Generator[ExperimentValidationResult, None, None]:
+    return (validate_experiment_data(exp, exp_data, solver_version) for exp, exp_data in zip(batch, batch_data))
 
 
 def validate_experiment_batch_data(batch: list[Experiment],
                                    batch_data: list[JoinedExperimentData],
+                                   solver_version: Version,
                                    progress_bar: bool = False) -> list[ExperimentValidationResult]:
     if progress_bar:
-        return list(tqdm(validate_experiment_batch_data_gen(batch, batch_data), total=len(batch)))
-    return list(validate_experiment_batch_data_gen(batch, batch_data))
+        return list(tqdm(validate_experiment_batch_data_gen(batch, batch_data, solver_version), total=len(batch)))
+    return list(validate_experiment_batch_data_gen(batch, batch_data, solver_version))
 
 
 def find_some_best_series(exp: Experiment) -> int:
@@ -104,10 +110,20 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     print("Joining data from different series into single data frame...")
     data: list[JoinedExperimentData] = [experiment_data_from_all_series(exp) for exp in tqdm(batch)]
 
+    print("Attempting to extract solver information from experiment batch...")
+    solver_desc_res = extract_solver_desc_from_experiment_batch(batch)
+    solver_version = Version(0, 1, 0)
+    if solver_desc_res is not None:
+        desc, json_str = solver_desc_res
+        solver_version = desc.version
+        print("Attempting to extract solver information from experiment batch OK")
+    else:
+        print("Attempting to extract solver information from experiment batch FAILED")
+
     print("Validating batch output...")
 
     # validation_results: Generator[ExperimentValidationResult, None, None] = validate_experiment_batch_data_gen(batch, data)
-    validation_results: list[ExperimentValidationResult] = validate_experiment_batch_data(batch, data, progress_bar=True)
+    validation_results: list[ExperimentValidationResult] = validate_experiment_batch_data(batch, data, solver_version=solver_version, progress_bar=True)
     has_corrupted_data = False
 
     for result in filter(lambda res: not res.ok, validation_results):
@@ -140,8 +156,6 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
                               total=len(batch)))
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
-
-    solver_desc_res = extract_solver_desc_from_experiment_batch(batch)
 
     res_sum_df = compute_stats_from_solver_summary(batch, data)
     global_df = compute_global_exp_stats(batch, data, tabledir)

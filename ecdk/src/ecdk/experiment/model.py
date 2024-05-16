@@ -338,6 +338,22 @@ class SolverRunConfig:
         )
 
 
+class Version:
+    __slots__ = ('major', 'minor', 'patch')
+
+    def __init__(self, major: int, minor: int, patch: int):
+        self.major = major
+        self.minor = minor
+        self.patch = patch
+
+    @classmethod
+    def from_str(cls, version_str: str):
+        parts = version_str.split('.')
+        assert len(parts) == 3, f"Expected exactly 3 parts in version string spec, got {len(parts)}"
+        major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
+        return cls(major, minor, patch)
+
+
 @dataclass
 class SolverDescription:
     """ Solver outputs this to stdout every time it is run. """
@@ -345,6 +361,7 @@ class SolverDescription:
     codename: str
     run_cfg: SolverRunConfig
     description: str
+    version: Version
 
     @classmethod
     def from_dict(cls, md: dict):
@@ -354,7 +371,10 @@ class SolverDescription:
         return cls(
             codename=md['codename'],
             run_cfg=md['run_cfg'],
-            description=md['description']
+            description=md['description'],
+
+            # 0.1.0 was the version before introducing this field to solver description
+            version=Version.from_str(md.get("version", "0.1.0")),
         )
 
 
