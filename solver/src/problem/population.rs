@@ -34,9 +34,7 @@ impl JsspPopProvider {
             job.iter_mut().for_each(|op| {
                 // We want the predecessors to be in asceding order. I rely on this behaviour in
                 // the JSSP solver later on. Do not change it w/o modyfing the algorithm.
-                println!("Inserting 0 for {}, prev: {:?}", op.id, op.preds);
                 op.preds.insert(0, 0);
-                println!("After Inserting 0 for {}, prev: {:?}", op.id, op.preds);
                 op.edges_out.push(Edge {
                     neigh_id: JsspInstance::job_succ_of_op(op.id, n_jobs, dim).unwrap_or(dim + 1),
                     kind: EdgeKind::JobSucc,
