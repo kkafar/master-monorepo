@@ -51,6 +51,7 @@ impl JsspPopProvider {
             .into_iter()
             .chain(instance.jobs.clone().into_iter().flatten())
             .chain([sink_op])
+            .sorted_by(|a, b| a.id.cmp(&b.id))
             .collect_vec();
 
         assert_eq!(operations.len(), dim + 2);
