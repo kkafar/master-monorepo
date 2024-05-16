@@ -564,7 +564,7 @@ mod tests {
 
         let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
 
-        for (job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+        for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
             for (index, &op_id) in job_operation_ids.iter().enumerate() {
                 let preds = JsspInstance::generate_predecessors_of_op_with_id(op_id, n_jobs);
 

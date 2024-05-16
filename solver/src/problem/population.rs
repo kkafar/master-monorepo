@@ -34,7 +34,9 @@ impl JsspPopProvider {
             job.iter_mut().for_each(|op| {
                 // We want the predecessors to be in asceding order. I rely on this behaviour in
                 // the JSSP solver later on. Do not change it w/o modyfing the algorithm.
+                println!("Inserting 0 for {}, prev: {:?}", op.id, op.preds);
                 op.preds.insert(0, 0);
+                println!("After Inserting 0 for {}, prev: {:?}", op.id, op.preds);
                 op.edges_out.push(Edge {
                     neigh_id: JsspInstance::job_succ_of_op(op.id, n_jobs, dim).unwrap_or(dim + 1),
                     kind: EdgeKind::JobSucc,
@@ -274,7 +276,7 @@ mod tests {
         let instance = get_instance_test01();
         let provider = JsspPopProvider::new(instance);
         let instance = provider.instance();
-        let operations = &provider.operations;
+        let _operations = &provider.operations;
 
         {
             let job_0 = &instance.jobs[0];
@@ -287,11 +289,27 @@ mod tests {
 
             let op_2 = &job_0[1];
             assert_eq!(op_2.id(), 3);
-            println!("{:?}", op_1.preds());
-            assert_eq!(op_1.preds().len(), 2); // 0 & 1
-            assert_eq!(op_1.preds()[0], 0);
-            assert_eq!(op_1.preds()[1], 1);
+            println!("{:?}", op_2.preds());
+            assert_eq!(op_2.preds().len(), 2); // 0 & 1
+            assert_eq!(op_2.preds()[0], 0);
+            assert_eq!(op_2.preds()[1], 1);
         }
 
+        {
+            let job_1 = &instance.jobs[1];
+            assert_eq!(job_1.len(), 2);
+
+            let op_1 = &job_1[0];
+            assert_eq!(op_1.id(), 2);
+            assert_eq!(op_1.preds().len(), 1);
+            assert_eq!(*op_1.preds().first().unwrap(), 0);
+
+            let op_2 = &job_1[1];
+            assert_eq!(op_2.id(), 4);
+            println!("{:?}", op_2.preds());
+            assert_eq!(op_2.preds().len(), 2); // 0 & 1
+            assert_eq!(op_2.preds()[0], 0);
+            assert_eq!(op_2.preds()[1], 2);
+        }
     }
 }
