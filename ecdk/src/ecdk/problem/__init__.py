@@ -5,18 +5,8 @@ from typing import Optional
 from copy import copy, deepcopy
 
 
-@dataclass
-class IdSpan:
-    """ Represents range of operation ids that given job is comprised of. """
-
-    # Inclusive
-    start: int
-
-    # Inclusive
-    end: int
-
-    def __contains__(self, item: int) -> bool:
-        return item >= self.start and item <= self.end
+def ceildiv(a: int, b: int) -> int:
+    return -(a // -b)
 
 
 @dataclass
@@ -33,7 +23,6 @@ class Job:
 
     # Operations have id numbered from 1 upwards, hence ops[0].id = 1, etc.
     ops: list[Operation]
-    span: IdSpan
 
     @property
     def ops_count(self) -> int:
@@ -45,7 +34,10 @@ class JsspInstance:
     """ I do not care about complexity in this class. At least for now.
     Future me will hate this. """
 
-    # Jobs are numbered from 1 upwards
+    # JOBS use 0-based numbering,
+    # OPERATIONS use 1-based numbering,
+    # MACHINES use 0-based numbering,
+
     inner_jobs: list[Job]
 
     # Machines are numbered from 0 upwards
@@ -53,31 +45,56 @@ class JsspInstance:
 
     @property
     def jobs(self) -> list[Job]:
-        """ I'm numbering jobs from 1 upwards, as this is how they are
-        numbered in solution string.
-        """
-        return self.inner_jobs[1:]
+        return self.inner_jobs
 
     @property
     def n_jobs(self):
-        """ I'm numbering jobs from 1 upwards, as this is how they are
-        numbered in solution string.
-        """
-        return len(self.inner_jobs) - 1
+        return len(self.inner_jobs)
 
-    def job_for_op_with_id(self, opid: int) -> Optional[Job]:
-        for job in self.jobs:
-            if opid in job.span:
-                return job
+    @property
+    def n_ops(self):
+        return self.n_jobs * self.n_machines
+
+    @staticmethod
+    def job_id_of_op(op_id: int, n_jobs: int, n_ops: int) -> int:
+        if op_id >= n_ops:
+            raise ValueError(f"op_id ({op_id}) must not be >= n_ops {n_ops}")
+        return (op_id - 1) % n_jobs
+
+    @staticmethod
+    def op_offset_in_job(op_id: int, n_jobs: int) -> int:
+        """Returns which operation in turn of its job this operation is.
+        Correct result should be >= 1.
+        Expect garbage output for garbage input."""
+        return ceildiv(op_id, n_jobs)
+
+    @staticmethod
+    def job_pred_for_op(op_id: int, n_jobs: int) -> Optional[int]:
+        if op_id - n_jobs >= 1:
+            return op_id - n_jobs
         return None
+
+    @staticmethod
+    def id_of_kth_op_of_job_j(k: int, j: int, n_jobs: int) -> int:
+        """Returns "global" id of k'th operation of job j.
+        Note that it is assumed that k >= 1.
+        This method panics when k < 1.
+        It **might** return invalid result for invalid input, e.g.
+        when job j does not have kth operation."""
+        assert k >= 1
+        return (k - 1) * n_jobs + j + 1
+
+    def job_for_op_with_id(self, op_id: int) -> Optional[Job]:
+        return self.inner_jobs[JsspInstance.job_id_of_op(op_id, self.n_jobs, self.n_ops)]
 
     def op_for_id(self, id: int) -> Operation:
         """
         :returns: operation with given id, raises error in case op was not found
         """
         if (job := self.job_for_op_with_id(id)) is not None:
-            op = job.ops[id - job.span.start]
-            assert op.id == id
+            index = JsspInstance.op_offset_in_job(id, self.n_jobs) - 1
+            op = job.ops[index]
+            assert op.id == id, f"Found wrong operation ({op.id}), expected ({id})"
             return op
         else:
             raise ValueError(f"Failed to found op for id {id}")
@@ -88,9 +105,9 @@ class JsspInstance:
         exception on other failures. In case of success returns desired operation.
         """
         if (job := self.job_for_op_with_id(id)) is not None:
-            # looking for pred
-            if id - 1 >= job.span.start:
-                return job.ops[id - job.span.start - 1]
+            pred_id = JsspInstance.job_pred_for_op(id, self.n_jobs)
+            if pred_id is not None:
+                return self.op_for_id(pred_id)
             else:
                 return None
         else:
@@ -119,25 +136,20 @@ class JsspInstance:
         # Single line for each job + header
         assert len(spec) == n_jobs + 1, "It looks like there are more jobs spec than expected"
 
-        # I want to have jobs numbered from 1, as it is done in the solution string
-        jobs: list[Job] = [None]
-        crt_op_id = 1
-        crt_job_id = 1
+        # I want to have jobs numbered from 0, and operations numbered fom 1
+        jobs: list[Job] = []
 
-        for line_i, line in enumerate(spec[1:]):
+        for job_id, line in enumerate(spec[1:]):
             line = line.split()
             assert len(line) % 2 == 0, "Expected even number of elements in line with job specification"
 
-            first_op_id = crt_op_id
             ops = []
 
-            for machine_id, duration in iter_batched(line, 2):
-                ops.append(Operation(id=crt_op_id, duration=int(duration), machine=int(machine_id), job_id=crt_job_id, finish_time=None))
-                crt_op_id += 1
+            for op_number_in_job, (machine_id, duration) in enumerate(iter_batched(line, 2)):
+                op_id = JsspInstance.id_of_kth_op_of_job_j(op_number_in_job + 1, job_id, n_jobs)
+                ops.append(Operation(id=op_id, duration=int(duration), machine=int(machine_id), job_id=job_id, finish_time=None))
 
-            crt_job_id += 1
-            last_op_id = crt_op_id - 1
-            jobs.append(Job(ops=ops, span=IdSpan(first_op_id, last_op_id)))
+            jobs.append(Job(ops=ops))
 
         return JsspInstance(jobs, n_machines)
 
@@ -154,7 +166,7 @@ class ScheduleReconstructionResult:
         return self.err is None or len(self.err) == 0
 
 
-def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspInstance, fitness: int) -> ScheduleReconstructionResult:
+def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspInstance, fitness: int, compat: bool = False) -> ScheduleReconstructionResult:
     """ Verify the solution string according to problem instance constraints. Basically we create the full
     schedule (lists of jobs in order of execution for each machine) based on solution string and instance spec.
     After building up the schedule, problem constraints are validated (jobs precedence) and the fitness value is verified
@@ -163,6 +175,7 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
     :param solstr: solution string as outputted by solver
     :param instance: specification of the problem instance (job description, etc.)
     :param fitness: fitness the solver claims this solution has
+    :param compat: whether solution string needs to be translated first, because it uses old operation numbering rules
     :returns: reconstruction result, see structure definition for details
     """
 
