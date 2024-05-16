@@ -340,8 +340,12 @@ mod tests {
     #[test]
     fn operation_ids_are_ascending_test03() {
         let provider = JsspPopProvider::new(get_instance_test03());
-        provider.operations.iter().tuple_windows().for_each(|(op_a, op_b)| {
-            assert_eq!(op_b.id, op_a.id + 1);
-        });
+        provider
+            .operations
+            .iter()
+            .tuple_windows()
+            .for_each(|(op_a, op_b)| {
+                assert_eq!(op_b.id, op_a.id + 1);
+            });
     }
 }
