@@ -8,7 +8,10 @@ use itertools::Itertools;
 
 use crate::stats::IndividualTelemetry;
 
-use super::{individual::JsspIndividual, parse::JsspInstanceLoadingError, Edge, EdgeKind, JsspInstance, Machine, Operation};
+use super::{
+    individual::JsspIndividual, parse::JsspInstanceLoadingError, Edge, EdgeKind, JsspInstance, Machine,
+    Operation,
+};
 
 pub struct JsspPopProvider {
     instance: JsspInstance,

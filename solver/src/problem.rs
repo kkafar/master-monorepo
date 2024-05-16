@@ -2,10 +2,10 @@ use std::ops::Range;
 
 use itertools::Itertools;
 
-pub mod parse;
 pub mod crossover;
 pub mod fitness;
 pub mod individual;
+pub mod parse;
 pub mod population;
 pub mod probe;
 pub mod replacement;

@@ -236,16 +236,22 @@ mod tests {
         let job_2_expected_ids = [3, 6, 9, 12];
         let job_expected_ids = [job_0_expected_ids, job_1_expected_ids, job_2_expected_ids];
 
-        for (expected_job_operation_ids, actual_job_operations) in job_expected_ids.into_iter().zip_eq(instance.jobs) {
+        for (expected_job_operation_ids, actual_job_operations) in
+            job_expected_ids.into_iter().zip_eq(instance.jobs)
+        {
             for (i, operation) in actual_job_operations.into_iter().enumerate() {
                 if i == 0 {
                     assert!(operation.preds.is_empty());
                 } else {
                     assert!(!operation.preds.is_empty());
                     assert_eq!(operation.preds.len(), i);
-                    operation.preds.into_iter().zip(expected_job_operation_ids).for_each(|(pred_id, expected_pred_id)| {
-                        assert_eq!(expected_pred_id, pred_id);
-                    });
+                    operation
+                        .preds
+                        .into_iter()
+                        .zip(expected_job_operation_ids)
+                        .for_each(|(pred_id, expected_pred_id)| {
+                            assert_eq!(expected_pred_id, pred_id);
+                        });
                 }
             }
         }
