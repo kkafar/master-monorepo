@@ -1,7 +1,6 @@
 mod cli;
 mod config;
 mod logging;
-mod parse;
 mod problem;
 mod solver;
 mod stats;

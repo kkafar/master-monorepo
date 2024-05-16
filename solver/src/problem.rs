@@ -5,6 +5,7 @@ use itertools::Itertools;
 pub mod crossover;
 pub mod fitness;
 pub mod individual;
+pub mod parse;
 pub mod population;
 pub mod probe;
 pub mod replacement;
@@ -20,7 +21,7 @@ pub enum EdgeKind {
 }
 
 /// Models the edge in neighbourhood graph where operations are nodes
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Edge {
     /// Unique id of the neighbour operation
     pub neigh_id: usize,
@@ -123,26 +124,6 @@ impl Operation {
 
         // TODO: Should we zero `critical_path_edge` and `critical_distance` here?
         // Why is it not done?
-    }
-
-    #[cfg(test)]
-    pub fn id(&self) -> usize {
-        self.id
-    }
-
-    #[cfg(test)]
-    pub fn duration(&self) -> usize {
-        self.duration
-    }
-
-    #[cfg(test)]
-    pub fn machine_id(&self) -> usize {
-        self.machine
-    }
-
-    #[cfg(test)]
-    pub fn preds(&self) -> &Vec<usize> {
-        &self.preds
     }
 }
 
