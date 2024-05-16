@@ -334,10 +334,12 @@ impl JsspInstance {
     /// operations are numbered in specific way. See the issue for details.
     #[inline]
     pub fn job_id_of_op(op_id: usize, n_jobs: usize) -> usize {
-        op_id % n_jobs
+        // We subtract 1 as operations are numbered from 1, and jobs are numbered from 0.
+        (op_id - 1) % n_jobs
     }
 
     /// Returns which operation in turn of its job this operation is.
+    /// Correct result should be >= 1.
     /// Expect garbage output for garbage input.
     ///
     /// IMPORTANT:
@@ -414,8 +416,12 @@ impl JsspInstance {
     /// operations are numbered in specific way. See the issue for details.
     #[allow(dead_code)]
     pub fn job_pred_of_op(op_id: usize, n_jobs: usize) -> Option<usize> {
-        if op_id - n_jobs >= 1 {
-            Some(op_id - n_jobs)
+        if let Some(sub) = op_id.checked_sub(n_jobs) {
+            if sub >= 1 {
+                Some(sub)
+            } else {
+                None
+            }
         } else {
             None
         }
@@ -423,4 +429,156 @@ impl JsspInstance {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::JsspInstance;
+
+    #[test]
+    fn id_of_kth_op_of_job_j_computed_correctly_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_expected_ids = [1, 4, 7, 10];
+        let job_1_expected_ids = [2, 5, 8, 11];
+        let job_2_expected_ids = [3, 6, 9, 12];
+
+        let job_expected_ids = [job_0_expected_ids, job_1_expected_ids, job_2_expected_ids];
+
+        for (job_id, expected_ids) in job_expected_ids.iter().enumerate() {
+            expected_ids
+                .iter()
+                .enumerate()
+                .map(|(index, id)| (index + 1, id))
+                .for_each(|(op_number, &expected_id)| {
+                    assert_eq!(JsspInstance::id_of_kth_op_of_job_j(op_number, job_id, n_jobs), expected_id);
+                })
+        }
+    }
+
+    #[test]
+    fn job_id_of_op_computed_correctly_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for &op_id in job_operation_ids {
+                assert_eq!(JsspInstance::job_id_of_op(op_id, n_jobs), job_id);
+            }
+        }
+    }
+
+    #[test]
+    fn op_offset_in_job_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for (expected_op_offset, &op_id) in job_operation_ids.iter().enumerate().map(|(index, op_id)| (index + 1, op_id)) {
+                assert_eq!(JsspInstance::op_offset_in_job(op_id, n_jobs), expected_op_offset);
+            }
+        }
+    }
+
+    #[test]
+    fn job_succ_of_op_computed_correctly_test03() {
+        let n_jobs = 3;
+        let n_machines = 4;
+        let n_ops = n_jobs * n_machines;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for (index, &op_id) in job_operation_ids.iter().enumerate() {
+                if index < job_operation_ids.len() - 1 {
+                    assert_eq!(JsspInstance::job_succ_of_op(op_id, n_jobs, n_ops), Some(job_operation_ids[index + 1]));
+                } else {
+                    assert_eq!(JsspInstance::job_succ_of_op(op_id, n_jobs, n_ops), None);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn job_pred_of_op_computed_correctly_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for (index, &op_id) in job_operation_ids.iter().enumerate() {
+                if index > 0 {
+                    assert_eq!(JsspInstance::job_pred_of_op(op_id, n_jobs), Some(job_operation_ids[index - 1]));
+                } else {
+                    assert_eq!(JsspInstance::job_pred_of_op(op_id, n_jobs), None);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn generate_predecessors_of_op_with_id_computed_correctly_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for (index, &op_id) in job_operation_ids.iter().enumerate() {
+                let preds = JsspInstance::generate_predecessors_of_op_with_id(op_id, n_jobs);
+
+                if index == 0 {
+                    assert!(preds.is_empty());
+                } else {
+                    assert_eq!(preds.len(), index);
+                    job_operation_ids.iter().take(index).zip(preds).for_each(|(&expected_id, generated_id)| {
+                        assert_eq!(expected_id, generated_id);
+                    })
+                }
+            }
+        }
+
+
+    }
+}
