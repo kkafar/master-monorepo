@@ -452,7 +452,10 @@ mod tests {
                 .enumerate()
                 .map(|(index, id)| (index + 1, id))
                 .for_each(|(op_number, &expected_id)| {
-                    assert_eq!(JsspInstance::id_of_kth_op_of_job_j(op_number, job_id, n_jobs), expected_id);
+                    assert_eq!(
+                        JsspInstance::id_of_kth_op_of_job_j(op_number, job_id, n_jobs),
+                        expected_id
+                    );
                 })
         }
     }
@@ -493,7 +496,11 @@ mod tests {
         let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
 
         for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
-            for (expected_op_offset, &op_id) in job_operation_ids.iter().enumerate().map(|(index, op_id)| (index + 1, op_id)) {
+            for (expected_op_offset, &op_id) in job_operation_ids
+                .iter()
+                .enumerate()
+                .map(|(index, op_id)| (index + 1, op_id))
+            {
                 assert_eq!(JsspInstance::op_offset_in_job(op_id, n_jobs), expected_op_offset);
             }
         }
@@ -517,7 +524,10 @@ mod tests {
         for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
             for (index, &op_id) in job_operation_ids.iter().enumerate() {
                 if index < job_operation_ids.len() - 1 {
-                    assert_eq!(JsspInstance::job_succ_of_op(op_id, n_jobs, n_ops), Some(job_operation_ids[index + 1]));
+                    assert_eq!(
+                        JsspInstance::job_succ_of_op(op_id, n_jobs, n_ops),
+                        Some(job_operation_ids[index + 1])
+                    );
                 } else {
                     assert_eq!(JsspInstance::job_succ_of_op(op_id, n_jobs, n_ops), None);
                 }
@@ -542,7 +552,10 @@ mod tests {
         for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
             for (index, &op_id) in job_operation_ids.iter().enumerate() {
                 if index > 0 {
-                    assert_eq!(JsspInstance::job_pred_of_op(op_id, n_jobs), Some(job_operation_ids[index - 1]));
+                    assert_eq!(
+                        JsspInstance::job_pred_of_op(op_id, n_jobs),
+                        Some(job_operation_ids[index - 1])
+                    );
                 } else {
                     assert_eq!(JsspInstance::job_pred_of_op(op_id, n_jobs), None);
                 }
@@ -572,13 +585,13 @@ mod tests {
                     assert!(preds.is_empty());
                 } else {
                     assert_eq!(preds.len(), index);
-                    job_operation_ids.iter().take(index).zip(preds).for_each(|(&expected_id, generated_id)| {
-                        assert_eq!(expected_id, generated_id);
-                    })
+                    job_operation_ids.iter().take(index).zip(preds).for_each(
+                        |(&expected_id, generated_id)| {
+                            assert_eq!(expected_id, generated_id);
+                        },
+                    )
                 }
             }
         }
-
-
     }
 }

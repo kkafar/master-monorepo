@@ -166,7 +166,5 @@ mod tests {
     }
 
     #[test]
-    fn predecessors_are_generated_correctly() {
-
-    }
+    fn predecessors_are_generated_correctly() {}
 }
