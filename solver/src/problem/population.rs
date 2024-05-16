@@ -141,6 +141,13 @@ mod tests {
         instance_loading_result.unwrap()
     }
 
+    fn get_instance_test03() -> JsspInstance {
+        let path = PathBuf::from_str("data/instances/mock_instances/test03.txt").unwrap();
+        let instance_loading_result = JsspInstance::try_from(&path);
+        assert!(instance_loading_result.is_ok());
+        instance_loading_result.unwrap()
+    }
+
     #[test]
     fn source_and_sink_are_on_proper_positions_test01() {
         let instance = get_instance_test01();
@@ -309,5 +316,23 @@ mod tests {
             assert_eq!(op_2.preds()[0], 0);
             assert_eq!(op_2.preds()[1], 2);
         }
+    }
+
+    #[test]
+    fn source_op_is_at_zero_index_in_operations_test03() {
+        let provider = JsspPopProvider::new(get_instance_test03());
+        let operations = &provider.operations;
+
+        assert_eq!(operations.len(), 14);
+        assert_eq!(operations[0].id, 0);
+    }
+
+    #[test]
+    fn sink_op_is_at_last_index_in_operations_test03() {
+        let provider = JsspPopProvider::new(get_instance_test03());
+        let operations = &provider.operations;
+
+        assert_eq!(operations.len(), 14);
+        assert_eq!(operations.last().unwrap().id, operations.len() - 1);
     }
 }

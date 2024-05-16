@@ -152,6 +152,7 @@ impl JsspFitness {
 
                     let machine_pred = &mut indv.operations[pred_id];
 
+                    println!("machine_pred.edges_out: {:?}", machine_pred.edges_out);
                     assert!(machine_pred.edges_out.len() == 1);
 
                     machine_pred.edges_out.push(Edge::new(j, EdgeKind::MachineSucc));
