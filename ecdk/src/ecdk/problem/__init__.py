@@ -9,6 +9,27 @@ def ceildiv(a: int, b: int) -> int:
     return -(a // -b)
 
 
+def job_id_of_op_legacy(op_id: int, n_machines: int) -> int:
+    return (op_id - 1) // n_machines
+
+
+def op_offset_in_job_legacy(op_id: int, n_machines: int) -> int:
+    return (op_id - 1) % n_machines + 1
+
+
+def translate_legacy_numbered_op_ids(ids: list[int], n_jobs: int, n_machines: int) -> list[int]:
+    result = []
+    for legacy_op_id in ids:
+        job_id = job_id_of_op_legacy(legacy_op_id, n_machines)
+        assert 0 <= job_id < n_jobs
+        offset = op_offset_in_job_legacy(legacy_op_id, n_machines)
+
+        op_id = JsspInstance.id_of_kth_op_of_job_j(offset, job_id, n_jobs)
+        result.append(op_id)
+
+    return result
+
+
 @dataclass
 class Operation:
     id: int
@@ -57,7 +78,7 @@ class JsspInstance:
 
     @staticmethod
     def job_id_of_op(op_id: int, n_jobs: int, n_ops: int) -> int:
-        if op_id >= n_ops:
+        if op_id > n_ops:
             raise ValueError(f"op_id ({op_id}) must not be >= n_ops {n_ops}")
         return (op_id - 1) % n_jobs
 
@@ -201,6 +222,9 @@ def validate_solution_string_in_context_of_instance(solstr: str, instance: JsspI
     # There is also special ordering rule for operations with 0 duration. Take a look into the docs of this repo
     # on the data model
     ordered_op_ids = list(map(int, solstr.split('_')))
+
+    if compat:
+        ordered_op_ids = translate_legacy_numbered_op_ids(ordered_op_ids, instance.n_jobs, instance.n_machines)
 
     machine_schedules = [[] for _ in range(0, instance.n_machines)]
 

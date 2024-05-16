@@ -151,7 +151,7 @@ def _parse_solver_description_from_file(file: Path) -> Optional[tuple[SolverDesc
 
     json_str = None
 
-    print('parsing')
+    # print('parsing')
     with open(file, 'r') as fd:
         while (line := fd.readline()) != '':
             if not line.startswith(start_marker):
