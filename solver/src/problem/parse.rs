@@ -6,7 +6,7 @@ use std::{
 use itertools::Itertools;
 use thiserror::Error;
 
-use crate::problem::{JsspConfig, JsspInstance, JsspInstanceMetadata, Operation};
+use crate::problem::{Edge, EdgeKind, JsspConfig, JsspInstance, JsspInstanceMetadata, Operation};
 
 pub type Result<T> = std::result::Result<T, JsspInstanceLoadingError>;
 pub type Error = JsspInstanceLoadingError;
@@ -86,13 +86,18 @@ impl TryFrom<&PathBuf> for JsspInstance {
                         let duration = op_def[1].parse().unwrap();
                         // We add 1 because ops are 1-base indexed & enumerator starts from 0.
                         let op_id = JsspInstance::id_of_kth_op_of_job_j(op_id_in_job + 1, job_id, n_jobs);
-                        job_container.push(Operation::new(
+                        let mut operation = Operation::new(
                             op_id,
                             duration,
                             machine_id,
                             None,
                             JsspInstance::generate_predecessors_of_op_with_id(op_id, n_jobs),
-                        ));
+                        );
+                        if let Some(succ_id) = JsspInstance::job_succ_of_op(op_id, n_jobs, expected_op_count)
+                        {
+                            operation.edges_out.push(Edge::new(succ_id, EdgeKind::JobSucc));
+                        }
+                        job_container.push(operation);
                         op_count += 1;
                     });
             });
@@ -120,14 +125,27 @@ impl TryFrom<&PathBuf> for JsspInstance {
 mod tests {
     use std::{path::PathBuf, str::FromStr};
 
-    use crate::problem::JsspInstance;
+    use itertools::Itertools;
 
-    #[test]
-    fn operations_have_correct_ids_test01() {
+    use crate::problem::{Edge, EdgeKind, JsspInstance};
+
+    fn get_instance_test01() -> JsspInstance {
         let path = PathBuf::from_str("data/instances/mock_instances/test01.txt").unwrap();
         let instance_loading_result = JsspInstance::try_from(&path);
         assert!(instance_loading_result.is_ok());
-        let instance = instance_loading_result.unwrap();
+        instance_loading_result.unwrap()
+    }
+
+    fn get_instance_test03() -> JsspInstance {
+        let path = PathBuf::from_str("data/instances/mock_instances/test03.txt").unwrap();
+        let instance_loading_result = JsspInstance::try_from(&path);
+        assert!(instance_loading_result.is_ok());
+        instance_loading_result.unwrap()
+    }
+
+    #[test]
+    fn operations_have_correct_ids_test01() {
+        let instance = get_instance_test01();
 
         assert_eq!(instance.cfg.n_jobs, 2);
         assert_eq!(instance.cfg.n_machines, 2);
@@ -139,14 +157,14 @@ mod tests {
             assert_eq!(job_0.len(), 2);
 
             let op_1 = &job_0[0];
-            assert_eq!(op_1.id(), 1);
-            assert_eq!(op_1.machine_id(), 1);
-            assert_eq!(op_1.duration(), 4);
+            assert_eq!(op_1.id, 1);
+            assert_eq!(op_1.machine, 1);
+            assert_eq!(op_1.duration, 4);
 
             let op_2 = &job_0[1];
-            assert_eq!(op_2.id(), 3);
-            assert_eq!(op_2.machine_id(), 0);
-            assert_eq!(op_2.duration(), 2);
+            assert_eq!(op_2.id, 3);
+            assert_eq!(op_2.machine, 0);
+            assert_eq!(op_2.duration, 2);
         }
 
         {
@@ -154,17 +172,82 @@ mod tests {
             assert_eq!(job_1.len(), 2);
 
             let op_1 = &job_1[0];
-            assert_eq!(op_1.id(), 2);
-            assert_eq!(op_1.machine_id(), 0);
-            assert_eq!(op_1.duration(), 1);
+            assert_eq!(op_1.id, 2);
+            assert_eq!(op_1.machine, 0);
+            assert_eq!(op_1.duration, 1);
 
             let op_2 = &job_1[1];
-            assert_eq!(op_2.id(), 4);
-            assert_eq!(op_2.machine_id(), 1);
-            assert_eq!(op_2.duration(), 3);
+            assert_eq!(op_2.id, 4);
+            assert_eq!(op_2.machine, 1);
+            assert_eq!(op_2.duration, 3);
         }
     }
 
     #[test]
-    fn predecessors_are_generated_correctly() {}
+    fn operations_have_correct_ids_test03() {
+        let instance = get_instance_test03();
+
+        assert_eq!(instance.cfg.n_jobs, 3);
+        assert_eq!(instance.cfg.n_machines, 4);
+        assert_eq!(instance.cfg.n_ops, 12);
+
+        assert_eq!(instance.cfg.n_jobs, instance.jobs.len());
+
+        let job_0_expected_ids = [1, 4, 7, 10];
+        let job_1_expected_ids = [2, 5, 8, 11];
+        let job_2_expected_ids = [3, 6, 9, 12];
+        let job_expected_ids = [job_0_expected_ids, job_1_expected_ids, job_2_expected_ids];
+
+        assert_eq!(job_expected_ids.len(), instance.jobs.len());
+
+        for (_job_id, (expected_ids, actual_ids)) in job_expected_ids.iter().zip_eq(instance.jobs).enumerate()
+        {
+            for (&expected_id, actual_id) in expected_ids.iter().zip_eq(actual_ids.iter().map(|op| op.id)) {
+                assert_eq!(expected_id, actual_id);
+            }
+        }
+    }
+
+    #[test]
+    fn forward_job_edges_are_added_correctly_test03() {
+        let instance = get_instance_test03();
+
+        let n_jobs = instance.cfg.n_jobs;
+        let n_ops = instance.cfg.n_ops;
+
+        for job_operations in instance.jobs {
+            for operation in job_operations {
+                if let Some(succ_id) = JsspInstance::job_succ_of_op(operation.id, n_jobs, n_ops) {
+                    assert_eq!(operation.edges_out.len(), 1);
+                    assert_eq!(operation.edges_out[0], Edge::new(succ_id, EdgeKind::JobSucc));
+                } else {
+                    assert!(operation.edges_out.is_empty());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn predecessors_are_generated_correctly_test03() {
+        let instance = get_instance_test03();
+
+        let job_0_expected_ids = [1, 4, 7, 10];
+        let job_1_expected_ids = [2, 5, 8, 11];
+        let job_2_expected_ids = [3, 6, 9, 12];
+        let job_expected_ids = [job_0_expected_ids, job_1_expected_ids, job_2_expected_ids];
+
+        for (expected_job_operation_ids, actual_job_operations) in job_expected_ids.into_iter().zip_eq(instance.jobs) {
+            for (i, operation) in actual_job_operations.into_iter().enumerate() {
+                if i == 0 {
+                    assert!(operation.preds.is_empty());
+                } else {
+                    assert!(!operation.preds.is_empty());
+                    assert_eq!(operation.preds.len(), i);
+                    operation.preds.into_iter().zip(expected_job_operation_ids).for_each(|(pred_id, expected_pred_id)| {
+                        assert_eq!(expected_pred_id, pred_id);
+                    });
+                }
+            }
+        }
+    }
 }

@@ -6,9 +6,9 @@ use ecrs::{
 };
 use itertools::Itertools;
 
-use crate::{parse::JsspInstanceLoadingError, stats::IndividualTelemetry};
+use crate::stats::IndividualTelemetry;
 
-use super::{individual::JsspIndividual, Edge, EdgeKind, JsspInstance, Machine, Operation};
+use super::{individual::JsspIndividual, parse::JsspInstanceLoadingError, Edge, EdgeKind, JsspInstance, Machine, Operation};
 
 pub struct JsspPopProvider {
     instance: JsspInstance,
@@ -35,10 +35,12 @@ impl JsspPopProvider {
                 // We want the predecessors to be in asceding order. I rely on this behaviour in
                 // the JSSP solver later on. Do not change it w/o modyfing the algorithm.
                 op.preds.insert(0, 0);
-                op.edges_out.push(Edge {
-                    neigh_id: JsspInstance::job_succ_of_op(op.id, n_jobs, dim).unwrap_or(dim + 1),
-                    kind: EdgeKind::JobSucc,
-                })
+                if JsspInstance::job_succ_of_op(op.id, n_jobs, dim).is_none() {
+                    op.edges_out.push(Edge {
+                        neigh_id: dim + 1,
+                        kind: EdgeKind::JobSucc,
+                    })
+                }
             });
             // job.last_mut().unwrap().edges_out.last_mut().unwrap().neigh_id = dim + 1;
             zero_op.edges_out.push(Edge {
@@ -289,16 +291,16 @@ mod tests {
             assert_eq!(job_0.len(), 2);
 
             let op_1 = &job_0[0];
-            assert_eq!(op_1.id(), 1);
-            assert_eq!(op_1.preds().len(), 1);
-            assert_eq!(*op_1.preds().first().unwrap(), 0);
+            assert_eq!(op_1.id, 1);
+            assert_eq!(op_1.preds.len(), 1);
+            assert_eq!(*op_1.preds.first().unwrap(), 0);
 
             let op_2 = &job_0[1];
-            assert_eq!(op_2.id(), 3);
-            println!("{:?}", op_2.preds());
-            assert_eq!(op_2.preds().len(), 2); // 0 & 1
-            assert_eq!(op_2.preds()[0], 0);
-            assert_eq!(op_2.preds()[1], 1);
+            assert_eq!(op_2.id, 3);
+            println!("{:?}", op_2.preds);
+            assert_eq!(op_2.preds.len(), 2); // 0 & 1
+            assert_eq!(op_2.preds[0], 0);
+            assert_eq!(op_2.preds[1], 1);
         }
 
         {
@@ -306,16 +308,16 @@ mod tests {
             assert_eq!(job_1.len(), 2);
 
             let op_1 = &job_1[0];
-            assert_eq!(op_1.id(), 2);
-            assert_eq!(op_1.preds().len(), 1);
-            assert_eq!(*op_1.preds().first().unwrap(), 0);
+            assert_eq!(op_1.id, 2);
+            assert_eq!(op_1.preds.len(), 1);
+            assert_eq!(*op_1.preds.first().unwrap(), 0);
 
             let op_2 = &job_1[1];
-            assert_eq!(op_2.id(), 4);
-            println!("{:?}", op_2.preds());
-            assert_eq!(op_2.preds().len(), 2); // 0 & 1
-            assert_eq!(op_2.preds()[0], 0);
-            assert_eq!(op_2.preds()[1], 2);
+            assert_eq!(op_2.id, 4);
+            println!("{:?}", op_2.preds);
+            assert_eq!(op_2.preds.len(), 2); // 0 & 1
+            assert_eq!(op_2.preds[0], 0);
+            assert_eq!(op_2.preds[1], 2);
         }
     }
 
