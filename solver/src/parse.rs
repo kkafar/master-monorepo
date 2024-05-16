@@ -123,7 +123,7 @@ mod tests {
     use crate::problem::JsspInstance;
 
     #[test]
-    fn instance_loads_correctly_test01() {
+    fn operations_have_correct_ids_test01() {
         let path = PathBuf::from_str("data/instances/mock_instances/test01.txt").unwrap();
         let instance_loading_result = JsspInstance::try_from(&path);
         assert!(instance_loading_result.is_ok());
@@ -163,5 +163,10 @@ mod tests {
             assert_eq!(op_2.machine_id(), 1);
             assert_eq!(op_2.duration(), 3);
         }
+    }
+
+    #[test]
+    fn predecessors_are_generated_correctly() {
+
     }
 }

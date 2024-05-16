@@ -139,6 +139,11 @@ impl Operation {
     pub fn machine_id(&self) -> usize {
         self.machine
     }
+
+    #[cfg(test)]
+    pub fn preds(&self) -> &Vec<usize> {
+        &self.preds
+    }
 }
 
 #[derive(Debug, Clone)]

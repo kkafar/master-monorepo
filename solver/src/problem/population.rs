@@ -134,7 +134,7 @@ mod tests {
     //     }
     // }
 
-    fn get_instance_mini() -> JsspInstance {
+    fn get_instance_test01() -> JsspInstance {
         let path = PathBuf::from_str("data/instances/mock_instances/test01.txt").unwrap();
         let instance_loading_result = JsspInstance::try_from(&path);
         assert!(instance_loading_result.is_ok());
@@ -142,8 +142,8 @@ mod tests {
     }
 
     #[test]
-    fn source_and_sink_are_on_proper_positions_mini() {
-        let instance = get_instance_mini();
+    fn source_and_sink_are_on_proper_positions_test01() {
+        let instance = get_instance_test01();
         let provider = JsspPopProvider::new(instance);
         let instance = provider.instance();
         let sink_id = instance.cfg.n_ops + 1;
@@ -153,8 +153,8 @@ mod tests {
     }
 
     #[test]
-    fn source_has_edges_to_every_first_op_mini() {
-        let instance = get_instance_mini();
+    fn source_has_edges_to_every_first_op_test01() {
+        let instance = get_instance_test01();
         let provider = JsspPopProvider::new(instance);
         let instance = provider.instance();
 
@@ -175,8 +175,8 @@ mod tests {
     }
 
     #[test]
-    fn last_ops_are_connected_to_sink_mini() {
-        let instance = get_instance_mini();
+    fn last_ops_are_connected_to_sink_test01() {
+        let instance = get_instance_test01();
         let provider = JsspPopProvider::new(instance);
         let instance = provider.instance();
 
@@ -199,8 +199,8 @@ mod tests {
     }
 
     #[test]
-    fn forward_job_succ_edges_are_added_properly_mini() {
-        let instance = get_instance_mini();
+    fn forward_job_succ_edges_are_added_properly_test01() {
+        let instance = get_instance_test01();
         let provider = JsspPopProvider::new(instance);
         let instance = provider.instance();
 
@@ -218,8 +218,8 @@ mod tests {
     }
 
     #[test]
-    fn source_and_sink_ops_are_added_properly_mini() {
-        let instance = get_instance_mini();
+    fn source_and_sing_aggregate_test_test01() {
+        let instance = get_instance_test01();
         let provider = JsspPopProvider::new(instance);
         let instance = provider.instance();
 
@@ -267,5 +267,31 @@ mod tests {
                 1
             );
         })
+    }
+
+    #[test]
+    fn predecessor_array_is_filled_in_order_test01() {
+        let instance = get_instance_test01();
+        let provider = JsspPopProvider::new(instance);
+        let instance = provider.instance();
+        let operations = &provider.operations;
+
+        {
+            let job_0 = &instance.jobs[0];
+            assert_eq!(job_0.len(), 2);
+
+            let op_1 = &job_0[0];
+            assert_eq!(op_1.id(), 1);
+            assert_eq!(op_1.preds().len(), 1);
+            assert_eq!(*op_1.preds().first().unwrap(), 0);
+
+            let op_2 = &job_0[1];
+            assert_eq!(op_2.id(), 3);
+            println!("{:?}", op_1.preds());
+            assert_eq!(op_1.preds().len(), 2); // 0 & 1
+            assert_eq!(op_1.preds()[0], 0);
+            assert_eq!(op_1.preds()[1], 1);
+        }
+
     }
 }
