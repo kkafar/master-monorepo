@@ -124,6 +124,26 @@ impl Operation {
         // TODO: Should we zero `critical_path_edge` and `critical_distance` here?
         // Why is it not done?
     }
+
+    #[cfg(test)]
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
+    #[cfg(test)]
+    pub fn duration(&self) -> usize {
+        self.duration
+    }
+
+    #[cfg(test)]
+    pub fn machine_id(&self) -> usize {
+        self.machine
+    }
+
+    #[cfg(test)]
+    pub fn preds(&self) -> &Vec<usize> {
+        &self.preds
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -270,8 +290,308 @@ pub struct JsspInstanceMetadata {
 /// and each operation is assigned to a particular machine.
 #[derive(Debug, Clone)]
 pub struct JsspInstance {
+    /// Jobs are numerated with ids from 0 upwards.
+    /// Operations are assigned ids from 0 upwards, in order.
     pub jobs: Vec<Vec<Operation>>,
     pub cfg: JsspConfig,
     // TODO: I should merge Instance metadata with config
     pub metadata: JsspInstanceMetadata,
+}
+
+impl JsspInstance {
+    //! These methods are implemented according to decisions undertaken
+    //! in https://github.com/kkafar/master-monorepo/discussions/277
+
+    /// Returns "global" id of k'th operation of job j.
+    /// Note that it is assumed that k >= 1.
+    /// This method panics when k < 1.
+    /// It **might** return invalid result for invalid input, e.g.
+    /// when job j does not have kth operation.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    #[inline]
+    pub fn id_of_kth_op_of_job_j(k: usize, j: usize, n_jobs: usize) -> usize {
+        assert!(k >= 1);
+        (k - 1) * n_jobs + j + 1
+    }
+
+    /// Returns 0-based job id for operation with given id.
+    /// This method assumes that input is valid.
+    /// Expect garbage output for garbage input.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    #[inline]
+    pub fn job_id_of_op(op_id: usize, n_jobs: usize) -> usize {
+        // We subtract 1 as operations are numbered from 1, and jobs are numbered from 0.
+        (op_id - 1) % n_jobs
+    }
+
+    /// Returns which operation in turn of its job this operation is.
+    /// Correct result should be >= 1.
+    /// Expect garbage output for garbage input.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    #[inline]
+    pub fn op_offset_in_job(op_id: usize, n_jobs: usize) -> usize {
+        op_id.div_ceil(n_jobs)
+    }
+
+    /// Returns **newly allocated** vector of operations ids, that are job predecessors
+    /// of operation with given id. Note that this computation is not cached! Each call
+    /// to this method repeats the computation.
+    ///
+    /// Note also that this method does not include source (0) / sink (nm + 1) operations since these
+    /// are solver specific - not all approaches utilise this.
+    ///
+    /// This method **does** guarantee that the predecessors are in order, i.e.
+    /// for any given indice `i` of output array `result`, for any `0 <= j < i`, operation with id
+    /// `result[j]` a  job predecessor of op with id `result[i]`.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    pub fn generate_predecessors_of_op_with_id(op_id: usize, n_jobs: usize) -> Vec<usize> {
+        // op_id is kth operation of its job, thus there will be (k - 1) elemnts in result vector.
+        let k = JsspInstance::op_offset_in_job(op_id, n_jobs);
+        let j = JsspInstance::job_id_of_op(op_id, n_jobs);
+
+        // TODO(perf): possible optimisation here, we do not need to compute each id individually,
+        // p + 1 can be derived from pth id by adding n_jobs.
+        Vec::from_iter((1..k).map(|pred_k| JsspInstance::id_of_kth_op_of_job_j(pred_k, j, n_jobs)))
+    }
+
+    /// Returns job successor of given operation, or None if there isn't one.
+    ///
+    /// Note that this method does not take into account any source / sink operations,
+    /// as these are solver / implementation dependent.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    pub fn job_succ_of_op(op_id: usize, n_jobs: usize, n_ops: usize) -> Option<usize> {
+        if op_id + n_jobs <= n_ops {
+            Some(op_id + n_jobs)
+        } else {
+            None
+        }
+    }
+
+    /// Returns job predecessor of given operation, or None if there isn't one.
+    ///
+    /// Note that this method does not take into account any source / sink operations,
+    /// as these are solver / implementation dependent.
+    ///
+    /// IMPORTANT:
+    /// Complying to https://github.com/kkafar/master-monorepo/discussions/277,
+    /// JOBS use 0-based numbering,
+    /// OPERATIONS use 1-based numbering,
+    /// MACHINES use 0-based numbering.
+    /// Moreover, since https://github.com/kkafar/master-monorepo/issues/223
+    /// operations are numbered in specific way. See the issue for details.
+    #[allow(dead_code)]
+    pub fn job_pred_of_op(op_id: usize, n_jobs: usize) -> Option<usize> {
+        if let Some(sub) = op_id.checked_sub(n_jobs) {
+            if sub >= 1 {
+                Some(sub)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::JsspInstance;
+
+    #[test]
+    fn id_of_kth_op_of_job_j_computed_correctly_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_expected_ids = [1, 4, 7, 10];
+        let job_1_expected_ids = [2, 5, 8, 11];
+        let job_2_expected_ids = [3, 6, 9, 12];
+
+        let job_expected_ids = [job_0_expected_ids, job_1_expected_ids, job_2_expected_ids];
+
+        for (job_id, expected_ids) in job_expected_ids.iter().enumerate() {
+            expected_ids
+                .iter()
+                .enumerate()
+                .map(|(index, id)| (index + 1, id))
+                .for_each(|(op_number, &expected_id)| {
+                    assert_eq!(
+                        JsspInstance::id_of_kth_op_of_job_j(op_number, job_id, n_jobs),
+                        expected_id
+                    );
+                })
+        }
+    }
+
+    #[test]
+    fn job_id_of_op_computed_correctly_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for &op_id in job_operation_ids {
+                assert_eq!(JsspInstance::job_id_of_op(op_id, n_jobs), job_id);
+            }
+        }
+    }
+
+    #[test]
+    fn op_offset_in_job_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for (expected_op_offset, &op_id) in job_operation_ids
+                .iter()
+                .enumerate()
+                .map(|(index, op_id)| (index + 1, op_id))
+            {
+                assert_eq!(JsspInstance::op_offset_in_job(op_id, n_jobs), expected_op_offset);
+            }
+        }
+    }
+
+    #[test]
+    fn job_succ_of_op_computed_correctly_test03() {
+        let n_jobs = 3;
+        let n_machines = 4;
+        let n_ops = n_jobs * n_machines;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for (index, &op_id) in job_operation_ids.iter().enumerate() {
+                if index < job_operation_ids.len() - 1 {
+                    assert_eq!(
+                        JsspInstance::job_succ_of_op(op_id, n_jobs, n_ops),
+                        Some(job_operation_ids[index + 1])
+                    );
+                } else {
+                    assert_eq!(JsspInstance::job_succ_of_op(op_id, n_jobs, n_ops), None);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn job_pred_of_op_computed_correctly_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for (index, &op_id) in job_operation_ids.iter().enumerate() {
+                if index > 0 {
+                    assert_eq!(
+                        JsspInstance::job_pred_of_op(op_id, n_jobs),
+                        Some(job_operation_ids[index - 1])
+                    );
+                } else {
+                    assert_eq!(JsspInstance::job_pred_of_op(op_id, n_jobs), None);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn generate_predecessors_of_op_with_id_computed_correctly_test03() {
+        let n_jobs = 3;
+        let _n_machines = 4;
+
+        // According to the used problem modeling each job should have 4 operations (n_machines)
+        // and each machine should be assigned 3 operations (n_jobs).
+
+        let job_0_ids = [1, 4, 7, 10];
+        let job_1_ids = [2, 5, 8, 11];
+        let job_2_ids = [3, 6, 9, 12];
+
+        let job_ops_ids = [job_0_ids, job_1_ids, job_2_ids];
+
+        for (_job_id, job_operation_ids) in job_ops_ids.iter().enumerate() {
+            for (index, &op_id) in job_operation_ids.iter().enumerate() {
+                let preds = JsspInstance::generate_predecessors_of_op_with_id(op_id, n_jobs);
+
+                if index == 0 {
+                    assert!(preds.is_empty());
+                } else {
+                    assert_eq!(preds.len(), index);
+                    job_operation_ids.iter().take(index).zip(preds).for_each(
+                        |(&expected_id, generated_id)| {
+                            assert_eq!(expected_id, generated_id);
+                        },
+                    )
+                }
+            }
+        }
+    }
 }
