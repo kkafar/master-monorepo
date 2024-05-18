@@ -2,3 +2,4 @@ inst.id,inst.ref,inst.jobs,inst.machines,inst.opt.bound.lower,inst.opt.bound.low
 test01,mockref,2,2,7,mockref,7,mockref,40,mockref
 test02,mockref,2,2,7,mockref,7,mockref,30,mockref
 test03,mockref,2,2,7,mockref,7,mockref,1000000,mockref
+test04,mockref,3,4,16,mockref,16,mockref,5000,mockref
