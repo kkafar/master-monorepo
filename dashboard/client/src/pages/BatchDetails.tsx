@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SetURLSearchParams, useParams, useSearchParams } from "react-router-dom";
 import Server, { BatchPlotsResponse, ExperimentPlots, TableRequest } from "../api/server";
 import SummaryByExpTable, { SummaryByExpTableData } from "../components/tables/SummaryByExpTable";
@@ -8,8 +8,6 @@ import './css/BatchDetails.css';
 import ConvergenceInfoTable, { ConvergenceInfoTableRowData } from "../components/tables/ConvergenceInfoTable";
 import RunSummaryStatsTable, { RunInfoTableRowData as RunSummaryStatsTableRowData } from "../components/tables/RunSummaryStatsTable";
 import TitledTable from "../components/TitledTable";
-import { table } from "console";
-import { Url } from "url";
 
 function createTableRequest(tableName: string, batchName: string): TableRequest {
   return {
@@ -162,9 +160,6 @@ function ExpPlotsDetails({ expPlots }: ExperimentPlotsDetailsProps): React.JSX.E
     plotUrl.pathname = "assets" + plotUrl.pathname;
     return plotUrl.toString();
   }, []);
-
-  // console.log(fitAvg.toString());
-
 
   return (
     <div>
