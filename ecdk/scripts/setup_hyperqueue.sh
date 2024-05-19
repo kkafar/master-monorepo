@@ -87,7 +87,8 @@ assert_envvar_set MY_GRANT_RES_CPU
 
 # module load python/3.10.8-gcccore-12.2.0
 # pip install -r requirements.txt
-load_module_if_needed python/3.10.8-gcccore-12.2.0
+# load_module_if_needed python/3.10.8-gcccore-12.2.0
+load_module_if_needed python/3.11.3-gcccore-12.3.0
 pip install -r requirements.txt
 
 
