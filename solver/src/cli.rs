@@ -1,6 +1,8 @@
 use clap::Parser;
 use std::path::PathBuf;
 
+use crate::VERSION;
+
 /// Jssp instance solver
 #[derive(Parser, Debug, Clone)]
 pub struct Args {
@@ -53,6 +55,10 @@ pub struct Args {
     /// by solvers that do use "standard" JsspFitness.
     #[arg(long = "local-search-enabled")]
     pub local_search_enabled: Option<bool>,
+
+    /// Print solver version and exit.
+    #[arg(long = "version", default_value_t = false)]
+    pub version: bool,
 }
 
 fn validate_args(args: &Args) -> Result<(), String> {
