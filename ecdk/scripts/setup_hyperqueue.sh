@@ -36,16 +36,16 @@ function create_auto_alloc_queue_if_needed() {
   # Relying on structure of command output here
   if [[ ${line_count} -eq 3 ]]; then
     echo "Seems that there are no auto allocation queues present, attempting to create one..."
-    # hq alloc add slurm \
-    #   --workers-per-alloc 1 \
-    #   --max-worker-count 48 \
-    #   --backlog 36 \
-    #   --idle-timeout 1m \
-    #   --time-limit 9h \
-    #   -- \
-    #   --partition=${MY_PARTITION} \
-    #   --account=${MY_GRANT_RES_CPU} \
-    #   --mem-per-cpu=256M
+    hq alloc add slurm \
+      --workers-per-alloc 1 \
+      --max-worker-count 48 \
+      --backlog 36 \
+      --idle-timeout 1m \
+      --time-limit 9h \
+      -- \
+      --partition=${MY_PARTITION} \
+      --account=${MY_GRANT_RES_CPU} \
+      --mem-per-cpu=256M
 
     # Experiment with 2 CPU workers
     # Tried this out, however it allocated single-cpu workers anyway (as reported by `squeue`).
@@ -62,17 +62,17 @@ function create_auto_alloc_queue_if_needed() {
     #   --account=${MY_GRANT_RES_CPU} \
     #   --mem-per-cpu=256M
 
-    hq alloc add slurm \
-      --workers-per-alloc 1 \
-      --max-worker-count 4 \
-      --backlog 4 \
-      --idle-timeout 1m \
-      --time-limit 5m \
-      --cpus 2 \
-      -- \
-      --partition=${MY_PARTITION} \
-      --account=${MY_GRANT_RES_CPU} \
-      --mem-per-cpu=256M
+    # hq alloc add slurm \
+    #   --workers-per-alloc 1 \
+    #   --max-worker-count 4 \
+    #   --backlog 4 \
+    #   --idle-timeout 1m \
+    #   --time-limit 5m \
+    #   --cpus 2 \
+    #   -- \
+    #   --partition=${MY_PARTITION} \
+    #   --account=${MY_GRANT_RES_CPU} \
+    #   --mem-per-cpu=256M
 
   else
     echo "Seems that there are auto allocation queues present. Not starting another one."
