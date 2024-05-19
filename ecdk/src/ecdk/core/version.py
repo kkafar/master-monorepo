@@ -8,7 +8,6 @@ class Version:
 
     @classmethod
     def from_str(cls, version_str: str):
-        print(f"Received str: {version_str}")
         parts = version_str.split('.')
         assert len(parts) == 3, f"Expected exactly 3 parts in version string spec, got {len(parts)}"
         major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
