@@ -1,8 +1,6 @@
 use clap::Parser;
 use std::path::PathBuf;
 
-use crate::VERSION;
-
 /// Jssp instance solver
 #[derive(Parser, Debug, Clone)]
 pub struct Args {

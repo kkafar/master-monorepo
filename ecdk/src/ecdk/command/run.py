@@ -5,7 +5,9 @@ from experiment.model import (
     ExperimentConfig,
     Experiment,
     ExperimentBatch,
-    SolverConfigFile
+    SolverConfigFile,
+    SolverExecutableInfo,
+    EcdkInfo,
 )
 from data.file_resolver import resolve_all_input_files
 from data.tools import maybe_load_instance_metadata
@@ -16,6 +18,7 @@ from core.tools import (
     current_timestamp_iso8601
 )
 from core.fs import initialize_file_hierarchy
+from core.version import Version
 from context import Context
 
 
@@ -51,22 +54,30 @@ def run(ctx: Context, args: RunCmdArgs):
             )
         )
 
+    solver_proxy = SolverProxy(args.bin)
     solver_config = SolverConfigFile(args.config_file) if args.config_file else None
+    solver_info = SolverExecutableInfo(version=solver_proxy.version())
+    ecdk_info = EcdkInfo(version=ctx.ecdk_version)
+
     batch = ExperimentBatch(output_dir=base_dir,
                             experiments=batch,
                             solver_config=solver_config,
-                            start_time=start_timestamp)
+                            start_time=start_timestamp,
+                            solver_info=solver_info,
+                            ecdk_info=ecdk_info)
 
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
 
+    exit(0)
+
     experiment_configs = [exp.config for exp in batch.experiments]
 
     if args.hq and ctx.is_ares:
-        HyperQueueRunner(SolverProxy(args.bin)).run(batch, ctx=ctx, postprocess=args.experimental_postprocess)
+        HyperQueueRunner(solver_proxy).run(batch, ctx=ctx, postprocess=args.experimental_postprocess)
     else:
         LocalExperimentBatchRunner(
-            SolverProxy(args.bin),
+            solver_proxy,
             experiment_configs
         ).run(process_limit=args.procs)
 

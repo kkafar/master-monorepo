@@ -1,11 +1,47 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, Dict
 from data.model import InstanceMetadata
+from core.version import Version
 import core.util
 from polars import DataFrame
 import datetime as dt
 import json
+
+
+@dataclass(frozen=True)
+class SolverExecutableInfo:
+    """ Information on solver binary that was used for particular batch """
+
+    version: Version = field(default=Version(0, 1, 0))
+
+    @classmethod
+    def from_dict(cls, md: dict):
+        return cls(
+            version=Version.from_str(md['version'])
+        )
+
+    def as_dict(self) -> dict:
+        return {
+            "version": str(self.version),
+        }
+
+
+@dataclass(frozen=True)
+class EcdkInfo:
+    """ Information on ecdk application used to conduct experiments / analyze data etc. """
+    version: Version = field(default=Version(0, 0, 1))
+
+    @classmethod
+    def from_dict(cls, md: dict):
+        return cls(
+            version=Version.from_str(md.get('version', '0.0.1'))
+        )
+
+    def as_dict(self) -> dict:
+        return {
+            "version": str(self.version),
+        }
 
 
 @dataclass(frozen=True)
@@ -296,6 +332,9 @@ class ExperimentBatch:
     # ISO 8601 timestamp
     start_time: Optional[str] = None
 
+    solver_info: Optional[SolverExecutableInfo] = None
+    ecdk_info: Optional[EcdkInfo] = None
+
     def as_dict(self) -> dict:
         result = {
             "output_dir": str(self.output_dir),
@@ -307,6 +346,12 @@ class ExperimentBatch:
 
         if self.start_time:
             result["start_time"] = self.start_time
+
+        if self.solver_info is not None:
+            result["solver_info"] = self.solver_info.as_dict()
+
+        if self.ecdk_info is not None:
+            result["ecdk_info"] = self.ecdk_info.as_dict()
 
         return result
 
@@ -338,22 +383,6 @@ class SolverRunConfig:
         )
 
 
-class Version:
-    __slots__ = ('major', 'minor', 'patch')
-
-    def __init__(self, major: int, minor: int, patch: int):
-        self.major = major
-        self.minor = minor
-        self.patch = patch
-
-    @classmethod
-    def from_str(cls, version_str: str):
-        parts = version_str.split('.')
-        assert len(parts) == 3, f"Expected exactly 3 parts in version string spec, got {len(parts)}"
-        major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
-        return cls(major, minor, patch)
-
-
 @dataclass
 class SolverDescription:
     """ Solver outputs this to stdout every time it is run. """
@@ -376,5 +405,4 @@ class SolverDescription:
             # 0.1.0 was the version before introducing this field to solver description
             version=Version.from_str(md.get("version", "0.1.0")),
         )
-
 
