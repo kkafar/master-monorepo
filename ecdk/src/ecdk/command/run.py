@@ -69,8 +69,6 @@ def run(ctx: Context, args: RunCmdArgs):
     # Create file hierarchy & dump configuration data
     initialize_file_hierarchy(batch)
 
-    exit(0)
-
     experiment_configs = [exp.config for exp in batch.experiments]
 
     if args.hq and ctx.is_ares:
