@@ -28,6 +28,12 @@ fn register_solvers(registry: &mut SolverRegistry) {
 
 fn run() -> anyhow::Result<()> {
     let args = cli::parse_args();
+
+    if args.version {
+        println!("{VERSION}");
+        return Ok(());
+    }
+
     let config = match Config::try_from(args) {
         Ok(config) => config,
         Err(err) => panic!("Failed to create config from args: {err}"),

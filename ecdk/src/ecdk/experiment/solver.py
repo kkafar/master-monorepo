@@ -1,21 +1,25 @@
 import subprocess as sp
 import datetime as dt
 from pathlib import Path
+from typing import Optional
 from .model import (
     SolverParams,
     SolverResult,
     SolverRunMetadata,
 )
 from core.series import load_series_output
+from core.version import Version
 
 
 class SolverProxy:
-    INPUT_FILE_OPT_NAME = '--input-file'
-    OUTPUT_DIR_OPT_NAME = '--output-dir'
-    CONFIG_FILE_OPT_NAME = '--config'
+    INPUT_FILE_OPT = '--input-file'
+    OUTPUT_DIR_OPT = '--output-dir'
+    CONFIG_FILE_OPT = '--config'
+    VERSION_OPT = '--version'
 
-    def __init__(self, binary: Path):
+    def __init__(self, binary: Path, version: Optional[Version] = None):
         self.binary: Path = binary
+        self._cached_version: Optional[Version] = version
 
     # def __task_from_params(self, id: int, params: SolverParams) -> Task:
     #     return Task(
@@ -27,19 +31,30 @@ class SolverProxy:
     def exec_cmd_from_params(self, params: SolverParams, stringify_args: bool = False) -> list[str]:
         base = [
             self.binary,
-            SolverProxy.INPUT_FILE_OPT_NAME,
+            SolverProxy.INPUT_FILE_OPT,
             params.input_file,
-            SolverProxy.OUTPUT_DIR_OPT_NAME,
+            SolverProxy.OUTPUT_DIR_OPT,
             params.output_dir
         ]
         if params.config_file is not None:
-            base.extend((SolverProxy.CONFIG_FILE_OPT_NAME, params.config_file))
+            base.extend((SolverProxy.CONFIG_FILE_OPT, params.config_file))
 
         if stringify_args:
             # For older versions of Python on Ares / HyperQueue
             base = list(map(str, base))
 
         return base
+
+    def _query_version_cmd(self, stringify_args: bool = False) -> list[str]:
+        cmd_parts = [
+            self.binary,
+            SolverProxy.VERSION_OPT
+        ]
+        return cmd_parts
+
+        if stringify_args:
+            # For older versions of Python on Ares / HyperQueue
+            cmd_parts = list(map(str, cmd_parts))
 
     def run(self, params: SolverParams) -> SolverResult:
         print(f"Running with {params}", end=' ', flush=True)
@@ -71,4 +86,20 @@ class SolverProxy:
     #             status=compl_task.return_code
     #         )
     #     ) for param, compl_task in zip(params, completed_tasks)]
+
+    def _query_version(self) -> Optional[Version]:
+        args = self._query_version_cmd()
+        completed_process: sp.CompletedProcess = sp.run(args, capture_output=True, encoding="utf-8")
+        maybe_version_information = completed_process.stdout
+        # TODO: consider running some validation here & handling errors
+        version = Version.from_str(maybe_version_information)
+        return version
+
+    def version(self) -> Optional[Version]:
+        if self._cached_version is not None:
+            return self._cached_version
+
+        self._cached_version = self._query_version()
+        return self._cached_version
+
 
