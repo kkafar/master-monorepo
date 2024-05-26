@@ -1,12 +1,12 @@
 import polars as pl
 import polars.selectors as cs
 import itertools as it
+import context
 from tqdm import tqdm
-from pprint import pprint
 from pathlib import Path
-from typing import Optional, Generator
-from experiment.model import Experiment, Version
-from data.model import JoinedExperimentData, ExperimentValidationResult
+from typing import Optional, Generator, Iterable
+from experiment.model import Experiment, Version, ExperimentId, SolutionHash
+from data.model import JoinedExperimentData, ExperimentValidationResult, SeriesId
 from .tools import experiment_data_from_all_series, extract_solver_desc_from_experiment_batch
 from .plot import create_plots_for_experiment, plot_perf_cmp, visualise_instance_solution
 from .stat import (
@@ -16,7 +16,7 @@ from .stat import (
     compute_convergence_iteration_per_exp,
     compute_stats_from_solver_summary
 )
-from core.fs import get_plotdir_for_exp, get_main_tabledir
+from core.fs import get_plotdir_for_exp, get_main_tabledir, get_data_dir_from_ecdk_dir
 from core.util import write_string_to_file
 from problem import (
     validate_solution_string_in_context_of_instance,
@@ -24,6 +24,7 @@ from problem import (
     ScheduleReconstructionResult,
 )
 from .constants import FLOAT_PRECISION
+from .db.proxy import DatabaseProxy
 
 
 DiffTableDesc = tuple[str, pl.DataFrame]
@@ -157,19 +158,27 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
 
     tabledir = get_main_tabledir(outdir) if outdir is not None else None
 
-    res_sum_df = compute_stats_from_solver_summary(batch, data)
+    print("Computing statistics...")
+    run_metadata_stats_df = compute_stats_from_solver_summary(batch, data)
     global_df = compute_global_exp_stats(batch, data, tabledir)
     conv_df = compute_convergence_iteration_per_exp(batch, data, tabledir)
 
+    if run_metadata_stats_df is not None:
+        print("Looking for any previously unknown solutions...")
+        ctx = context.get_context()
+        db_proxy = DatabaseProxy(ctx.ecdk_db_path(), ctx.ecdk_instance_solutions_dir())
+        look_for_new_solution(run_metadata_stats_df[1], db_proxy, tabledir)
+
     if tabledir is not None:
+        print(f"Saving table data to {tabledir}...")
         conv_df.write_csv(
             tabledir.joinpath('convergence_info.csv'),
             has_header=True,
             float_precision=FLOAT_PRECISION
         )
 
-        if res_sum_df:
-            run_sum_df, sols_df = res_sum_df
+        if run_metadata_stats_df:
+            run_sum_df, sols_df = run_metadata_stats_df
             run_sum_df.write_csv(
                 tabledir / 'run_summary_stats.csv',
                 has_header=True,
@@ -184,6 +193,35 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     if outdir and solver_desc_res:
         solver_desc, json_str = solver_desc_res
         write_string_to_file(json_str, outdir / 'solver_desc.json')
+
+
+def look_for_new_solution(hash_df: pl.DataFrame, db: DatabaseProxy, table_dir: Path = None) -> Iterable[tuple[ExperimentId, SolutionHash]]:
+    """ :param hash_df: data frame with schema `expname, hash, fitness_best, series_id`
+    """
+    hash_series = hash_df.get_column("hash")
+    unique_solutions = db.has_reference_solution_hashes(hash_series)
+    new_solution_df_schema = {
+        "experiment_id": pl.Utf8,
+        "solution_hash": pl.Utf8,
+        "series_id": pl.Int32,
+    }
+    new_solution_df = pl.DataFrame(schema=new_solution_df_schema)
+    if len(unique_solutions) > 0:
+        print("WOWOW, We've found a new solution(s)! Here they are:")
+        series_ids = pl.Series("series_id", [hash_df.filter(pl.col("hash") == record[1])["sid"].item() for record in unique_solutions])
+        experiment_ids = [t[0] for t in unique_solutions]
+        solution_hashes = [t[1] for t in unique_solutions]
+        new_solution_df = pl.DataFrame({
+            "experiment_id": experiment_ids,
+            "solution_hash": solution_hashes,
+            "series_id": series_ids,
+        }, schema=new_solution_df_schema)
+        print(new_solution_df)
+    else:
+        print("No new previously unknown solutions found")
+
+    if table_dir is not None:
+        new_solution_df.write_csv(table_dir / 'discovered_solutions.csv', has_header=True)
 
 
 def compare_exp_batch_outputs(basedir: Path, benchdir: Path):

@@ -25,4 +25,5 @@ processed.out/**
 compare.out/**
 !.gitkeep
 dist/
+main.db
 

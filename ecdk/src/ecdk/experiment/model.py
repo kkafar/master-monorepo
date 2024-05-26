@@ -1,12 +1,17 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, TypeAlias
 from data.model import InstanceMetadata
 from core.version import Version
 import core.util
 from polars import DataFrame
 import datetime as dt
 import json
+
+ExperimentId: TypeAlias = str
+ExperimentFamily: TypeAlias = str
+SolutionHash: TypeAlias = str
+SolutionStr: TypeAlias = str
 
 
 @dataclass(frozen=True)
@@ -282,7 +287,7 @@ class ExperimentResult:
 @dataclass
 class Experiment:
     """ Instance description, run configuration, result obtained """
-    name: str
+    name: ExperimentId
     instance: InstanceMetadata
     config: ExperimentConfig  # TODO: Flatten the structure and pass whole Experiment around
     result: Optional[ExperimentResult] = None

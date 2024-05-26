@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from core.util import iter_batched
 from typing import Optional
-from copy import copy, deepcopy
+from copy import deepcopy
 
 
 def ceildiv(a: int, b: int) -> int:
@@ -125,7 +125,7 @@ class JsspInstance:
         :returns: None only in case op with this id is the first op of the job. Raises
         exception on other failures. In case of success returns desired operation.
         """
-        if (job := self.job_for_op_with_id(id)) is not None:
+        if self.job_for_op_with_id(id) is not None:
             pred_id = JsspInstance.job_pred_for_op(id, self.n_jobs)
             if pred_id is not None:
                 return self.op_for_id(pred_id)
