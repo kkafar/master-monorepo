@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from experiment.model import Experiment, ExperimentBatch
+from experiment.model import Experiment, ExperimentBatch, ExperimentId, ExperimentFamily
 
 
 def experiment_file_from_directory(directory: Path) -> Path:
@@ -71,6 +71,34 @@ def get_main_tabledir(basedir: Path) -> Path:
 
 def get_tabledir_for_exp(exp: Experiment, basedir: Path) -> Path:
     return get_main_tabledir(basedir).joinpath(exp.name)
+
+
+def get_data_dir_from_ecdk_dir(ecdk_dir: Path) -> Path:
+    return ecdk_dir.joinpath("data")
+
+
+def get_raw_solutions_dir_from_data_dir(data_dir: Path) -> Path:
+    return data_dir.joinpath('solutions')
+
+
+def get_solutions_dir_for_experiment_family(base_solutions_dir: Path, experiment_family: ExperimentFamily) -> Path:
+    return base_solutions_dir.joinpath(f'{experiment_family}_solutions')
+
+
+def experiment_id_from_solution_file(solution_file: Path) -> ExperimentId:
+    stem = solution_file.stem
+    assert stem.endswith("solutions"), "Solution file must end with 'solutions' suffix"
+    parts = stem.split('_')
+    assert len(parts) == 2, f"Illformed solution file name: {solution_file}"
+    return parts[0]
+
+
+def experiment_family_from_solution_dir(family_solution_dir: Path) -> ExperimentFamily:
+    stem = family_solution_dir.stem
+    assert stem.endswith("solutions"), "Solution dir must end with 'solutions' suffix"
+    parts = stem.split('_')
+    assert len(parts) == 2, f"Illformed solution dir name: {family_solution_dir}"
+    return parts[0]
 
 
 def init_processed_data_file_hierarchy(exps: list[Experiment], basedir: Path):

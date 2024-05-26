@@ -16,7 +16,7 @@ import polars as pl
 import matplotlib.pyplot as plt
 import cli
 import logging
-from context import Context
+import context
 from data.constants import FLOAT_PRECISION
 
 
@@ -31,7 +31,7 @@ def configure_env():
 
 def main():
     configure_env()
-    ctx = Context(strict=True)
+    ctx = context.initialize_context(strict=True)
     args = cli.parse_cli_args()  # TODO: This should be other way around.
                                     # Context should be create basing on args and then validated
     args.handler(ctx, args)

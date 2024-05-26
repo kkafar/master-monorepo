@@ -1,6 +1,7 @@
 import polars as pl
 import polars.selectors as cs
 import itertools as it
+import context
 from tqdm import tqdm
 from pprint import pprint
 from pathlib import Path
@@ -16,7 +17,7 @@ from .stat import (
     compute_convergence_iteration_per_exp,
     compute_stats_from_solver_summary
 )
-from core.fs import get_plotdir_for_exp, get_main_tabledir
+from core.fs import get_plotdir_for_exp, get_main_tabledir, get_data_dir_from_ecdk_dir
 from core.util import write_string_to_file
 from problem import (
     validate_solution_string_in_context_of_instance,
@@ -24,6 +25,7 @@ from problem import (
     ScheduleReconstructionResult,
 )
 from .constants import FLOAT_PRECISION
+from .db.proxy import DatabaseProxy
 
 
 DiffTableDesc = tuple[str, pl.DataFrame]
@@ -184,6 +186,15 @@ def process_experiment_batch_output(batch: list[Experiment], outdir: Optional[Pa
     if outdir and solver_desc_res:
         solver_desc, json_str = solver_desc_res
         write_string_to_file(json_str, outdir / 'solver_desc.json')
+
+    ctx = context.get_context()
+    db_proxy = DatabaseProxy(ctx.ecdk_db_path(), ctx.ecdk_instance_solutions_dir())
+    look_for_new_solution(db_proxy)
+
+
+def look_for_new_solution(db: DatabaseProxy):
+    print("Looking for any unknown soluitons...")
+    pass
 
 
 def compare_exp_batch_outputs(basedir: Path, benchdir: Path):
