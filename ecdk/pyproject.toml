@@ -1,6 +1,6 @@
 [project]
 name = "ecdk"
-version = "0.1.0"
+version = "0.2.0"
 authors = [
   { name="Kacper Kafara", email="kacperkafara@gmail.com" }
 ]
