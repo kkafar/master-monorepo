@@ -249,6 +249,13 @@ def compute_convergence_iteration_per_exp(batch: list[Experiment], data: list[Jo
 def compute_stats_from_solver_summary(
         batch: list[Experiment],
         data: list[JoinedExperimentData]) -> Optional[tuple[pl.DataFrame, pl.DataFrame]]:
+    """ Computes statistics & extracts information based on solver summary (run_metadata.json).
+    This function assumes that data & batch structures are synchronized (on index i there is data for ith experiment).
+
+    :param batch: iterable of experiments
+    :param data: joined data for respective batch experiments
+    :return: tuple of two data frames - first one contains statistics, second one stores hashes & experiment_ids
+    """
     main_df = pl.DataFrame()
     hash_df = pl.DataFrame()
 
@@ -304,10 +311,12 @@ def compute_stats_from_solver_summary(
             summary_df
             .lazy()
             .filter(pl.col(Col.FITNESS) == best_fitness)
+            .group_by(pl.col(KEY_HASH))
+            .agg(pl.col(Col.SID).min())  # We take smalest series id from unique ones
             .select([
                 pl.lit(pl.Series(KEY_EXPNAME, (exp.name,))),
-                pl.col(KEY_HASH).unique().alias(KEY_BEST_HASH),
-                pl.lit(pl.Series(KEY_FITNESS_BEST, (best_fitness,)))
+                pl.lit(pl.Series(KEY_FITNESS_BEST, (best_fitness,))),
+                pl.all(),
             ])
             .collect()
         )

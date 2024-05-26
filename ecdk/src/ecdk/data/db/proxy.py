@@ -1,7 +1,9 @@
 import sqlite3 as sql
 from pathlib import Path
+from typing import Iterable
 from .raw_data_provider import RawSolutionDataProvider
 from core.util import iter_batched
+from experiment.model import SolutionHash, ExperimentId
 
 
 class DatabaseProxy:
@@ -51,3 +53,14 @@ class DatabaseProxy:
             cursor = cursor.executemany("INSERT INTO solution_reference (experiment_id, solution_hash, solution_str) VALUES(?, ?, ?);", record)
         self._connection.commit()
 
+    def has_reference_solution_hashes(self, solution_hashes: Iterable[SolutionHash]) -> list[tuple[ExperimentId, SolutionHash]]:
+        cursor = self._connection.cursor()
+        for hash in solution_hashes:
+            cursor = cursor.execute(
+                """
+                SELECT experiment_id, solution_hash FROM solution_reference WHERE solution_hash = ?
+                """,
+                (hash,)
+            )
+
+        return cursor.fetchall()
